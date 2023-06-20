@@ -1,10 +1,12 @@
 import React, { useContext } from 'react';
-import { TouchableOpacity, Image, View } from 'react-native';
+import { TouchableOpacity, Image, View, StyleSheet } from 'react-native';
 import MenuList from './components/MenuList';
 import { AuthContext } from './navigation';
 
-const HeaderMenu = ({ hasUser }) => {
 
+const HeaderMenu = () => {
+
+    const { hasUser } = useContext(AuthContext);
     const { isDropdownOpen, setIsDropdownOpen } = useContext(AuthContext);
 
     const handleDropdownToggle = () => {
@@ -14,20 +16,22 @@ const HeaderMenu = ({ hasUser }) => {
     if(hasUser) {
       if(!isDropdownOpen) {
         return (
-          <TouchableOpacity onPress={handleDropdownToggle}>
-            <Image
-              source={require('./assets/profile.png')}
-              style={{ width: 30, height: 30, marginRight: 15, marginBottom: 5 }}
-            />
-          </TouchableOpacity>
+            <View style={styles.view}>
+                <TouchableOpacity onPress={handleDropdownToggle} style={styles.imageContainer}>
+                    <Image
+                    source={require('./assets/profile.png')}
+                    style={styles.image}
+                    />
+                </TouchableOpacity>
+            </View>
           );
       } else { // dropdown is already opened
         return (
-          <View>
-            <TouchableOpacity onPress={handleDropdownToggle}>
+          <View style={styles.view}>
+            <TouchableOpacity onPress={handleDropdownToggle} style={styles.imageContainer}>
                 <Image
                 source={require('./assets/profile.png')}
-                style={{ width: 30, height: 30, marginRight: 15, marginTop: 45 }}
+                style={styles.image}
                 />
             </TouchableOpacity>
             <MenuList />
@@ -36,6 +40,33 @@ const HeaderMenu = ({ hasUser }) => {
       }
     }
     return null;
-  };
+  }
+  
+  const styles = StyleSheet.create({
+    imageContainer: {
+      position: 'absolute',
+      top: 5, 
+      right: 10,
+      zIndex: 1, 
+    },
+    image: {
+      width: 30,
+      height: 30,
+      backgroundColor: '#f48024',
+      borderRadius: 30,
+      borderColor: 'white',
+        borderWidth: 1,
+      paddingTop: 5,
+      marginRight: 10
+    },
+    view: {
+      marginTop: -20,
+      marginBottom: 25
+    }
+        
+})
+  ;
+
+
 
 export default HeaderMenu;

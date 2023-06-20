@@ -1,18 +1,11 @@
-import React, { useContext } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { AuthContext } from "../navigation";
+import React from "react";
+import { View, Text } from "react-native";
 
 const FeedScreen = () => {
-    const { setUser } = useContext(AuthContext);
   
     return (
       <View style={styles.view}>
         <Text style={styles.title}>Feed</Text>
-        <TouchableOpacity 
-        style={styles.button}
-        onPress={() => setUser(false)}>
-            <Text style={styles.buttonText}>Logout</Text>
-        </TouchableOpacity>
       </View>
     );
 }
