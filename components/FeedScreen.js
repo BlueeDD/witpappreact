@@ -8,11 +8,6 @@ const FeedScreen = () => {
     <View style={styles.view}>
       <Text style={styles.title}>Feed</Text>
       {/* {user} && <Text>{user.name}</Text> */}
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => setHasUser(false)}>
-        <Text style={styles.buttonText}>Logout</Text>
-      </TouchableOpacity>
     </View>
   );
 }
