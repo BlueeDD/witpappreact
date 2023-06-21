@@ -42,51 +42,52 @@ const Feed = () => {
 
 export default function App() {
 
-  const [hasUser, setUser] = useState(false);
+  const [hasUser, setHasUser] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
-    <AuthContext.Provider value={{ hasUser, setUser, isDropdownOpen, setIsDropdownOpen }}>
-    <NavigationContainer>
-      <Stack.Navigator
-      screenOptions={
-        {headerBackImage: () => <Image source={require('./assets/back.png')} style={{width: 30, height: 30, marginLeft: 15}}/>,
-        headerBackTitleVisible: false,
-        headerTintColor: 'white',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
-        headerRight: () => (
-          <HeaderMenu hasUser={hasUser} />
-        ),  
-        headerStyle: {
-          backgroundColor: '#f48024',
-        },
-      }
-      }>
-      {hasUser ? (
-        <Stack.Screen 
-        name="Feed" 
-        component={Feed}
-        options={{
-          title: 'Pub Crawl Malaga',
-        }} />
-      ) : (
-        <Stack.Screen 
-        name="LoginScreen" 
-        component={Login}
-        options={{
-          title: 'Pub Crawl Malaga',
-        }} />
-      )}
-        <Stack.Screen 
-        name="Register" 
-        component={Register}
-        options={{
-          title: 'Pub Crawl Malaga',
-        }} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <AuthContext.Provider value={{ hasUser, setHasUser, isDropdownOpen, setIsDropdownOpen }}>
+      <NavigationContainer>
+        <Stack.Navigator
+          screenOptions={
+            {
+              headerBackImage: () => <Image source={require('./assets/back.png')} style={{ width: 30, height: 30, marginLeft: 15 }} />,
+              headerBackTitleVisible: false,
+              headerTintColor: 'white',
+              headerTitleStyle: {
+                fontWeight: 'bold',
+              },
+              headerRight: () => (
+                <HeaderMenu hasUser={hasUser} />
+              ),
+              headerStyle: {
+                backgroundColor: '#f48024',
+              },
+            }
+          }>
+          {hasUser ? (
+            <Stack.Screen
+              name="Feed"
+              component={Feed}
+              options={{
+                title: 'Pub Crawl Malaga',
+              }} />
+          ) : (
+            <Stack.Screen
+              name="LoginScreen"
+              component={Login}
+              options={{
+                title: 'Pub Crawl Malaga',
+              }} />
+          )}
+          <Stack.Screen
+            name="Register"
+            component={Register}
+            options={{
+              title: 'Pub Crawl Malaga',
+            }} />
+        </Stack.Navigator>
+      </NavigationContainer>
     </AuthContext.Provider>
 
   );

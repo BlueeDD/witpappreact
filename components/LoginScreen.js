@@ -5,7 +5,7 @@ import { AuthContext } from '../navigation';
 
 const LoginForm = () => {
     const navigation = useNavigation();
-    const { setUser } = useContext(AuthContext);
+    const { setHasUser, setUser } = useContext(AuthContext);
 
     const handleRegisterPress = () => {
         navigation.navigate('Register');
@@ -23,12 +23,20 @@ const LoginForm = () => {
                 password: password, // '12345678'
             }),
         });
-        const data = await response.json();
-        console.log(data);
-        if (data.id >= 1) { // if user is found
-            setUser(true);
+        const dataRes = await response.json();
+        //console.log(dataRes);
+        if (dataRes.code == 0) { // if no error (user found)
+            //console.log(dataRes.data);
+            setHasUser(true);
+            setUser({
+                id: dataRes.data.id,
+                email: dataRes.data.email,
+                name: dataRes.data.name,
+                role: dataRes.data.role,
+                agentCityId: dataRes.data.agentCityId,
+            });
         } else {
-            setUser(false);
+            setHasUser(false);
         }
     };
 
