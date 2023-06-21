@@ -10,6 +10,7 @@ const MenuList = () => {
 
   const handleLogout = () => {
     setHasUser(false);
+    navigation.navigate('Feed');
     };
 
   const handleProfilePress = () => {
