@@ -45,7 +45,7 @@ const HeaderMenu = () => {
   const styles = StyleSheet.create({
     imageContainer: {
       position: 'absolute',
-      top: 5, 
+      top: 7, 
       right: 10,
       zIndex: 1, 
     },

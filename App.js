@@ -1,14 +1,23 @@
-import React, { useState } from "react";
-import { StyleSheet, View, StatusBar, Image, TouchableOpacity } from 'react-native';
+import React from "react";
+import { StyleSheet, View, StatusBar, Image } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import LoginScreen from './components/LoginScreen';
 import RegisterScreen from './components/RegisterScreen';
 import Footer from './components/Footer';
 import FeedScreen from "./components/FeedScreen";
 import HeaderMenu from "./headerMenu";
-import { AuthContext, Stack } from './navigation';
+import ProfileScreen from "./components/ProfileScreen";
+import AuthProvider, { AuthContext, Stack } from './navigation';
 
-
+const Profile = () => {
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      <ProfileScreen />
+      <Footer />
+    </View>
+  );
+}
 
 const Login = () => {
   return (
@@ -41,55 +50,68 @@ const Feed = () => {
 }
 
 export default function App() {
-
-  const [hasUser, setHasUser] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
   return (
-    <AuthContext.Provider value={{ hasUser, setHasUser, isDropdownOpen, setIsDropdownOpen }}>
+    <AuthProvider>
       <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={
-            {
-              headerBackImage: () => <Image source={require('./assets/back.png')} style={{ width: 30, height: 30, marginLeft: 15 }} />,
-              headerBackTitleVisible: false,
-              headerTintColor: 'white',
-              headerTitleStyle: {
-                fontWeight: 'bold',
-              },
-              headerRight: () => (
-                <HeaderMenu hasUser={hasUser} />
-              ),
-              headerStyle: {
-                backgroundColor: '#f48024',
-              },
-            }
-          }>
-          {hasUser ? (
-            <Stack.Screen
-              name="Feed"
-              component={Feed}
-              options={{
-                title: 'Pub Crawl Malaga',
-              }} />
-          ) : (
-            <Stack.Screen
-              name="LoginScreen"
-              component={Login}
-              options={{
-                title: 'Pub Crawl Malaga',
-              }} />
+        <AuthContext.Consumer>
+          {(authContext) => (
+            <Stack.Navigator
+              screenOptions={{
+                headerBackImage: () => (
+                  <Image
+                    source={require("./assets/back.png")}
+                    style={{ width: 30, height: 30, marginLeft: 15 }}
+                  />
+                ),
+                headerBackTitleVisible: false,
+                headerTintColor: "white",
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                },
+                headerRight: () => (
+                  <HeaderMenu hasUser={authContext.hasUser} />
+                ),
+                headerStyle: {
+                  backgroundColor: "#f48024",
+                },
+              }}
+            >
+              {authContext.hasUser ? (
+                <Stack.Screen
+                  name="Feed"
+                  component={Feed}
+                  options={{
+                    title: "Pub Crawl Malaga",
+                  }}
+                />
+              ) : (
+                <Stack.Screen
+                  name="LoginScreen"
+                  component={Login}
+                  options={{
+                    title: "Pub Crawl Malaga",
+                  }}
+                />
+              )}
+              <Stack.Screen
+                name="Register"
+                component={Register}
+                options={{
+                  title: "Pub Crawl Malaga",
+                }}
+              />
+              <Stack.Screen
+                name="Profile"
+                component={Profile}
+                options={{
+                  title: "Pub Crawl Malaga",
+                }}
+              />
+            </Stack.Navigator>
           )}
-          <Stack.Screen
-            name="Register"
-            component={Register}
-            options={{
-              title: 'Pub Crawl Malaga',
-            }} />
-        </Stack.Navigator>
+        </AuthContext.Consumer>
       </NavigationContainer>
-    </AuthContext.Provider>
-
+    </AuthProvider>
   );
 }
 
