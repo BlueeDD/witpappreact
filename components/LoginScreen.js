@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { View, TextInput, Image, StyleSheet, Text, TouchableOpacity, KeyboardAvoidingView, Platform} from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../navigation';
@@ -7,19 +7,33 @@ import { AuthContext } from '../navigation';
 const LoginForm = () => {
     const navigation = useNavigation();
     const { setUser } = useContext(AuthContext);
+    const [email, setEmail] = React.useState("");
+    const [password, setPassword] = React.useState("");
+    const [isValid, setIsValid] = useState(true);
 
+    const handleEmailChange = (email) => {
+        setEmail(email);
+        const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+        setIsValid(emailPattern.test(email));
+    };
 
     const handleRegisterPress = () => {
         navigation.navigate('Register');
     };
 
-    // on login, set hasUser to true
+    // on login, set hasUser to true if email and password are not empty and correct format
     const handleLoginPress = () => {
-        setUser(true);
+        if (!isValid) {
+            alert("Please enter a valid email address.");
+        }
+        else {
+            if (email !== "" && password !== "") {
+                setUser(true);
+            } else {
+                alert("Please fill in all fields");
+            }
+        }
       };
-
-    const [email, setEmail] = React.useState("");
-    const [password, setPassword] = React.useState("");
 
     return (
         <KeyboardAvoidingView
@@ -28,12 +42,20 @@ const LoginForm = () => {
             <View style={styles.view}>
                 <Image style={{ alignSelf: "center", marginBottom: 20 }}
                 source={require('../assets/logo.webp')} />
+                {/* email input is required and should fit email format */}
                 <TextInput style={styles.textInput}
                     placeholder="Email"
                     placeholderTextColor={"white"}
-                    onChangeText={text => setEmail(text)}
+                    onChangeText={text => handleEmailChange(text)}
                     value={email}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    required={true}
                 />
+                {!isValid && (
+                    <Text style={styles.errorText}>Please enter a valid email address.</Text>
+                )}
                 <TextInput style={styles.textInput}
                     placeholder="Password"
                     placeholderTextColor={"white"}
@@ -104,6 +126,12 @@ const LoginForm = () => {
             flex: 1,
             justifyContent: "center",
             alignItems: "center",
+        },
+        errorText: {
+            color: "red",
+            marginBottom: 15,
+            marginTop: -25,
+            fontSize: 12,
         }
     }
 );
