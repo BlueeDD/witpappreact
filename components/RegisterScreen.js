@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from "react";
 import { View, Text } from 'react-native';
 import { TextInput, Image, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
 
@@ -7,6 +7,26 @@ const RegisterScreen = () => {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
+  const [isValid, setIsValid] = useState(true);
+
+
+  const handleEmailChange = (email) => {
+    setEmail(email);
+    const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+    setIsValid(emailPattern.test(email));
+  };
+
+  const handleCreateAccountPress = () => {
+    if (email !== "" && password !== "" && confirmPassword !== "") {
+        if (password === confirmPassword) {
+            alert("Account Created");
+        } else {
+            alert("Passwords do not match");
+        }
+    } else {
+        alert("Please fill in all fields");
+    }
+    };
 
   return (
       <KeyboardAvoidingView 
@@ -18,9 +38,16 @@ const RegisterScreen = () => {
             <TextInput style={styles.textInput}
                 placeholder="Email"
                 placeholderTextColor={"white"}
-                onChangeText={text => setEmail(text)}
+                onChangeText={text => handleEmailChange(text)}
                 value={email}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                required={true}
             />
+            {!isValid && (
+                    <Text style={styles.errorText}>Please enter a valid email address.</Text>
+                )}
             <TextInput style={styles.textInput}
                 placeholder="Password"
                 placeholderTextColor={"white"}
@@ -37,7 +64,7 @@ const RegisterScreen = () => {
             />
             <TouchableOpacity 
             style={styles.button}
-            onPress={() => alert("Account Created")}>
+            onPress={handleCreateAccountPress}>
                 <Text style={styles.buttonText}>Create account</Text>
             </TouchableOpacity>
           </View>
@@ -80,6 +107,12 @@ const styles = StyleSheet.create({
       backgroundColor: "white",
       alignItems: "center",
       justifyContent: "center",
+  },
+  errorText: {
+    color: "red",
+    marginBottom: 15,
+    marginTop: -25,
+    fontSize: 12,
   },
 });
 
