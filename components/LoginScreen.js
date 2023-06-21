@@ -26,7 +26,7 @@ const LoginForm = () => {
     };
 
 
-    const handleLoginPress = () => {
+    const handleLoginPress = async () => {
         if (!isValid) {
             alert("Please enter a valid email address.");
         }
@@ -163,7 +163,6 @@ const LoginForm = () => {
             fontSize: 12,
         }
     }
-}
 );
 
 export default LoginForm;

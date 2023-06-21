@@ -1,13 +1,13 @@
 import React, { useContext } from 'react';
-import { View, Image, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { AuthContext } from '../navigation';
 
 const MenuList = () => {
 
-  const { setUser } = useContext(AuthContext);
+  const { setHasUser } = useContext(AuthContext);
 
   const handleLogout = () => {
-    setUser(false);
+    setHasUser(false);
     };
 
   return (
@@ -35,13 +35,13 @@ const MenuList = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 37, 
+    top: 45, 
     right: 5, 
     padding: 10,
     zIndex: 1,
   },
   item: {
-    marginBottom: 5,
+    marginBottom: 10,
     textAlign: 'center',
     backgroundColor: '#f48024',
     borderRadius: 50,

@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useContext } from "react";
 import { View, Text } from "react-native";
+import { AuthContext } from '../navigation';
 
 const FeedScreen = () => {
   const { user, setHasUser, setUser } = useContext(AuthContext);
