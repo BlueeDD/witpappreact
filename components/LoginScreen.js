@@ -6,7 +6,7 @@ import { AuthContext } from '../navigation';
 
 const LoginForm = () => {
     const navigation = useNavigation();
-    const { setHasUser, setUser } = useContext(AuthContext);
+    const { user, setHasUser, setUser } = useContext(AuthContext);
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [isValid, setIsValid] = useState(true);
@@ -43,16 +43,14 @@ const LoginForm = () => {
                     }),
                 });
                 const dataRes = await response.json();
-                //console.log(dataRes);
                 if (dataRes.code == 0) { // if no error (user found)
-                    //console.log(dataRes.data);
                     setHasUser(true);
                     setUser({
                         id: dataRes.data.id,
                         email: dataRes.data.email,
                         name: dataRes.data.name,
                         role: dataRes.data.role,
-                        agentCityId: dataRes.data.agentCityId,
+                        agentCityId: dataRes.data.agent_city_id,
                     });
                 } else {
                     setHasUser(false);
@@ -71,7 +69,6 @@ const LoginForm = () => {
             <View style={styles.view}>
                 <Image style={{ alignSelf: "center", marginBottom: 20 }}
                 source={require('../assets/logo.webp')} />
-                {/* email input is required and should fit email format */}
                 <TextInput style={styles.textInput}
                     placeholder="Email"
                     placeholderTextColor={"white"}
@@ -94,7 +91,6 @@ const LoginForm = () => {
                 />
                 <TouchableOpacity
                     style={styles.button}
-                    /* on button press, check the credentials */
                     onPress={handleLoginPress}>
                     <Text style={styles.buttonText}>Login</Text>
                 </TouchableOpacity>

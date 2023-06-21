@@ -1,18 +1,26 @@
 import React, { useContext } from 'react';
 import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../navigation';
 
 const MenuList = () => {
 
   const { setHasUser } = useContext(AuthContext);
+  const navigation = useNavigation();
 
   const handleLogout = () => {
     setHasUser(false);
     };
 
+  const handleProfilePress = () => {
+    navigation.navigate('Profile');
+  };
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.item}>
+      <TouchableOpacity 
+      style={styles.item}
+      onPress={handleProfilePress}>
         <View style={styles.imageContainer}>
           <Image 
             source={require('../assets/settings.png')} 

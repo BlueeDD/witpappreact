@@ -1,14 +1,11 @@
 import React, { useContext } from "react";
 import { View, Text } from "react-native";
-import { AuthContext } from '../navigation';
 
 const FeedScreen = () => {
-  const { user, setHasUser, setUser } = useContext(AuthContext);
 
   return (
     <View style={styles.view}>
       <Text style={styles.title}>Feed</Text>
-      {/* {user} && <Text>{user.name}</Text> */}
     </View>
   );
 }
