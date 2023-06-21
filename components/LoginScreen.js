@@ -1,12 +1,12 @@
 import React, { useContext, useState } from "react";
 import { View, TextInput, Image, StyleSheet, Text, TouchableOpacity, KeyboardAvoidingView, Platform} from "react-native";
+
 import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../navigation';
 
-
 const LoginForm = () => {
     const navigation = useNavigation();
-    const { setUser } = useContext(AuthContext);
+    const { setHasUser, setUser } = useContext(AuthContext);
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [isValid, setIsValid] = useState(true);
@@ -20,28 +20,54 @@ const LoginForm = () => {
         }
     };
 
+
     const handleRegisterPress = () => {
         navigation.navigate('Register');
     };
 
-    // on login, set hasUser to true if email and password are not empty and correct format
+
     const handleLoginPress = () => {
         if (!isValid) {
             alert("Please enter a valid email address.");
         }
         else {
             if (email !== "" && password !== "") {
-                setUser(true);
+                const response = await fetch('https://whereisthepubcrawl.com/API/login.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ // pass the email and password from form to the API
+                        email: email, // 'superadmin@gmail.com'
+                        password: password, // '12345678'
+                    }),
+                });
+                const dataRes = await response.json();
+                //console.log(dataRes);
+                if (dataRes.code == 0) { // if no error (user found)
+                    //console.log(dataRes.data);
+                    setHasUser(true);
+                    setUser({
+                        id: dataRes.data.id,
+                        email: dataRes.data.email,
+                        name: dataRes.data.name,
+                        role: dataRes.data.role,
+                        agentCityId: dataRes.data.agentCityId,
+                    });
+                } else {
+                    setHasUser(false);
+                }
             } else {
                 alert("Please fill in all fields");
             }
         }
       };
 
+
     return (
         <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 100}>
+            behavior={"padding"}
+            keyboardVerticalOffset={0}>
             <View style={styles.view}>
                 <Image style={{ alignSelf: "center", marginBottom: 20 }}
                 source={require('../assets/logo.webp')} />
@@ -66,19 +92,19 @@ const LoginForm = () => {
                     value={password}
                     secureTextEntry={true}
                 />
-                <TouchableOpacity 
-                style={styles.button}
-                /* on login, set hasUser to true */
-                onPress={handleLoginPress}>
+                <TouchableOpacity
+                    style={styles.button}
+                    /* on button press, check the credentials */
+                    onPress={handleLoginPress}>
                     <Text style={styles.buttonText}>Login</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                style={{width: 200}} 
-                onPress={handleRegisterPress} >
-                    <Text 
-                    underlineColor="#f48024"
-                    style={styles.registerText}>You don't have an account? 
-                    <Text style={styles.underline}> Register here.</Text>
+                    style={{ width: 200 }}
+                    onPress={handleRegisterPress} >
+                    <Text
+                        underlineColor="#f48024"
+                        style={styles.registerText}>You don't have an account?
+                        <Text style={styles.underline}> Register here.</Text>
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -137,7 +163,7 @@ const LoginForm = () => {
             fontSize: 12,
         }
     }
+}
 );
-
 
 export default LoginForm;

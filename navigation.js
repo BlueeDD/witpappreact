@@ -4,9 +4,17 @@ import { createStackNavigator } from "@react-navigation/stack";
 
 export const AuthContext = createContext({
   hasUser: false,
-  setUser: () => {},
+  setHasUser: () => { },
   isDropdownOpen: false,
-  setIsDropdownOpen: () => {},
+  setIsDropdownOpen: () => { },
+  user: {
+    id: null,
+    email: null,
+    name: null,
+    role: null,
+    agentCityId: null,
+  },
+  setUser: () => { },
 });
 
 export const Stack = createStackNavigator();
