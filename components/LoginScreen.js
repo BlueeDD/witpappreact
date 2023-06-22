@@ -20,11 +20,9 @@ const LoginForm = () => {
         }
     };
 
-
     const handleRegisterPress = () => {
         navigation.navigate('Register');
     };
-
 
     const handleLoginPress = async () => {
         if (!isValid) {
@@ -61,7 +59,6 @@ const LoginForm = () => {
         }
     };
 
-
     return (
         <KeyboardAvoidingView
             behavior={"padding"}
@@ -78,6 +75,7 @@ const LoginForm = () => {
                     autoCapitalize="none"
                     autoCorrect={false}
                     required={true}
+                    selectionColor={"grey"}
                 />
                 {!isValid && (
                     <Text style={styles.errorText}>Please enter a valid email address.</Text>
@@ -88,6 +86,7 @@ const LoginForm = () => {
                     onChangeText={text => setPassword(text)}
                     value={password}
                     secureTextEntry={true}
+                    selectionColor={"grey"}
                 />
                 <TouchableOpacity
                     style={styles.button}
@@ -128,7 +127,6 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.8,
         shadowOffset: { width: 0, height: 2 },
         shadowRadius: 4,
-
     },
     buttonText: {
         color: "black",
