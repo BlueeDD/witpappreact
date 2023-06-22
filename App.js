@@ -31,11 +31,7 @@ const Register = () => {
 
 const Feed = () => {
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      <FeedScreen />
-      <Footer />
-    </View>
+    <FeedScreen />
   );
 }
 
