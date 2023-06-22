@@ -61,11 +61,6 @@ const LoginForm = () => {
         }
       };
 
-      const loginPress = () => {
-        setHasUser(true);
-      };
-
-
     return (
         <KeyboardAvoidingView
             behavior={"padding"}
@@ -95,7 +90,7 @@ const LoginForm = () => {
                 />
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={loginPress}>
+                    onPress={handleLoginPress}>
                     <Text style={styles.buttonText}>Login</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
