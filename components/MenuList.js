@@ -5,35 +5,37 @@ import { AuthContext } from '../navigation';
 
 const MenuList = () => {
 
-  const { setHasUser } = useContext(AuthContext);
+  const { setHasUser, setIsDropdownOpen } = useContext(AuthContext);
   const navigation = useNavigation();
 
   const handleLogout = () => {
+    setIsDropdownOpen(false);
     setHasUser(false);
     navigation.navigate('Feed');
-    };
+  };
 
   const handleProfilePress = () => {
+    setIsDropdownOpen(false);
     navigation.navigate('Profile');
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity 
-      style={styles.item}
-      onPress={handleProfilePress}>
+      <TouchableOpacity
+        style={styles.item}
+        onPress={handleProfilePress}>
         <View style={styles.imageContainer}>
-          <Image 
-            source={require('../assets/settings.png')} 
+          <Image
+            source={require('../assets/settings.png')}
             style={styles.image} />
         </View>
       </TouchableOpacity>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.item}
         onPress={handleLogout}>
         <View style={styles.imageContainer}>
-          <Image 
-            source={require('../assets/logout.png')} 
+          <Image
+            source={require('../assets/logout.png')}
             style={styles.image} />
         </View>
       </TouchableOpacity>
@@ -44,8 +46,8 @@ const MenuList = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 45, 
-    right: 5, 
+    top: 45,
+    right: 5,
     padding: 10,
     zIndex: 1,
   },
