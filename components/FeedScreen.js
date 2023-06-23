@@ -5,6 +5,7 @@ import Footer from "./Footer";
 import { AuthContext } from '../navigation';
 
 const FeedScreen = () => {
+  
   const [isChecked, setIsChecked] = useState(false);
   const { user } = useContext(AuthContext);
 
@@ -64,8 +65,8 @@ const FeedScreen = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <View style={styles.row}>
-        <View style={styles.column1}>
+        <View style={styles.row}>
+        <View style={styles.column}>
           <TouchableOpacity
             style={[styles.checkbox, initialCheckboxes["checkbox0"] && styles.checkboxChecked]}
             onPress={() => handleCheckboxToggle("checkbox0")}
@@ -104,7 +105,7 @@ const FeedScreen = () => {
             onPress={() => handleCheckboxToggle("checkbox5")}
           /> */}
         </View>
-        <View style={styles.column2}>
+        <View style={[styles.column, {marginLeft: -50}]}>
           <Text style={styles.title}>{meetingPoint}</Text>
           {stops.map((stop) => (
             <View key={stop.place_order}>
@@ -114,6 +115,9 @@ const FeedScreen = () => {
             </View>
           ))}
           {/* <Text style={[styles.hiddenText, checkboxes.checkbox1 && !checkboxes.checkbox2 && styles.text]}>
+        <View style={[styles.column, {marginLeft: -50}]}>
+          <Text style={styles.title}>Meeting point</Text>
+          <Text style={[styles.hiddenText, checkboxes.checkbox1 && !checkboxes.checkbox2 && styles.text]}>
             walking to the next stop...</Text>
           <Text style={styles.title}>Stop n°1</Text>
           <Text style={[styles.hiddenText, checkboxes.checkbox2 && !checkboxes.checkbox3 && styles.text]}>
@@ -139,54 +143,46 @@ const styles = {
     fontWeight: "bold",
     textAlign: "center",
     textAlignVertical: "center",
-    flex: 1,
+    marginVertical: 12,
   },
   text: {
     fontSize: 15,
     color: "grey",
     textAlign: "center",
     textAlignVertical: "center",
-    flex: 1,
+    marginVertical: 30,
   },
   hiddenText: {
     fontSize: 15,
     color: "white",
     textAlign: "center",
     textAlignVertical: "center",
-    flex: 1,
+    marginVertical: 30,
   },
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: 'white',
-  },
+    container: {
+      flexDirection: "column",
+      height: "100%",
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "white",
+    },
   row: {
-    flex: 1,
     flexDirection: "row",
+    width: "100%",
     alignItems: "center",
-    marginLeft: 60,
+    justifyContent: "center",
+    marginBottom: 70,
   },
-  column1: {
-    flex: 1,
+  column: {
     flexDirection: "column",
     alignItems: "center",
-    marginBottom: 90,
-    marginTop: 20,
-    marginRight: -30,
-    marginLeft: -70,
-  },
-  column2: {
-    flex: 1,
-    flexDirection: "column",
-    alignItems: "center",
-    marginTop: 30,
-    marginBottom: 47,
-    marginRight: 100,
-    marginLeft: -20,
+    width: "50%",
+    justifyContent: "center",
+    marginLeft: -100,
   },
   separator: {
     width: 15,
-    height: 100,
+    height: 75,
     backgroundColor: "green",
     borderLeftColor: "darkgreen",
     borderRightColor: "darkgreen",
