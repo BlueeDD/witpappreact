@@ -9,16 +9,6 @@ import HeaderMenu from "./headerMenu";
 import ProfileScreen from "./components/ProfileScreen";
 import AuthProvider, { AuthContext, Stack } from './navigation';
 
-const Profile = () => {
-  return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      <ProfileScreen />
-      <Footer />
-    </View>
-  );
-}
-
 const Login = () => {
   return (
     <View style={styles.container}>
@@ -41,9 +31,15 @@ const Register = () => {
 
 const Feed = () => {
   return (
+    <FeedScreen />
+  );
+}
+
+const Profile = () => {
+  return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <FeedScreen />
+      <ProfileScreen />
       <Footer />
     </View>
   );

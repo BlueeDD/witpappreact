@@ -11,6 +11,7 @@ const MenuList = () => {
   const handleLogout = () => {
     setIsDropdownOpen(false);
     setHasUser(false);
+    navigation.navigate('Feed');
   };
 
   const handleProfilePress = () => {
