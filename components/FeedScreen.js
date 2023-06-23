@@ -84,22 +84,22 @@ const FeedScreen = () => {
             style={[styles.checkbox, checkboxes.checkbox1 && styles.checkboxChecked]}
             onPress={() => handleCheckboxToggle("checkbox1")}
           />
-          <View style={[styles.separator, !checkboxes.checkbox1 && styles.hiddenSeparator]} />
+          <View style={[styles.separator, !checkboxes.checkbox1 && styles.hiddenSeparator, checkboxes.checkbox1 && !checkboxes.checkbox2 && styles.separatorDotted]} />
           <TouchableOpacity
             style={[styles.checkbox, checkboxes.checkbox2 && styles.checkboxChecked]}
             onPress={() => handleCheckboxToggle("checkbox2")}
           />
-          <View style={[styles.separator, !checkboxes.checkbox2 && styles.hiddenSeparator]} />
+          <View style={[styles.separator, !checkboxes.checkbox2 && styles.hiddenSeparator, checkboxes.checkbox2 && !checkboxes.checkbox3 && styles.separatorDotted]} />
           <TouchableOpacity
             style={[styles.checkbox, checkboxes.checkbox3 && styles.checkboxChecked]}
             onPress={() => handleCheckboxToggle("checkbox3")}
           />
-          <View style={[styles.separator, !checkboxes.checkbox3 && styles.hiddenSeparator]} />
+          <View style={[styles.separator, !checkboxes.checkbox3 && styles.hiddenSeparator, checkboxes.checkbox3 && !checkboxes.checkbox4 && styles.separatorDotted]} />
           <TouchableOpacity
             style={[styles.checkbox, checkboxes.checkbox4 && styles.checkboxChecked]}
             onPress={() => handleCheckboxToggle("checkbox4")}
           />
-          <View style={[styles.separator, !checkboxes.checkbox4 && styles.hiddenSeparator]} />
+          <View style={[styles.separator, !checkboxes.checkbox4 && styles.hiddenSeparator, checkboxes.checkbox4 && !checkboxes.checkbox5 && styles.separatorDotted]} />
           <TouchableOpacity
             style={[styles.checkbox, checkboxes.checkbox5 && styles.checkboxChecked]}
             onPress={() => handleCheckboxToggle("checkbox5")}
@@ -181,23 +181,25 @@ const styles = {
     marginLeft: -100,
   },
   separator: {
-    width: 15,
+    width: 8,
     height: 75,
     backgroundColor: "green",
-    borderLeftColor: "darkgreen",
-    borderRightColor: "darkgreen",
-    borderBottomColor: "green",
-    borderTopColor: "green",
-    borderWidth: 4,
-    borderLeftWidth: 4,
-    borderRightWidth: 4,
+    borderColor: "darkgreen",
+    borderWidth: 2,
+  },
+  separatorDotted: {
+    width: 0,
+    height: 75,
+    backgroundColor: "white",
+    backgroundStyle: "dotted",
+    borderColor: "darkgreen",
+    borderWidth: 3,
+    borderStyle: "dotted",
+    marginTop: -1,
   },
   hiddenSeparator: {
     backgroundColor: "white",
-    borderLeftColor: "white",
-    borderRightColor: "white",
-    borderBottomColor: "white",
-    borderTopColor: "white",
+    borderColor: "white",
   },
   checkbox: {
     height: 50,
@@ -206,7 +208,7 @@ const styles = {
     borderColor: "darkgreen",
     justifyContent: "center",
     alignItems: "center",
-  },
+    },
   checkboxChecked: {
     backgroundColor: "green",
     borderColor: "darkgreen",
