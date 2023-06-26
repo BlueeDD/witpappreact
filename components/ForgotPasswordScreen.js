@@ -1,12 +1,12 @@
 import React, { useContext, useState } from "react";
-import { View, TextInput, Image, StyleSheet, Text, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
+import { View, TextInput, Image, StyleSheet, Text, TouchableOpacity, KeyboardAvoidingView } from "react-native";
 
 import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../navigation';
 
-const LoginForm = () => {
+const ForgotPasswordForm = () => {
     const navigation = useNavigation();
-    const { user, setHasUser, setUser } = useContext(AuthContext);
+    const { setHasUser, setUser } = useContext(AuthContext);
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [isValid, setIsValid] = useState(true);
@@ -20,19 +20,16 @@ const LoginForm = () => {
         }
     };
 
-    const handleRegisterPress = () => {
-        navigation.navigate('Register');
+    const handleLoginPress = () => {
+        navigation.navigate('Login');
     };
 
-    const handleForgotPasswordPress = () => {
-        navigation.navigate('ForgotPassword');
-    };
-
-    const handleLoginPress = async () => {
+    const handleForgotPasswordPress = async () => {
         if (!isValid) {
             alert("Please enter a valid email address.");
         } else {
-            if (email !== "" && password !== "") {
+            if (email !== "") {
+                // TODO : call the API that enables to send an email to the user with a link to reset his password (must use the WEB site to reset it)
                 const response = await fetch('http://192.168.0.62/witp/API/login.php', { // 'https://whereisthepubcrawl.com/API/login.php'
                     method: 'POST',
                     headers: {
@@ -84,41 +81,25 @@ const LoginForm = () => {
                 {!isValid && (
                     <Text style={styles.errorText}>Please enter a valid email address.</Text>
                 )}
-                <TextInput style={styles.textInput}
-                    placeholder="Password"
-                    placeholderTextColor={"white"}
-                    onChangeText={text => setPassword(text)}
-                    value={password}
-                    secureTextEntry={true}
-                    selectionColor={"grey"}
-                />
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={handleLoginPress}>
-                    <Text style={styles.buttonText}>Login</Text>
+                    onPress={handleForgotPasswordPress}>
+                    <Text style={styles.buttonText}>Send reset link</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={{ width: 200 }}
-                    onPress={handleRegisterPress} >
+                    onPress={handleLoginPress} >
                     <Text
                         underlineColor="#f48024"
-                        style={styles.registerText}>You don't have an account?
-                        <Text style={styles.underline}> Register here.</Text>
-                    </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={{ width: 200 }}
-                    onPress={handleForgotPasswordPress} >
-                    <Text
-                        underlineColor="#f48024"
-                        style={styles.registerText}>Have forgotten your password?
-                        <Text style={styles.underline}> Reset it here.</Text>
+                        style={styles.registerText}>You finally remember your password?
+                        <Text style={styles.underline}> Login here.</Text>
                     </Text>
                 </TouchableOpacity>
             </View>
         </KeyboardAvoidingView>
     );
 }
+
 const styles = StyleSheet.create({
     textInput: {
         height: 60,
@@ -172,4 +153,4 @@ const styles = StyleSheet.create({
 }
 );
 
-export default LoginForm;
+export default ForgotPasswordForm;

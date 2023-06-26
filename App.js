@@ -3,6 +3,7 @@ import { StyleSheet, View, StatusBar, Image } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import LoginScreen from './components/LoginScreen';
 import RegisterScreen from './components/RegisterScreen';
+import ForgotPasswordScreen from "./components/ForgotPasswordScreen";
 import Footer from './components/Footer';
 import FeedScreen from "./components/FeedScreen";
 import HeaderMenu from "./headerMenu";
@@ -24,6 +25,16 @@ const Register = () => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       <RegisterScreen />
+      <Footer />
+    </View>
+  );
+}
+
+const ForgotPassword = () => {
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      <ForgotPasswordScreen />
       <Footer />
     </View>
   );
@@ -82,7 +93,7 @@ export default function App() {
                 />
               ) : (
                 <Stack.Screen
-                  name="LoginScreen"
+                  name="Login"
                   component={Login}
                   options={{
                     title: "Pub Crawl Malaga",
@@ -99,6 +110,13 @@ export default function App() {
               <Stack.Screen
                 name="Profile"
                 component={Profile}
+                options={{
+                  title: "Pub Crawl Malaga",
+                }}
+              />
+              <Stack.Screen
+                name="ForgotPassword"
+                component={ForgotPassword}
                 options={{
                   title: "Pub Crawl Malaga",
                 }}
