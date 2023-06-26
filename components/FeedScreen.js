@@ -127,12 +127,19 @@ const FeedScreen = () => {
           />
           {stops.map((stop) => (
             <View key={stop.place_order} style={{ alignItems: "center" }}>
-              <Animated.View
+              {checkboxes["checkbox" + (stop.place_order - 1)] &&
+              !checkboxes["checkbox" + stop.place_order] ? (
+                <Animated.Text
                 style={[
                   styles.separator,
-                  !checkboxes["checkbox" + (stop.place_order - 1)] && styles.hiddenSeparator,
-                  checkboxes["checkbox" + (stop.place_order - 1)] && !checkboxes["checkbox" + stop.place_order] && [{opacity: animatedSeparator},styles.separatorDotted]]}
+                  {
+                    opacity: animatedSeparator,
+                  },
+                ]}
               />
+              ) : (
+              <Text style={[styles.separator,!checkboxes["checkbox" + (stop.place_order - 1)] && styles.hiddenSeparator]}/>
+              )}
               <TouchableOpacity
                 style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
                 onPress={() => handleCheckboxToggle("checkbox" + stop.place_order)}
@@ -220,17 +227,8 @@ const styles = {
     borderColor: "darkgreen",
     borderWidth: 2,
   },
-  separatorDotted: {
-    width: 0,
-    height: 75,
-    backgroundColor: "white",
-    borderColor: "darkgreen",
-    borderWidth: 3,
-    borderStyle: "dotted",
-  },
   hiddenSeparator: {
-    backgroundColor: "white",
-    borderColor: "white",
+    opacity: 0,
   },
   checkbox: {
     height: 50,
