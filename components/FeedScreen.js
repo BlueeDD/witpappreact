@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect, useRef } from "react";
-import { View, Text, StatusBar, TouchableOpacity, Animated } from "react-native";
+import { View, Text, StatusBar, TouchableOpacity, Animated, ScrollView } from "react-native";
 import Footer from "./Footer";
 
 import { AuthContext } from "../navigation";
@@ -56,12 +56,12 @@ const FeedScreen = () => {
       Animated.sequence([
         Animated.timing(animatedDots, {
           toValue: 1,
-          duration: 1000,
+          duration: 1500,
           useNativeDriver: false,
         }),
         Animated.timing(animatedDots, {
           toValue: 0,
-          duration: 1000,
+          duration: 1500,
           useNativeDriver: false,
         }),
       ])
@@ -75,12 +75,12 @@ const FeedScreen = () => {
         Animated.sequence([
           Animated.timing(animatedSeparator, {
             toValue: 1,
-            duration: 1000, // Duration for each state (0 and 1)
+            duration: 1500, // Duration for each state (0 and 1)
             useNativeDriver: false,
           }),
           Animated.timing(animatedSeparator, {
             toValue: 0,
-            duration: 1000, // Duration for each state (0 and 1)
+            duration: 1500, // Duration for each state (0 and 1)
             useNativeDriver: false,
           }),
         ])
@@ -119,58 +119,58 @@ const FeedScreen = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <View style={styles.row}>
-        <View style={styles.column}>
-          <TouchableOpacity
-            style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
-            onPress={() => handleCheckboxToggle("checkbox0")}
-          />
-          {stops.map((stop) => (
-            <View key={stop.place_order} style={{ alignItems: "center" }}>
-              {checkboxes["checkbox" + (stop.place_order - 1)] &&
-              !checkboxes["checkbox" + stop.place_order] ? (
-                <Animated.Text
-                style={[
-                  styles.separator,
-                  {
-                    opacity: animatedSeparator,
-                  },
-                ]}
-              />
-              ) : (
-              <Text style={[styles.separator,!checkboxes["checkbox" + (stop.place_order - 1)] && styles.hiddenSeparator]}/>
-              )}
-              <TouchableOpacity
-                style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
-                onPress={() => handleCheckboxToggle("checkbox" + stop.place_order)}
-              />
-            </View>
-          ))}
-        </View>
-        <View style={[styles.column, { marginLeft: -50 }]}>
-          <Text style={styles.title}>{meetingPoint}</Text>
-          {stops.map((stop) => (
-            <View key={stop.place_order}>
-              {checkboxes["checkbox" + (stop.place_order - 1)] &&
-              !checkboxes["checkbox" + stop.place_order] ? (
-                <Animated.Text
+      <ScrollView contentContainerStyle={styles.row}>
+          <View style={styles.column}>
+            <TouchableOpacity
+              style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
+              onPress={() => handleCheckboxToggle("checkbox0")}
+            />
+            {stops.map((stop) => (
+              <View key={stop.place_order} style={{ alignItems: "center" }}>
+                {checkboxes["checkbox" + (stop.place_order - 1)] &&
+                !checkboxes["checkbox" + stop.place_order] ? (
+                  <Animated.Text
                   style={[
-                    styles.text,
+                    styles.separator,
                     {
-                      opacity: animatedDots,
+                      opacity: animatedSeparator,
                     },
                   ]}
-                >
-                  walking to the next stop...
-                </Animated.Text>
-              ) : (
-                <Text style={styles.hiddenText}>hidden</Text>
-              )}
-              <Text style={styles.title}>{stop.place_name}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
+                />
+                ) : (
+                <Text style={[styles.separator,!checkboxes["checkbox" + (stop.place_order - 1)] && styles.hiddenSeparator]}/>
+                )}
+                <TouchableOpacity
+                  style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
+                  onPress={() => handleCheckboxToggle("checkbox" + stop.place_order)}
+                />
+              </View>
+            ))}
+          </View>
+          <View style={[styles.column, { marginLeft: -50 }]}>
+            <Text style={styles.title}>{meetingPoint}</Text>
+            {stops.map((stop) => (
+              <View key={stop.place_order}>
+                {checkboxes["checkbox" + (stop.place_order - 1)] &&
+                !checkboxes["checkbox" + stop.place_order] ? (
+                  <Animated.Text
+                    style={[
+                      styles.text,
+                      {
+                        opacity: animatedDots,
+                      },
+                    ]}
+                  >
+                    walking to the next stop...
+                  </Animated.Text>
+                ) : (
+                  <Text style={styles.hiddenText}>hidden</Text>
+                )}
+                <Text style={styles.title}>{stop.place_name}</Text>
+              </View>
+            ))}
+          </View>
+      </ScrollView>
       <Footer />
     </View>
   );
@@ -212,13 +212,14 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 70,
+    marginTop: 58,
   },
   column: {
     flexDirection: "column",
     alignItems: "center",
     width: "50%",
     justifyContent: "center",
-    marginLeft: -100,
+    marginLeft: -180,
   },
   separator: {
     width: 8,
@@ -241,6 +242,10 @@ const styles = {
   checkboxChecked: {
     backgroundColor: "green",
     borderColor: "darkgreen",
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 70,
   },
 };
 
