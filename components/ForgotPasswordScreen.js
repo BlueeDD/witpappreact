@@ -1,14 +1,11 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { View, TextInput, Image, StyleSheet, Text, TouchableOpacity, KeyboardAvoidingView } from "react-native";
 
 import { useNavigation } from '@react-navigation/native';
-import { AuthContext } from '../navigation';
 
 const ForgotPasswordForm = () => {
     const navigation = useNavigation();
-    const { setHasUser, setUser } = useContext(AuthContext);
     const [email, setEmail] = React.useState("");
-    const [password, setPassword] = React.useState("");
     const [isValid, setIsValid] = useState(true);
 
     const handleEmailChange = (email) => {
@@ -29,30 +26,21 @@ const ForgotPasswordForm = () => {
             alert("Please enter a valid email address.");
         } else {
             if (email !== "") {
-                // TODO : call the API that enables to send an email to the user with a link to reset his password (must use the WEB site to reset it)
-                const response = await fetch('http://192.168.0.62/witp/API/login.php', { // 'https://whereisthepubcrawl.com/API/login.php'
+                // API that sends an email to the user with a link to reset his password (must use the WEB site to reset it)
+                const response = await fetch('http://192.168.0.62/witp/API/changePassword.php', { // 'https://whereisthepubcrawl.com/API/changePassword.php'
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ // pass the email and password from form to the API
                         email: email,
-                        password: password,
                     }),
                 });
                 const dataRes = await response.json();
                 if (dataRes.code == 0) { // if no error (user found)
-                    setHasUser(true);
-                    setUser({
-                        id: dataRes.data.id,
-                        email: dataRes.data.email,
-                        name: dataRes.data.name,
-                        role: dataRes.data.role,
-                        agentCityId: dataRes.data.agent_city_id,
-                    });
+                    alert("An email has been sent to you with a link to reset your password. Please check your inbox and change your password on the website.");
                 } else {
                     alert(dataRes.message);
-                    setHasUser(false);
                 }
             } else {
                 alert("Please fill in all fields");
@@ -82,7 +70,7 @@ const ForgotPasswordForm = () => {
                     <Text style={styles.errorText}>Please enter a valid email address.</Text>
                 )}
                 <TouchableOpacity
-                    style={styles.button}
+                    style={[styles.button, { marginBottom: 30 }]}
                     onPress={handleForgotPasswordPress}>
                     <Text style={styles.buttonText}>Send reset link</Text>
                 </TouchableOpacity>
@@ -91,8 +79,8 @@ const ForgotPasswordForm = () => {
                     onPress={handleLoginPress} >
                     <Text
                         underlineColor="#f48024"
-                        style={styles.registerText}>You finally remember your password?
-                        <Text style={styles.underline}> Login here.</Text>
+                        style={styles.registerText}>You finally remember your password ?
+                        <Text style={styles.underline}> Login here</Text>
                     </Text>
                 </TouchableOpacity>
             </View>
