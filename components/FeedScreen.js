@@ -1,12 +1,11 @@
-import React, { useState, useContext, useEffect } from "react";
-import { View, Text, StatusBar, TouchableOpacity } from "react-native";
+import React, { useState, useContext, useEffect, useRef } from "react";
+import { View, Text, StatusBar, TouchableOpacity, Animated } from "react-native";
 import Footer from "./Footer";
 
 import { AuthContext } from '../navigation';
 
 const FeedScreen = () => {
 
-  const [isChecked, setIsChecked] = useState(false);
   const { user } = useContext(AuthContext);
 
   // set the checkboxes
@@ -16,27 +15,79 @@ const FeedScreen = () => {
   const [meetingPoint, setMeetingPoint] = useState(""); // string of meeting point
   const [stops, setStops] = useState([]); // array of stops [ {place_order: 1, place_name: "The first stop"}, ...
 
+  const animatedDots = useRef(new Animated.Value(0)).current;
+
+
   /**
    * toogle the checbox status
    * @param {*} checkboxName 
+   * if the checkbox is checked, set every previous checkbox to checked
+   * if the checkbox is unchecked, set every next checkbox to unchecked
    */
   const handleCheckboxToggle = (checkboxName) => {
     console.log("checkboxName : " + checkboxName);
-    setCheckboxes((prevValue) => ({
-      ...prevValue,
-      [checkboxName]: !prevValue[checkboxName], // toggle the checkbox value
-    }));
+    setCheckboxes((prevValue) => {
+      const newState = { ...prevValue };
+      newState[checkboxName] = !newState[checkboxName];
+      if (newState[checkboxName]) {
+        for (let i = 0; i < checkboxName.slice(-1); i++) {
+          newState["checkbox" + i] = true;
+        }
+      }
+      else {
+        for (let i = parseInt(checkboxName.slice(-1)) + 1; i <= stops.length; i++) {
+          newState["checkbox" + i] = false;
+        }
+      }
+      return newState;
+    }
+    );
   };
 
   useEffect(() => {
     getPubcrawlData();
   }, []);
 
+  useEffect(() => {
+    animateDots();
+  }, [stops]);
+
+  const animateDots = () => {
+    animatedDots.setValue(0); // Reset animation value
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(animatedDots, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: false,
+        }),
+        Animated.timing(animatedDots, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: false,
+        }),
+      ])
+    ).start();
+  };
+
+  const animateSeparator = () => {
+    animatedSeparator.setValue(0); // Reset animation value
+
+    Animated.loop(
+      Animated.timing(animatedSeparator, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: false,
+      })
+    ).start();
+  };
+
   const getPubcrawlData = async () => {
     console.log("agent id : " + user.agentCityId);
 
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
-    const response = await fetch('http://192.168.0.62/witp/API/getStopsTodayByCityId.php', {
+    const response = await fetch('http://192.168.0.70/witp/API/getStopsTodayByCityId.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -72,63 +123,37 @@ const FeedScreen = () => {
             onPress={() => handleCheckboxToggle("checkbox0")}
           />
           {stops.map((stop) => (
-            <View key={stop.place_order}>
-              <View style={[styles.separator, !initialCheckboxes["checkbox" + stop.place_order] && styles.hiddenSeparator]} />
+            <View key={stop.place_order} style={{alignItems: "center"
+            }}>
+              <View style={[styles.separator, !checkboxes["checkbox" + (stop.place_order - 1)] && styles.hiddenSeparator, checkboxes["checkbox" + (stop.place_order -1)] && !checkboxes["checkbox" + stop.place_order] && styles.separatorDotted]} />
               <TouchableOpacity
                 style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
                 onPress={() => handleCheckboxToggle("checkbox" + stop.place_order)}
               />
             </View>
           ))}
-          {/* <TouchableOpacity
-            style={[styles.checkbox, checkboxes.checkbox1 && styles.checkboxChecked]}
-            onPress={() => handleCheckboxToggle("checkbox1")}
-          />
-          <View style={[styles.separator, !checkboxes.checkbox1 && styles.hiddenSeparator, checkboxes.checkbox1 && !checkboxes.checkbox2 && styles.separatorDotted]} />
-          <TouchableOpacity
-            style={[styles.checkbox, checkboxes.checkbox2 && styles.checkboxChecked]}
-            onPress={() => handleCheckboxToggle("checkbox2")}
-          />
-          <View style={[styles.separator, !checkboxes.checkbox2 && styles.hiddenSeparator, checkboxes.checkbox2 && !checkboxes.checkbox3 && styles.separatorDotted]} />
-          <TouchableOpacity
-            style={[styles.checkbox, checkboxes.checkbox3 && styles.checkboxChecked]}
-            onPress={() => handleCheckboxToggle("checkbox3")}
-          />
-          <View style={[styles.separator, !checkboxes.checkbox3 && styles.hiddenSeparator, checkboxes.checkbox3 && !checkboxes.checkbox4 && styles.separatorDotted]} />
-          <TouchableOpacity
-            style={[styles.checkbox, checkboxes.checkbox4 && styles.checkboxChecked]}
-            onPress={() => handleCheckboxToggle("checkbox4")}
-          />
-          <View style={[styles.separator, !checkboxes.checkbox4 && styles.hiddenSeparator, checkboxes.checkbox4 && !checkboxes.checkbox5 && styles.separatorDotted]} />
-          <TouchableOpacity
-            style={[styles.checkbox, checkboxes.checkbox5 && styles.checkboxChecked]}
-            onPress={() => handleCheckboxToggle("checkbox5")}
-          /> */}
         </View>
         <View style={[styles.column, { marginLeft: -50 }]}>
           <Text style={styles.title}>{meetingPoint}</Text>
           {stops.map((stop) => (
             <View key={stop.place_order}>
-              <Text style={[styles.hiddenText, checkboxes["checkbox" + (stop.place_order - 1)] && !checkboxes["checkbox" + (stop.place_order)] && styles.text]}>
-                walking to the next stop...</Text>
+              {checkboxes["checkbox" + (stop.place_order - 1)] &&
+              !checkboxes["checkbox" + stop.place_order] ? (
+                <Animated.Text
+                  style={[
+                    styles.text,
+                    {
+                      opacity: animatedDots},
+                  ]}
+                >
+                  walking to the next stop...
+                </Animated.Text>
+              ) : (
+                <Text style={styles.hiddenText}>hidden</Text>
+              )}
               <Text style={styles.title}>{stop.place_name}</Text>
             </View>
           ))}
-          {/* <Text style={[styles.hiddenText, checkboxes.checkbox1 && !checkboxes.checkbox2 && styles.text]}>
-        <View style={[styles.column, {marginLeft: -50}]}>
-          <Text style={styles.title}>Meeting point</Text>
-          <Text style={[styles.hiddenText, checkboxes.checkbox1 && !checkboxes.checkbox2 && styles.text]}>
-            walking to the next stop...</Text>
-          <Text style={styles.title}>Stop n°1</Text>
-          <Text style={[styles.hiddenText, checkboxes.checkbox2 && !checkboxes.checkbox3 && styles.text]}>
-            walking to the next stop...</Text>
-          <Text style={styles.title}>Stop n°2</Text>
-          <Text style={[styles.hiddenText, checkboxes.checkbox3 && !checkboxes.checkbox4 && styles.text]}>
-            walking to the next stop...</Text>
-          <Text style={styles.title}>Stop n°3</Text>
-          <Text style={[styles.hiddenText, checkboxes.checkbox4 && !checkboxes.checkbox5 && styles.text]}>
-            walking to the next stop...</Text>
-          <Text style={styles.title}>Stop n°4</Text> */}
         </View>
       </View>
       <Footer />
@@ -138,7 +163,7 @@ const FeedScreen = () => {
 
 const styles = {
   title: {
-    fontSize: 20,
+    fontSize: 16,
     color: "black",
     fontWeight: "bold",
     textAlign: "center",
@@ -146,18 +171,18 @@ const styles = {
     marginVertical: 12,
   },
   text: {
-    fontSize: 15,
+    fontSize: 13,
     color: "grey",
     textAlign: "center",
     textAlignVertical: "center",
-    marginVertical: 30,
+    marginVertical: 23,
   },
   hiddenText: {
-    fontSize: 15,
+    fontSize: 13,
     color: "white",
     textAlign: "center",
     textAlignVertical: "center",
-    marginVertical: 30,
+    marginVertical: 23,
   },
   container: {
     flexDirection: "column",
