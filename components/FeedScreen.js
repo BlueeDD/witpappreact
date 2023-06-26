@@ -5,7 +5,7 @@ import Footer from "./Footer";
 import { AuthContext } from '../navigation';
 
 const FeedScreen = () => {
-  
+
   const [isChecked, setIsChecked] = useState(false);
   const { user } = useContext(AuthContext);
 
@@ -65,10 +65,10 @@ const FeedScreen = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-        <View style={styles.row}>
+      <View style={styles.row}>
         <View style={styles.column}>
           <TouchableOpacity
-            style={[styles.checkbox, initialCheckboxes["checkbox0"] && styles.checkboxChecked]}
+            style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
             onPress={() => handleCheckboxToggle("checkbox0")}
           />
           {stops.map((stop) => (
@@ -105,7 +105,7 @@ const FeedScreen = () => {
             onPress={() => handleCheckboxToggle("checkbox5")}
           /> */}
         </View>
-        <View style={[styles.column, {marginLeft: -50}]}>
+        <View style={[styles.column, { marginLeft: -50 }]}>
           <Text style={styles.title}>{meetingPoint}</Text>
           {stops.map((stop) => (
             <View key={stop.place_order}>
@@ -159,13 +159,13 @@ const styles = {
     textAlignVertical: "center",
     marginVertical: 30,
   },
-    container: {
-      flexDirection: "column",
-      height: "100%",
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: "white",
-    },
+  container: {
+    flexDirection: "column",
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "white",
+  },
   row: {
     flexDirection: "row",
     width: "100%",
