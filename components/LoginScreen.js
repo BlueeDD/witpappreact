@@ -92,29 +92,34 @@ const LoginForm = () => {
                     secureTextEntry={true}
                     selectionColor={"grey"}
                 />
+                <View style={{ width: 200 }}>
+                    <Text
+                        underlineColor="#f48024"
+                        style={styles.registerText}>Have forgotten your password ?
+                        <TouchableOpacity
+                            onPress={handleForgotPasswordPress} >
+                            <Text style={[styles.registerText, styles.underline]}>
+                                Reset it here
+                            </Text>
+                        </TouchableOpacity>
+                    </Text>
+                </View>
                 <TouchableOpacity
-                    style={styles.button}
+                    style={[styles.button, { marginBottom: 30 }]}
                     onPress={handleLoginPress}>
                     <Text style={styles.buttonText}>Login</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                    style={{ width: 200 }}
-                    onPress={handleRegisterPress} >
+                <View style={{ width: 200 }}>
                     <Text
                         underlineColor="#f48024"
-                        style={styles.registerText}>You don't have an account?
-                        <Text style={styles.underline}> Register here.</Text>
+                        style={styles.registerText}>You don't have an account ?
+                        <TouchableOpacity onPress={handleRegisterPress} >
+                            <Text style={[styles.registerText, styles.underline]}>
+                                Register here
+                            </Text>
+                        </TouchableOpacity>
                     </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={{ width: 200 }}
-                    onPress={handleForgotPasswordPress} >
-                    <Text
-                        underlineColor="#f48024"
-                        style={styles.registerText}>Have forgotten your password?
-                        <Text style={styles.underline}> Reset it here.</Text>
-                    </Text>
-                </TouchableOpacity>
+                </View>
             </View>
         </KeyboardAvoidingView>
     );
