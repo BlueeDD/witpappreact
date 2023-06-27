@@ -95,7 +95,7 @@ const LoginForm = () => {
                 <View style={{ width: 200 }}>
                     <Text
                         underlineColor="#f48024"
-                        style={styles.registerText}>Have forgotten your password ?
+                        style={styles.registerText}>You forgot your password ?
                         <TouchableOpacity
                             onPress={handleForgotPasswordPress} >
                             <Text style={[styles.registerText, styles.underline]}>
@@ -157,8 +157,8 @@ const styles = StyleSheet.create({
         color: "#f48024",
         fontWeight: "bold",
         textAlign: "center",
-        paddingVertical: 15,
         fontSize: 12,
+        marginTop: 0,
     },
     underline: {
         textDecorationLine: 'underline',
