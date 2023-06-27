@@ -21,7 +21,6 @@ const FeedScreen = () => {
    * @param {*} checkboxName 
    */
   const handleCheckboxToggle = (checkboxName) => {
-    console.log("checkboxName : " + checkboxName);
     setCheckboxes((prevValue) => ({
       ...prevValue,
       [checkboxName]: !prevValue[checkboxName], // toggle the checkbox value
@@ -33,7 +32,7 @@ const FeedScreen = () => {
   }, []);
 
   const getPubcrawlData = async () => {
-    console.log("agent id : " + user.agentCityId);
+    //console.log("agent id : " + user.agentCityId);
 
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
     const response = await fetch('http://192.168.1.14/witp/API/getStopsTodayByCityId.php', {
