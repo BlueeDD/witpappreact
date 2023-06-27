@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect, useRef } from "react";
 import { View, Text, StatusBar, TouchableOpacity, Animated, ScrollView } from "react-native";
 import Footer from "./Footer";
+import DefaultScreen from "./DefaultScreen";
 
 import { AuthContext } from "../navigation";
 
@@ -9,6 +10,7 @@ const FeedScreen = () => {
 
   // set the checkboxes
   const initialCheckboxes = {};
+  const [hasPubcrawl, setHasPubcrawl] = useState(false);
   const [checkboxes, setCheckboxes] = useState({});
 
   const [meetingPoint, setMeetingPoint] = useState(""); // string of meeting point
@@ -91,7 +93,7 @@ const FeedScreen = () => {
   const getPubcrawlData = async () => {
 
     // TODO: replace with 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php'
-    const response = await fetch("http://192.168.0.70/witp/API/getStopsTodayByCityId.php", {
+    const response = await fetch("http://192.168.0.14/witp/API/getStopsTodayByCityId.php", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -111,67 +113,76 @@ const FeedScreen = () => {
       setCheckboxes(initialCheckboxes);
       setMeetingPoint(dataRes.data.pubcrawl.meeting_point);
       setStops(dataRes.data.stops);
+      setHasPubcrawl(true);
+    } else if (dataRes.code == 2) {
+      setHasPubcrawl(false);
     } else {
       alert("We encountered a problem to get the pubcrawl data. Please try again later.");
     }
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      <ScrollView contentContainerStyle={styles.row}>
-          <View style={styles.column}>
-            <TouchableOpacity
-              style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
-              onPress={() => handleCheckboxToggle("checkbox0")}
-            />
-            {stops.map((stop) => (
-              <View key={stop.place_order} style={{ alignItems: "center" }}>
-                {checkboxes["checkbox" + (stop.place_order - 1)] &&
-                !checkboxes["checkbox" + stop.place_order] ? (
-                  <Animated.Text
-                  style={[
-                    styles.separator,
-                    {
-                      opacity: animatedSeparator,
-                    },
-                  ]}
-                />
-                ) : (
-                <Text style={[styles.separator,!checkboxes["checkbox" + (stop.place_order - 1)] && styles.hiddenSeparator]}/>
-                )}
-                <TouchableOpacity
-                  style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
-                  onPress={() => handleCheckboxToggle("checkbox" + stop.place_order)}
-                />
-              </View>
-            ))}
-          </View>
-          <View style={[styles.column, { marginLeft: -50 }]}>
-            <Text style={styles.title}>{meetingPoint}</Text>
-            {stops.map((stop) => (
-              <View key={stop.place_order}>
-                {checkboxes["checkbox" + (stop.place_order - 1)] &&
-                !checkboxes["checkbox" + stop.place_order] ? (
-                  <Animated.Text
+    <View style={{ flex: 1 }}>
+    { hasPubcrawl ? (
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" />
+          <ScrollView contentContainerStyle={styles.row}>
+            <View style={styles.column}>
+              <TouchableOpacity
+                style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
+                onPress={() => handleCheckboxToggle("checkbox0")}
+              />
+              {stops.map((stop) => (
+                <View key={stop.place_order} style={{ alignItems: "center" }}>
+                  {checkboxes["checkbox" + (stop.place_order - 1)] &&
+                  !checkboxes["checkbox" + stop.place_order] ? (
+                    <Animated.Text
                     style={[
-                      styles.text,
+                      styles.separator,
                       {
-                        opacity: animatedDots,
+                        opacity: animatedSeparator,
                       },
                     ]}
-                  >
-                    walking to the next stop...
-                  </Animated.Text>
-                ) : (
-                  <Text style={styles.hiddenText}>hidden</Text>
-                )}
-                <Text style={styles.title}>{stop.place_name}</Text>
-              </View>
-            ))}
-          </View>
-      </ScrollView>
-      <Footer />
+                  />
+                  ) : (
+                  <Text style={[styles.separator,!checkboxes["checkbox" + (stop.place_order - 1)] && styles.hiddenSeparator]}/>
+                  )}
+                  <TouchableOpacity
+                    style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
+                    onPress={() => handleCheckboxToggle("checkbox" + stop.place_order)}
+                  />
+                </View>
+              ))}
+            </View>
+            <View style={[styles.column, { marginLeft: -50 }]}>
+              <Text style={styles.title}>{meetingPoint}</Text>
+              {stops.map((stop) => (
+                <View key={stop.place_order}>
+                  {checkboxes["checkbox" + (stop.place_order - 1)] &&
+                  !checkboxes["checkbox" + stop.place_order] ? (
+                    <Animated.Text
+                      style={[
+                        styles.text,
+                        {
+                          opacity: animatedDots,
+                        },
+                      ]}
+                    >
+                      walking to the next stop...
+                    </Animated.Text>
+                  ) : (
+                    <Text style={styles.hiddenText}>hidden</Text>
+                  )}
+                  <Text style={styles.title}>{stop.place_name}</Text>
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        <Footer />
+      </View>
+    ) : (
+      <DefaultScreen />
+    )}
     </View>
   );
 };
