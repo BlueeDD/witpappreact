@@ -18,12 +18,15 @@ const RegisterScreen = () => {
 
     const handleCreateAccountPress = () => {
         if (email !== "" && password !== "" && confirmPassword !== "") {
-            if (password === confirmPassword) {
-                alert("Account Created");
-            } else {
+            if (!isValid) {
+                alert("Email address is not valid");
+            } else if (password !== confirmPassword) {
                 alert("Passwords do not match");
+            } else {
+                // do nothing at this time : see what we want exactly
+                alert("Account Created");
             }
-        } else {
+        } else { // minimum one of the field is empty
             alert("Please fill in all fields");
         }
     };
