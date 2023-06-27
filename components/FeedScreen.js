@@ -36,7 +36,7 @@ const FeedScreen = () => {
     console.log("agent id : " + user.agentCityId);
 
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
-    const response = await fetch('http://192.168.0.62/witp/API/getStopsTodayByCityId.php', {
+    const response = await fetch('http://192.168.1.14/witp/API/getStopsTodayByCityId.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -57,7 +57,9 @@ const FeedScreen = () => {
       setStops(dataRes.data.stops);
     } else {
       //console.log(dataRes.code);
-      alert("We encountered a problem to get the pubcrawl data. Please try again later.");
+      if (dataRes.code != 2) { // if error is not "no pubcrawl today"
+        alert("We encountered a problem to get the pubcrawl data. Please try again later.");
+      }
     }
     //console.log(dataRes.data);
   };
@@ -208,7 +210,7 @@ const styles = {
     borderColor: "darkgreen",
     justifyContent: "center",
     alignItems: "center",
-    },
+  },
   checkboxChecked: {
     backgroundColor: "green",
     borderColor: "darkgreen",
