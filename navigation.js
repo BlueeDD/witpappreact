@@ -11,11 +11,13 @@ const initialUser = {
 
 export const AuthContext = createContext({
   hasUser: false,
-  setHasUser: () => {},
+  setHasUser: () => { },
   isDropdownOpen: false,
-  setIsDropdownOpen: () => {},
+  setIsDropdownOpen: () => { },
   user: initialUser,
-  setUser: () => {},
+  setUser: () => { },
+  isConnected: true,
+  setIsConnected: () => { },
 });
 
 export const Stack = createStackNavigator();
@@ -24,6 +26,7 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(initialUser);
   const [hasUser, setHasUser] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isConnected, setIsConnected] = useState(true);
 
   const handleSetUser = (userData) => {
     setUser(userData);
@@ -38,6 +41,8 @@ const AuthProvider = ({ children }) => {
         setIsDropdownOpen,
         user,
         setUser: handleSetUser,
+        isConnected,
+        setIsConnected,
       }}
     >
       {children}

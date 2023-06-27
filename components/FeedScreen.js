@@ -91,10 +91,11 @@ const FeedScreen = () => {
   
 
   const getPubcrawlData = async () => {
+    //console.log("agent id : " + user.agentCityId);
 
-    // TODO: replace with 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php'
-    const response = await fetch("http://192.168.0.14/witp/API/getStopsTodayByCityId.php", {
-      method: "POST",
+    // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
+    const response = await fetch('http://192.168.1.14/witp/API/getStopsTodayByCityId.php', {
+      method: 'POST',
       headers: {
         "Content-Type": "application/json",
       },
@@ -117,7 +118,7 @@ const FeedScreen = () => {
     } else if (dataRes.code == 2) {
       setHasPubcrawl(false);
     } else {
-      alert("We encountered a problem to get the pubcrawl data. Please try again later.");
+        alert("We encountered a problem to get the pubcrawl data. Please try again later.");
     }
   };
 
