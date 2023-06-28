@@ -6,16 +6,11 @@ const DefaultScreen = () => {
     return (
     <View style={styles.container}>
         <StatusBar barStyle="light-content" />
-        <ImageBackground
-          source={require('../assets/background.png')}
-          style={styles.backgroundImage}
-        >
             <View style={styles.textContainer}>
                 <View style={styles.innerContainer}>
                     <Text style={styles.text}>There is no Pubcrawl planned today</Text>
                 </View>
             </View>
-        </ImageBackground>
         <Footer />
       </View>
     );
@@ -26,10 +21,6 @@ const DefaultScreen = () => {
       flex: 1, // Set flex to 1 to take up all available space
       backgroundColor: 'white',
     },
-    backgroundImage: {
-      flex: 1,
-      resizeMode: 'stretch',
-    },
     textContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -37,16 +28,15 @@ const DefaultScreen = () => {
         marginBottom: 70,
       },
       innerContainer: {
-        backgroundColor: 'white',
-        borderWidth: 5,
+        backgroundColor: '#f48024',
         opacity: 0.9,
-        borderColor: '#F5F5F5',
+        borderColor: 'black',
         borderRadius: 20,
         padding: 10,
       },
       text: {
         color: 'black',
-        fontSize: 30,
+        fontSize: 25,
         fontWeight: 'bold',
         textAlign: 'center',
       },
