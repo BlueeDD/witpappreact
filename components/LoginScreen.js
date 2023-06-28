@@ -33,7 +33,7 @@ const LoginForm = () => {
             alert("Please enter a valid email address.");
         } else {
             if (email !== "" && password !== "") {
-                const response = await fetch('http://192.168.1.14/witp/API/login.php', { // 'https://whereisthepubcrawl.com/API/login.php'
+                const response = await fetch('http://192.168.0.70/witp/API/login.php', { // 'https://whereisthepubcrawl.com/API/login.php'
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ const LoginForm = () => {
                 <View style={{ width: 200 }}>
                     <Text
                         underlineColor="#f48024"
-                        style={styles.registerText}>You forgot your password ?
+                        style={[styles.registerText,{marginTop: -10}]}>You forgot your password ?
                         <TouchableOpacity
                             onPress={handleForgotPasswordPress} >
                             <Text style={[styles.registerText, styles.underline]}>
@@ -105,7 +105,7 @@ const LoginForm = () => {
                     </Text>
                 </View>
                 <TouchableOpacity
-                    style={[styles.button, { marginBottom: 30 }]}
+                    style={[styles.button, { marginBottom: 15, marginTop: 30 }]}
                     onPress={handleLoginPress}>
                     <Text style={styles.buttonText}>Login</Text>
                 </TouchableOpacity>
