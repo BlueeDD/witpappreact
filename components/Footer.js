@@ -34,7 +34,7 @@ const Footer = () => {
           <>
             <View style={styles.banner}>
               <MaterialCommunityIcons name="wifi-off" size={24} color={"white"} />
-              <Text style={styles.bannerText}>No Internet Connection (test)</Text>
+              <Text style={styles.bannerText}>No Internet Connection</Text>
             </View>
           </>
         )}
