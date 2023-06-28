@@ -19,6 +19,23 @@ const FeedScreen = () => {
   const animatedDots = useRef(new Animated.Value(0)).current;
   const animatedSeparator = useRef(new Animated.Value(0)).current;
 
+  const [timer, setTimer] = useState(0);
+  const startTimer = () => {
+    setTimer(10000); // Set the timer duration in milliseconds (5 seconds in this example)
+  };
+  
+  const formatTimerValue = (timer) => {
+    const minutes = Math.floor(timer / 60000); // Convert milliseconds to minutes
+    const seconds = Math.floor((timer % 60000) / 1000); // Remaining seconds
+  
+    if (minutes > 0) {
+      return `${minutes} min`;
+    } else {
+      return `${seconds} sec`;
+    }
+  };
+  
+
   /**
    * toggle the checkbox status
    * @param {*} checkboxName
@@ -26,6 +43,7 @@ const FeedScreen = () => {
    * if the checkbox is unchecked, set every next checkbox to unchecked
    */
   const handleCheckboxToggle = (checkboxName) => {
+    startTimer(); // Reset the timer when a checkbox is clicked
     setCheckboxes((prevValue) => {
       const newState = { ...prevValue };
       newState[checkboxName] = !newState[checkboxName];
@@ -42,6 +60,7 @@ const FeedScreen = () => {
     });
   };
 
+
   useEffect(() => {
     getPubcrawlData();
   }, []);
@@ -49,7 +68,30 @@ const FeedScreen = () => {
   useEffect(() => {
     animateDots();
     animateSeparator();
+    startTimer();
   }, [stops]);
+
+  useEffect(() => {
+    if (timer === 0) {
+      // Timer is up, check the first unchecked checkbox
+      const firstUncheckedCheckbox = Object.entries(checkboxes).find(([key, value]) => !value);
+      if (firstUncheckedCheckbox) {
+        setCheckboxes((prevValue) => {
+          const newState = { ...prevValue };
+          newState[firstUncheckedCheckbox[0]] = true;
+          return newState;
+        });
+        startTimer(); // Start the timer again if there are still unchecked checkboxes
+      }
+    } else {
+      // Timer is still running, decrease the timer value every second
+      const intervalId = setInterval(() => {
+        setTimer((prevValue) => prevValue - 1000);
+      }
+      , 1000);
+      return () => clearInterval(intervalId); // This is important to clear the interval when the component unmounts
+    }
+  }, [timer, checkboxes]);
 
   const animateDots = () => {
     animatedDots.setValue(0); // Reset animation value
@@ -132,26 +174,34 @@ const FeedScreen = () => {
               <TouchableOpacity
                 style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
                 onPress={() => handleCheckboxToggle("checkbox0")}
-              />
+              >
+                {!checkboxes["checkbox0"] && timer > 0 && (
+                  <Text style={styles.checkboxTimer}>{formatTimerValue(timer)}</Text>
+                )}
+              </TouchableOpacity>
               {stops.map((stop) => (
                 <View key={stop.place_order} style={{ alignItems: "center" }}>
                   {checkboxes["checkbox" + (stop.place_order - 1)] &&
                   !checkboxes["checkbox" + stop.place_order] ? (
                     <Animated.Text
-                    style={[
-                      styles.separator,
-                      {
-                        opacity: animatedSeparator,
-                      },
-                    ]}
-                  />
+                      style={[
+                        styles.separator,
+                        {
+                          opacity: animatedSeparator,
+                        },
+                      ]}
+                    />
                   ) : (
-                  <Text style={[styles.separator,!checkboxes["checkbox" + (stop.place_order - 1)] && styles.hiddenSeparator]}/>
+                    <Text style={[styles.separator, !checkboxes["checkbox" + (stop.place_order - 1)] && styles.hiddenSeparator]} />
                   )}
                   <TouchableOpacity
                     style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
                     onPress={() => handleCheckboxToggle("checkbox" + stop.place_order)}
-                  />
+                  >
+                    {!checkboxes["checkbox" + stop.place_order] && checkboxes["checkbox" + (stop.place_order -1)] && timer > 0 && (
+                     <Text style={styles.checkboxTimer}>{formatTimerValue(timer)}</Text>
+                    )}
+                  </TouchableOpacity>
                 </View>
               ))}
             </View>
@@ -224,7 +274,6 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 70,
-    marginTop: 58,
   },
   column: {
     flexDirection: "column",
@@ -255,6 +304,13 @@ const styles = {
     backgroundColor: "green",
     borderColor: "darkgreen",
   },
+  checkboxTimer: {
+    fontSize: 12,
+    color: "black",
+    fontWeight: "bold",
+    textAlign: "center",
+    textAlignVertical: "center",
+  },  
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 70,
