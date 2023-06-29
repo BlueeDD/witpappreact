@@ -79,7 +79,7 @@ const ForgotPasswordForm = () => {
                     onPress={handleLoginPress} >
                     <Text
                         underlineColor="#f48024"
-                        style={styles.registerText}>You finally remember your password ?
+                        style={[styles.registerText,{marginTop: -30}]}>You finally remember your password ?
                         <Text style={styles.underline}> Login here</Text>
                     </Text>
                 </TouchableOpacity>
