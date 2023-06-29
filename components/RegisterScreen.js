@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text } from 'react-native';
 import { TextInput, Image, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
-import { set } from "react-native-reanimated";
 
 const RegisterScreen = () => {
 
@@ -30,12 +29,7 @@ const RegisterScreen = () => {
 
     const handleItemPress = (item) => {
         setSelectedItem(item);
-        handleItemSelect(item);
         setCity_id(item.id);
-    };
-
-    const handleItemSelect = (item) => {
-        console.log('Selected item:', item);
     };
 
     const handleEmailChange = (email) => {
@@ -54,7 +48,7 @@ const RegisterScreen = () => {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ // pass the email and password from form to the API
+                    body: JSON.stringify({ // pass the email, name and city_id to the API
                         name: name,
                         email: email,
                         city_id: city_id,
@@ -65,7 +59,7 @@ const RegisterScreen = () => {
                 if (dataRes.code == 0) { // if no error (user found)
                     alert("A request has been sent to the administrator. You will receive an email when your account is created.");
             } else if (dataRes.code !== 0) { 
-                alert("We encountered a problem to create your account. Please try again later.");
+                alert(dataRes.message);
             } else {
                 alert("Please fill in all fields");
             }
@@ -89,7 +83,6 @@ const RegisterScreen = () => {
                     placeholderTextColor={"white"}
                     onChangeText={text => setName(text)}
                     value={name}
-                    secureTextEntry={true}
                     selectionColor={"grey"}
                 />
                 <TextInput style={styles.textInput}
