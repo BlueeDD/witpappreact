@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { View, Text } from 'react-native';
 import { TextInput, Image, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
+import { set } from "react-native-reanimated";
 
 const RegisterScreen = () => {
 
     const [email, setEmail] = React.useState("");
     const [name, setName] = React.useState("");
     const [cities, setCities] = React.useState([]);
+    const [city_id, setCity_id] = React.useState("");
     const [isValid, setIsValid] = useState(true);
     const [selectedItem, setSelectedItem] = useState(null);
 
@@ -29,6 +31,7 @@ const RegisterScreen = () => {
     const handleItemPress = (item) => {
         setSelectedItem(item);
         handleItemSelect(item);
+        setCity_id(item.id);
     };
 
     const handleItemSelect = (item) => {
@@ -41,21 +44,34 @@ const RegisterScreen = () => {
         setIsValid(emailPattern.test(email));
     };
 
-    const handleCreateAccountPress = () => {
-        if (email !== "" && name !== "") {
-            if (!isValid) {
-                alert("Email address is not valid");
-                //si aucune ville n'est sélectionnée
-            } else if (selectedItem === null) {
-                alert("Please select a city");
+    const handleCreateAccountPress = async () => {
+        if (!isValid) {
+            alert("Please enter a valid email address.");
+        } else {
+            if (email !== "" && name !== "") {
+                const response = await fetch('http://192.168.0.14/witp/API/register.php', { // 'https://whereisthepubcrawl.com/API/login.php'
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ // pass the email and password from form to the API
+                        name: name,
+                        email: email,
+                        city_id: city_id,
+
+                    }),
+                });
+                const dataRes = await response.json();
+                if (dataRes.code == 0) { // if no error (user found)
+                    alert("A request has been sent to the administrator. You will receive an email when your account is created.");
+            } else if (dataRes.code !== 0) { 
+                alert("We encountered a problem to create your account. Please try again later.");
             } else {
-                // do nothing at this time : see what we want exactly
-                alert("A request has been sent to the administrator. You will receive an email when your account is created.");
+                alert("Please fill in all fields");
             }
-        } else { // minimum one of the field is empty
-            alert("Please fill in all fields");
+        
         }
-    };
+}};
 
     useEffect(() => {
         getCitiesData();
