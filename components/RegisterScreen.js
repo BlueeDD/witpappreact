@@ -1,14 +1,39 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text } from 'react-native';
 import { TextInput, Image, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
 
 const RegisterScreen = () => {
 
     const [email, setEmail] = React.useState("");
-    const [password, setPassword] = React.useState("");
-    const [confirmPassword, setConfirmPassword] = React.useState("");
+    const [name, setName] = React.useState("");
+    const [cities, setCities] = React.useState([]);
     const [isValid, setIsValid] = useState(true);
+    const [selectedItem, setSelectedItem] = useState(null);
 
+    const getCitiesData = async () => {
+    
+        const response = await fetch('http://192.168.0.14/witp/API/getCities.php', {
+          method: 'GET',
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const dataRes = await response.json();
+        if (dataRes.code == 0) {
+        setCities(dataRes.data);
+        } else {
+            alert("We encountered a problem to get the cities data. Please try again later.");
+        }
+      };
+
+    const handleItemPress = (item) => {
+        setSelectedItem(item);
+        handleItemSelect(item);
+    };
+
+    const handleItemSelect = (item) => {
+        console.log('Selected item:', item);
+    };
 
     const handleEmailChange = (email) => {
         setEmail(email);
@@ -17,19 +42,24 @@ const RegisterScreen = () => {
     };
 
     const handleCreateAccountPress = () => {
-        if (email !== "" && password !== "" && confirmPassword !== "") {
+        if (email !== "" && name !== "") {
             if (!isValid) {
                 alert("Email address is not valid");
-            } else if (password !== confirmPassword) {
-                alert("Passwords do not match");
+                //si aucune ville n'est sélectionnée
+            } else if (selectedItem === null) {
+                alert("Please select a city");
             } else {
                 // do nothing at this time : see what we want exactly
-                alert("Account Created");
+                alert("A request has been sent to the administrator. You will receive an email when your account is created.");
             }
         } else { // minimum one of the field is empty
             alert("Please fill in all fields");
         }
     };
+
+    useEffect(() => {
+        getCitiesData();
+    }, []);
 
     return (
         <KeyboardAvoidingView
@@ -38,6 +68,14 @@ const RegisterScreen = () => {
             <View style={styles.view}>
                 <Image style={{ alignSelf: "center", marginBottom: 20 }}
                     source={require('../assets/logo.webp')} />
+                <TextInput style={styles.textInput}
+                    placeholder="Name"
+                    placeholderTextColor={"white"}
+                    onChangeText={text => setName(text)}
+                    value={name}
+                    secureTextEntry={true}
+                    selectionColor={"grey"}
+                />
                 <TextInput style={styles.textInput}
                     placeholder="Email"
                     placeholderTextColor={"white"}
@@ -52,22 +90,26 @@ const RegisterScreen = () => {
                 {!isValid && (
                     <Text style={styles.errorText}>Please enter a valid email address.</Text>
                 )}
-                <TextInput style={styles.textInput}
-                    placeholder="Password"
-                    placeholderTextColor={"white"}
-                    onChangeText={text => setPassword(text)}
-                    value={password}
-                    secureTextEntry={true}
-                    selectionColor={"grey"}
-                />
-                <TextInput style={styles.textInput}
-                    placeholder="Confirm Password"
-                    placeholderTextColor={"white"}
-                    onChangeText={text => setConfirmPassword(text)}
-                    value={confirmPassword}
-                    secureTextEntry={true}
-                    selectionColor={"grey"}
-                />
+                <Text style={[styles.text,{}]}>Select your city :</Text>
+                {cities.map((city) => (
+                    <TouchableOpacity
+                    key={city.id}
+                    style={[
+                        styles.item,
+                        selectedItem === city && styles.selectedItem,
+                    ]}
+                    onPress={() => handleItemPress(city)}
+                    >
+                    <Text
+                        style={[
+                        styles.itemText,
+                        selectedItem === city && styles.selectedItemText,
+                        ]}
+                    >
+                        {city.name}
+                    </Text>
+                    </TouchableOpacity>
+                ))}
                 <TouchableOpacity
                     style={styles.button}
                     onPress={handleCreateAccountPress}>
@@ -92,7 +134,7 @@ const styles = StyleSheet.create({
     button: {
         width: 180,
         backgroundColor: "#f48024",
-        marginTop: 15,
+        marginTop: 20,
         borderWidth: 1,
         borderRadius: 30,
         alignSelf: "center",
@@ -119,6 +161,25 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         marginTop: -25,
         fontSize: 12,
+    },
+    item: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+    },
+    itemText: {
+        fontSize: 16,
+    },
+    selectedItem: {
+        backgroundColor: '#f48024',
+    },
+    selectedItemText: {
+        color: 'white',
+    },
+    text: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 10,
     },
 });
 
