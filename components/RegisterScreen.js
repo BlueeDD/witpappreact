@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text } from 'react-native';
 import { TextInput, Image, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
-import { set } from "react-native-reanimated";
 
 const RegisterScreen = () => {
 
@@ -13,20 +12,20 @@ const RegisterScreen = () => {
     const [selectedItem, setSelectedItem] = useState(null);
 
     const getCitiesData = async () => {
-    
+
         const response = await fetch('http://192.168.0.14/witp/API/getCities.php', {
-          method: 'GET',
-          headers: {
-            "Content-Type": "application/json",
-          },
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+            },
         });
         const dataRes = await response.json();
         if (dataRes.code == 0) {
-        setCities(dataRes.data);
+            setCities(dataRes.data);
         } else {
             alert("We encountered a problem to get the cities data. Please try again later.");
         }
-      };
+    };
 
     const handleItemPress = (item) => {
         setSelectedItem(item);
@@ -64,14 +63,15 @@ const RegisterScreen = () => {
                 const dataRes = await response.json();
                 if (dataRes.code == 0) { // if no error (user found)
                     alert("A request has been sent to the administrator. You will receive an email when your account is created.");
-            } else if (dataRes.code !== 0) { 
-                alert("We encountered a problem to create your account. Please try again later.");
-            } else {
-                alert("Please fill in all fields");
+                } else if (dataRes.code !== 0) {
+                    alert("We encountered a problem to create your account. Please try again later.");
+                } else {
+                    alert("Please fill in all fields");
+                }
+
             }
-        
         }
-}};
+    };
 
     useEffect(() => {
         getCitiesData();
@@ -106,24 +106,24 @@ const RegisterScreen = () => {
                 {!isValid && (
                     <Text style={styles.errorText}>Please enter a valid email address.</Text>
                 )}
-                <Text style={[styles.text,{}]}>Select your city :</Text>
+                <Text style={[styles.text, {}]}>Select your city :</Text>
                 {cities.map((city) => (
                     <TouchableOpacity
-                    key={city.id}
-                    style={[
-                        styles.item,
-                        selectedItem === city && styles.selectedItem,
-                    ]}
-                    onPress={() => handleItemPress(city)}
-                    >
-                    <Text
+                        key={city.id}
                         style={[
-                        styles.itemText,
-                        selectedItem === city && styles.selectedItemText,
+                            styles.item,
+                            selectedItem === city && styles.selectedItem,
                         ]}
+                        onPress={() => handleItemPress(city)}
                     >
-                        {city.name}
-                    </Text>
+                        <Text
+                            style={[
+                                styles.itemText,
+                                selectedItem === city && styles.selectedItemText,
+                            ]}
+                        >
+                            {city.name}
+                        </Text>
                     </TouchableOpacity>
                 ))}
                 <TouchableOpacity
