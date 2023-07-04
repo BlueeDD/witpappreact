@@ -1,6 +1,6 @@
 # WitpAppReact
 
-WitpAppReact is a mobile application built using React Native. It provides features such as user authentication, login, registration, password reset, feed screen, and user profile.
+WitpAppReact is a mobile application built using React Native. It provides features for agent of SouthTours to manage upcoming and ongoing pubcrawls.
 
 ## Installation
 
@@ -52,4 +52,3 @@ Feel free to customize and extend the application according to your requirements
 
 - Pierre Lafon @BlueeDD
 - Maxime Frémeaux @unshiny99
-
