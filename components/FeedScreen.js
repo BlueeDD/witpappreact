@@ -23,7 +23,7 @@ const FeedScreen = () => {
 
   const [timer, setTimer] = useState(0);
   const startTimer = () => {
-    setTimer(10000); // Set the timer duration in milliseconds (5 seconds in this example)
+    setTimer(100000); // Set the timer duration in milliseconds
   };
   
   const formatTimerValue = (timer) => {
@@ -232,7 +232,7 @@ const FeedScreen = () => {
         {currentLocation && (
           <Text>
             {/* Latitude: {currentLocation.latitude}, Longitude: {currentLocation.longitude} */}
-              L'école de Maxime est à : {Math.round(calculateDistance(currentLocation.latitude, currentLocation.longitude, 50.32410862038596, 3.5148236677305826))/1000} kilomètres
+              Maxime's school is : {Math.round(calculateDistance(currentLocation.latitude, currentLocation.longitude, 50.32410862038596, 3.5148236677305826)/1000)} kilometers away
           </Text>
         )}
           <ScrollView contentContainerStyle={styles.row}>
@@ -340,6 +340,7 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 70,
+    marginTop: 20,
   },
   column: {
     flexDirection: "column",
