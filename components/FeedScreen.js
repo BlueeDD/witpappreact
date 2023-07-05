@@ -1,9 +1,9 @@
-import React, { useState, useContext, useEffect, useRef } from "react";
-import { View, Text, StatusBar, TouchableOpacity, Animated, ScrollView } from "react-native";
-import Footer from "./Footer";
-import DefaultScreen from "./DefaultScreen";
-
-import { AuthContext } from "../navigation";
+import React, { useState, useContext, useEffect, useRef } from 'react';
+import { View, Text, StatusBar, TouchableOpacity, Animated, ScrollView } from 'react-native';
+import * as Location from 'expo-location';
+import { AuthContext } from '../navigation';
+import Footer from './Footer';
+import DefaultScreen from './DefaultScreen';
 
 const FeedScreen = () => {
   const { user } = useContext(AuthContext);
@@ -12,6 +12,8 @@ const FeedScreen = () => {
   const initialCheckboxes = {};
   const [hasPubcrawl, setHasPubcrawl] = useState(false);
   const [checkboxes, setCheckboxes] = useState({});
+
+  const [currentLocation, setCurrentLocation] = useState(null);
 
   const [meetingPoint, setMeetingPoint] = useState(""); // string of meeting point
   const [stops, setStops] = useState([]); // array of stops [ {place_order: 1, place_name: "The first stop"}, ...
@@ -72,6 +74,32 @@ const FeedScreen = () => {
   }, [stops]);
 
   useEffect(() => {
+    const requestLocationPermission = async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          console.log('Location permission denied');
+          return;
+        }
+        console.log('Location permission granted');
+      } catch (error) {
+        console.warn(error);
+      }
+    };
+  
+    requestLocationPermission();
+  }, []);
+  
+  useEffect(() => {
+    const intervalId = setInterval(getCurrentLocation, 5000); // Update location every 5 seconds
+  
+    return () => {
+      clearInterval(intervalId); // Clear the interval when the component unmounts
+    };
+  }, []);
+  
+
+  useEffect(() => {
     if (timer === 0) {
       // Timer is up, check the first unchecked checkbox
       const firstUncheckedCheckbox = Object.entries(checkboxes).find(([key, value]) => !value);
@@ -92,6 +120,38 @@ const FeedScreen = () => {
       return () => clearInterval(intervalId); // This is important to clear the interval when the component unmounts
     }
   }, [timer, checkboxes]);
+
+  const getCurrentLocation = async () => {
+    try {
+      const { coords } = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+      const { latitude, longitude } = coords;
+      //coordinates should be rounded to 2 decimals
+      setCurrentLocation({ latitude, longitude });
+    } catch (error) {
+      console.warn(error);
+    }
+  };
+  
+  // calculate the distance between two coordinates (your location and the next place's location usually)
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Radius of the earth in kilometers
+    const dLat = ((lat2 - lat1) * Math.PI) / 180; // Latitude difference in radians
+    const dLon = ((lon2 - lon1) * Math.PI) / 180; // Longitude difference in radians
+  
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+  
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c * 1000; // Distance in meters
+  
+    return distance;
+  };  
 
   const animateDots = () => {
     animatedDots.setValue(0); // Reset animation value
@@ -136,7 +196,7 @@ const FeedScreen = () => {
     //console.log("agent id : " + user.agentCityId);
 
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
-    const response = await fetch('http://192.168.0.14/witp/API/getStopsTodayByCityId.php', {
+    const response = await fetch('http://192.168.0.70/witp/API/getStopsTodayByCityId.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -169,6 +229,12 @@ const FeedScreen = () => {
     { hasPubcrawl ? (
       <View style={styles.container}>
         <StatusBar barStyle="light-content" />
+        {currentLocation && (
+          <Text>
+            {/* Latitude: {currentLocation.latitude}, Longitude: {currentLocation.longitude} */}
+              L'école de Maxime est à : {Math.round(calculateDistance(currentLocation.latitude, currentLocation.longitude, 50.32410862038596, 3.5148236677305826))/1000} kilomètres
+          </Text>
+        )}
           <ScrollView contentContainerStyle={styles.row}>
             <View style={styles.column}>
               <TouchableOpacity
