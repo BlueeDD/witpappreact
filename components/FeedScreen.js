@@ -12,9 +12,11 @@ const FeedScreen = () => {
   const initialCheckboxes = {};
   const [hasPubcrawl, setHasPubcrawl] = useState(false);
   const [checkboxes, setCheckboxes] = useState({});
-  const[currentStop, setCurrentStop] = useState(-1);
+  const [currentStop, setCurrentStop] = useState(-1);
+  const [pubcrawlID, setPubcrawlID] = useState(null);
 
-  const [currentLocation, setCurrentLocation] = useState(null);
+  const [currentLocation, setCurrentLocation] = useState({ latitude: 0, longitude: 0 });
+  const [distance, setDistance] = useState(null);
 
   const [meetingPoint, setMeetingPoint] = useState(""); // string of meeting point
   const [stops, setStops] = useState([]); // array of stops [ {place_order: 1, place_name: "The first stop"}, ...
@@ -92,13 +94,15 @@ const FeedScreen = () => {
   }, []);
   
   useEffect(() => {
-    const intervalId = setInterval(getCurrentLocation, 5000); // Update location every 5 seconds
-  
+    const intervalId = setInterval(getCurrentLocation, 5000); // Update location every 5 seconds  
     return () => {
       clearInterval(intervalId); // Clear the interval when the component unmounts
     };
   }, []);
-  
+
+  useEffect(() => {
+    setNextStop();
+  }, [currentLocation]);  
 
   useEffect(() => {
     if (timer === 0) {
@@ -134,25 +138,44 @@ const FeedScreen = () => {
       console.warn(error);
     }
   };
-  
-  // calculate the distance between two coordinates (your location and the next place's location usually)
-  const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Radius of the earth in kilometers
-    const dLat = ((lat2 - lat1) * Math.PI) / 180; // Latitude difference in radians
-    const dLon = ((lon2 - lon1) * Math.PI) / 180; // Longitude difference in radians
-  
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-  
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c * 1000; // Distance in meters
-  
-    return distance;
-  };  
+
+  const setNextStop = async () => {
+    console.log("Setting next stop");
+    console.log("Current stop: " + currentStop);
+    console.log("Current pubcrawl: " + pubcrawlID);
+    console.log("Current location: " + currentLocation.latitude + ", " + currentLocation.longitude);
+    console.log("Distance: " + distance);
+    // TODO : replace with // 'https://whereisthepubcrawl.com/API/setNextStop.php' 
+    const response = await fetch('http://192.168.0.14/witp/API/setNextStop.php', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        "pubcrawl_id": pubcrawlID,
+        "last_visited_place": currentStop,
+        "latitude": currentLocation.latitude,
+        "longitude": currentLocation.longitude
+      }),
+    });
+    const dataRes = await response.json();
+    if (dataRes.code == 0) {
+      console.log("Successfully updated the next stop");
+      setCurrentStop(dataRes.data.next_stop.place_order);
+      setDistance(dataRes.data.distance);
+      setCheckboxes((prevValue) => {
+        const newState = { ...prevValue };
+        newState["checkbox" + dataRes.last_visited_place] = true;
+        return newState;
+      });      
+    } else  if (dataRes.code == 2) {
+      console.log("The next stop is not close enough");
+      console.log("distance: " + dataRes.data.distance + " m")
+      setDistance(dataRes.data.distance);
+    } else {
+      console.log("Error updating the next stop");
+    }
+  };
 
   const animateDots = () => {
     animatedDots.setValue(0); // Reset animation value
@@ -225,6 +248,7 @@ const FeedScreen = () => {
       setMeetingPoint(dataRes.data.pubcrawl.meeting_point);
       setStops(dataRes.data.stops);
       setCurrentStop(dataRes.data.pubcrawl.last_visited_place);
+      setPubcrawlID(dataRes.data.pubcrawl.id);
       setHasPubcrawl(true);
     } else if (dataRes.code == 2) {
       setHasPubcrawl(false);
@@ -240,8 +264,7 @@ const FeedScreen = () => {
         <StatusBar barStyle="light-content" />
         {currentLocation && (
           <Text>
-            {/* Latitude: {currentLocation.latitude}, Longitude: {currentLocation.longitude} */}
-              Maxime's school is : {Math.round(calculateDistance(currentLocation.latitude, currentLocation.longitude, 50.32410862038596, 3.5148236677305826)/1000)} kilometers away
+              Next Stop is : {distance} meters away
           </Text>
         )}
           <ScrollView contentContainerStyle={styles.row}>
