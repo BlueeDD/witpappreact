@@ -3,19 +3,16 @@ import { View, Text, StatusBar, TouchableOpacity, Animated, ScrollView } from 'r
 import * as Location from 'expo-location';
 import { AuthContext } from '../navigation';
 import Footer from './Footer';
-import DefaultScreen from './DefaultScreen';
 
 
 const FeedScreen = () => {
-  const { user } = useContext(AuthContext);
-
   // set the checkboxes
   const initialCheckboxes = {};
-  const {hasPubcrawl, setHasPubcrawl} = useContext(AuthContext);
+  const {hasPubcrawl, setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user} = useContext(AuthContext);
   const [checkboxes, setCheckboxes] = useState({});
   const [currentStop, setCurrentStop] = useState(-1);
   const [pubcrawlID, setPubcrawlID] = useState(null);
-  const {isLocationEnabled, setIsLocationEnabled} = useContext(AuthContext);
+  const disabled = user.role === "Agent" ? { disabled: true } : {};
 
   const [currentLocation, setCurrentLocation] = useState({ latitude: 0, longitude: 0 });
   const [distance, setDistance] = useState(null);
@@ -171,7 +168,7 @@ const FeedScreen = () => {
     if (dataRes.code == 0) {
       console.log("Successfully updated the next stop");
       setCurrentStop(dataRes.data.next_stop.place_order);
-      setDistance(dataRes.data.distance);
+      setDistance(Math.round(dataRes.data.distance));
       setCheckboxes((prevValue) => {
         const newState = { ...prevValue };
         newState["checkbox" + dataRes.last_visited_place] = true;
@@ -180,7 +177,7 @@ const FeedScreen = () => {
     } else  if (dataRes.code == 2) {
       console.log("The next stop is not close enough");
       console.log("distance: " + dataRes.data.distance + " m")
-      setDistance(dataRes.data.distance);
+      setDistance(Math.round(dataRes.data.distance));
     } else {
       console.log("Error updating the next stop");
     }
@@ -272,7 +269,7 @@ const FeedScreen = () => {
         <StatusBar barStyle="light-content" />
         {currentLocation && (
           <Text>
-              Next Stop is : {distance} meters away
+              Next Stop is {distance} meters away
           </Text>
         )}
           <ScrollView contentContainerStyle={styles.row}>
@@ -280,6 +277,7 @@ const FeedScreen = () => {
               <TouchableOpacity
                 style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
                 onPress={() => handleCheckboxToggle("checkbox0")}
+                {...disabled}
               >
                 {!checkboxes["checkbox0"] && timer > 0 && (
                   <Text style={styles.checkboxTimer}>{formatTimerValue(timer)}</Text>
@@ -303,6 +301,7 @@ const FeedScreen = () => {
                   <TouchableOpacity
                     style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
                     onPress={() => handleCheckboxToggle("checkbox" + stop.place_order)}
+                    {...disabled}
                   >
                     {!checkboxes["checkbox" + stop.place_order] && checkboxes["checkbox" + (stop.place_order -1)] && timer > 0 && (
                      <Text style={styles.checkboxTimer}>{formatTimerValue(timer)}</Text>
