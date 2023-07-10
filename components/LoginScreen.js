@@ -1,6 +1,6 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { View, TextInput, Image, StyleSheet, Text, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
-
+import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../navigation';
 
@@ -10,6 +10,26 @@ const LoginForm = () => {
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [isValid, setIsValid] = useState(true);
+    const {isLocationEnabled, setIsLocationEnabled} = useContext(AuthContext);
+
+    const checkLocationPermission = async () => {
+        try {
+          const { status } = await Location.requestForegroundPermissionsAsync();
+          if (status === 'granted') {
+            console.log('Location permission is granted');
+            setIsLocationEnabled(true);
+          } else {
+            console.log('Location permission is denied');
+            setIsLocationEnabled(false);
+          }
+        } catch (error) {
+          console.log('Error checking location permission:', error);
+        }
+    };
+
+    useEffect(() => {
+        checkLocationPermission();
+    }, []);
 
     const handleEmailChange = (email) => {
         setEmail(email);
@@ -33,7 +53,7 @@ const LoginForm = () => {
             alert("Please enter a valid email address.");
         } else {
             if (email !== "" && password !== "") {
-                const response = await fetch('http://192.168.0.14/witp/API/login.php', { // 'https://whereisthepubcrawl.com/API/login.php'
+                const response = await fetch('http://192.168.0.70/witp/API/login.php', { // 'https://whereisthepubcrawl.com/API/login.php'
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

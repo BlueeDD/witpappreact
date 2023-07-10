@@ -1,17 +1,24 @@
-import React, { useState, useContext, useEffect, useRef } from "react";
-import { View, Text, StatusBar, TouchableOpacity, Animated, ScrollView } from "react-native";
-import Footer from "./Footer";
-import DefaultScreen from "./DefaultScreen";
+import React, { useState, useContext, useEffect, useRef } from 'react';
+import { View, Text, StatusBar, TouchableOpacity, Animated, ScrollView } from 'react-native';
+import * as Location from 'expo-location';
+import { AuthContext } from '../navigation';
+import Footer from './Footer';
+import DefaultScreen from './DefaultScreen';
 
-import { AuthContext } from "../navigation";
 
 const FeedScreen = () => {
   const { user } = useContext(AuthContext);
 
   // set the checkboxes
   const initialCheckboxes = {};
-  const [hasPubcrawl, setHasPubcrawl] = useState(false);
+  const {hasPubcrawl, setHasPubcrawl} = useContext(AuthContext);
   const [checkboxes, setCheckboxes] = useState({});
+  const [currentStop, setCurrentStop] = useState(-1);
+  const [pubcrawlID, setPubcrawlID] = useState(null);
+  const {isLocationEnabled, setIsLocationEnabled} = useContext(AuthContext);
+
+  const [currentLocation, setCurrentLocation] = useState({ latitude: 0, longitude: 0 });
+  const [distance, setDistance] = useState(null);
 
   const [meetingPoint, setMeetingPoint] = useState(""); // string of meeting point
   const [stops, setStops] = useState([]); // array of stops [ {place_order: 1, place_name: "The first stop"}, ...
@@ -20,8 +27,9 @@ const FeedScreen = () => {
   const animatedSeparator = useRef(new Animated.Value(0)).current;
 
   const [timer, setTimer] = useState(0);
+
   const startTimer = () => {
-    setTimer(10000); // Set the timer duration in milliseconds (5 seconds in this example)
+    setTimer(100000); // Set the timer duration in milliseconds
   };
   
   const formatTimerValue = (timer) => {
@@ -60,9 +68,9 @@ const FeedScreen = () => {
     });
   };
 
-
   useEffect(() => {
     getPubcrawlData();
+    checkLocation();
   }, []);
 
   useEffect(() => {
@@ -70,6 +78,17 @@ const FeedScreen = () => {
     animateSeparator();
     startTimer();
   }, [stops]);
+  
+  useEffect(() => {
+    const intervalId = setInterval(getCurrentLocation, 5000); // Update location every 5 seconds  
+    return () => {
+      clearInterval(intervalId); // Clear the interval when the component unmounts
+    };
+  }, []);
+
+  useEffect(() => {
+    setNextStop();
+  }, [currentLocation]);  
 
   useEffect(() => {
     if (timer === 0) {
@@ -92,6 +111,80 @@ const FeedScreen = () => {
       return () => clearInterval(intervalId); // This is important to clear the interval when the component unmounts
     }
   }, [timer, checkboxes]);
+
+  const checkLocationPermission = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        if (!isLocationEnabled) {
+        setIsLocationEnabled(true);
+        }
+      } else {
+        console.log('Location permission is denied');
+        if (isLocationEnabled) {
+        setIsLocationEnabled(false);
+        }
+      }
+    } catch (error) {
+      console.log('Error checking location permission:', error);
+    }
+  };
+
+  const getCurrentLocation = async () => {
+    try {
+      const { coords } = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+      const { latitude, longitude } = coords;
+      //coordinates should be rounded to 2 decimals
+      setCurrentLocation({ latitude, longitude });
+    } catch (error) {
+      console.warn(error);
+    }
+  };
+
+  //check location with a timer of 5 seconds
+  const checkLocation = () => {
+    if (isLocationEnabled) {
+    setTimeout(() => {
+      checkLocationPermission();
+      checkLocation(); // Call checkLocation recursively
+    }, 5000);
+    }
+  };
+
+  const setNextStop = async () => {
+    // TODO : replace with // 'https://whereisthepubcrawl.com/API/setNextStop.php' 
+    const response = await fetch('http://192.168.0.70/witp/API/setNextStop.php', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        "pubcrawl_id": pubcrawlID,
+        "last_visited_place": currentStop,
+        "latitude": currentLocation.latitude,
+        "longitude": currentLocation.longitude
+      }),
+    });
+    const dataRes = await response.json();
+    if (dataRes.code == 0) {
+      console.log("Successfully updated the next stop");
+      setCurrentStop(dataRes.data.next_stop.place_order);
+      setDistance(dataRes.data.distance);
+      setCheckboxes((prevValue) => {
+        const newState = { ...prevValue };
+        newState["checkbox" + dataRes.last_visited_place] = true;
+        return newState;
+      });      
+    } else  if (dataRes.code == 2) {
+      console.log("The next stop is not close enough");
+      console.log("distance: " + dataRes.data.distance + " m")
+      setDistance(dataRes.data.distance);
+    } else {
+      console.log("Error updating the next stop");
+    }
+  };
 
   const animateDots = () => {
     animatedDots.setValue(0); // Reset animation value
@@ -136,26 +229,35 @@ const FeedScreen = () => {
     //console.log("agent id : " + user.agentCityId);
 
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
-    const response = await fetch('http://192.168.0.14/witp/API/getStopsTodayByCityId.php', {
+    const response = await fetch('http://192.168.0.70/witp/API/getStopsTodayByCityId.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // pass the email and password from form to the API
+        // pass the email and password from the form to the API
         city_id: 1, // we use user's city ID
       }),
     });
     const dataRes = await response.json();
-    if (dataRes.code == 0) {
+    if (dataRes.code === 0) {
       // if no error (user found)
-      initialCheckboxes["checkbox0"] = false;
+      if (dataRes.data.pubcrawl.last_visited_place < 0) {
+        initialCheckboxes["checkbox0"] = false;
+      } else {
+        initialCheckboxes["checkbox0"] = true;
+      }
       dataRes.data.stops.forEach((item) => {
+        if (item.place_order <= dataRes.data.pubcrawl.last_visited_place) {
+          initialCheckboxes["checkbox" + item.place_order] = true; // Set initial state to true for the first checkbox (using place order)
+        } else
         initialCheckboxes["checkbox" + item.place_order] = false; // Set initial state to false for each checkbox (using place order)
       });
       setCheckboxes(initialCheckboxes);
       setMeetingPoint(dataRes.data.pubcrawl.meeting_point);
       setStops(dataRes.data.stops);
+      setCurrentStop(dataRes.data.pubcrawl.last_visited_place);
+      setPubcrawlID(dataRes.data.pubcrawl.id);
       setHasPubcrawl(true);
     } else if (dataRes.code == 2) {
       setHasPubcrawl(false);
@@ -166,9 +268,13 @@ const FeedScreen = () => {
 
   return (
     <View style={{ flex: 1 }}>
-    { hasPubcrawl ? (
       <View style={styles.container}>
         <StatusBar barStyle="light-content" />
+        {currentLocation && (
+          <Text>
+              Next Stop is : {distance} meters away
+          </Text>
+        )}
           <ScrollView contentContainerStyle={styles.row}>
             <View style={styles.column}>
               <TouchableOpacity
@@ -231,9 +337,6 @@ const FeedScreen = () => {
           </ScrollView>
         <Footer />
       </View>
-    ) : (
-      <DefaultScreen />
-    )}
     </View>
   );
 };
@@ -274,6 +377,7 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 70,
+    marginTop: 20,
   },
   column: {
     flexDirection: "column",

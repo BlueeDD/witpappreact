@@ -1,16 +1,99 @@
-import React from 'react';
-import { View, ImageBackground, StyleSheet, Text, StatusBar } from 'react-native';
+import React, {useEffect,useContext,useState} from 'react';
+import { View, StyleSheet, Text, StatusBar } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Footer from './Footer';
+import * as Location from 'expo-location';
+import { AuthContext } from '../navigation';
+
 
 const DefaultScreen = () => {
+   
+  const {isLocationEnabled, setIsLocationEnabled, hasPubcrawl, setHasPubcrawl} = useContext(AuthContext);
+  const [isVisible, setIsVisible] = useState(false);
+  
+  // Show the text after 500ms (avoid seeing it if you don't stay on the screen for long)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 500);
+    
+    // Cleanup the timer when the component unmounts or the state changes
+    return () => clearTimeout(timer);
+  }, []);
+
+  //check location permission
+  const checkLocationPermission = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        console.log('Location permission is granted');
+        if (!isLocationEnabled) {
+        setIsLocationEnabled(true);
+        }
+      } else {
+      }
+    } catch (error) {
+      console.log('Error checking location permission:', error);
+    }
+  };
+    
+    //check location with a timer of 5 seconds
+    const checkLocation = () => {
+      if (!isLocationEnabled) {
+      setTimeout(() => {
+        checkLocationPermission();
+        checkLocation(); // Call checkLocation recursively
+      }, 5000);
+      }
+    };
+
+
+    //check pubcrawl and location
+    useEffect(() => {
+      getPubcrawlData();
+      checkLocation();
+    }, []);
+    
+    //get pubcrawl data
+    const getPubcrawlData = async () => {
+      try {
+        const response = await fetch('http://192.168.0.70/witp/API/getStopsTodayByCityId.php', {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            city_id: 1,
+          }),
+        });
+        const dataRes = await response.json();
+        if (dataRes.code === 0) {
+          setHasPubcrawl(true);
+        }
+      } catch (error) {
+        console.log('Error fetching data from API', error);
+      }
+    };
+      
+
     return (
     <View style={styles.container}>
         <StatusBar barStyle="light-content" />
+            {!isLocationEnabled && (
+            <View style={styles.banner}>
+              <MaterialCommunityIcons name="crosshairs-gps" size={20} color={"white"} marginRight={10}/>
+              <Text style={{ color: 'white'}}>
+                Enable location in your settings to see the pubcrawls
+              </Text>
+            </View>
+            )}
+            {!hasPubcrawl && isVisible && (
             <View style={styles.textContainer}>
                 <View style={styles.innerContainer}>
                     <Text style={styles.text}>There is no Pubcrawl planned today</Text>
                 </View>
             </View>
+            )}
         <Footer />
       </View>
     );
@@ -39,6 +122,17 @@ const DefaultScreen = () => {
         fontSize: 25,
         fontWeight: 'bold',
         textAlign: 'center',
+      },
+      banner: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'red',
+        padding: 8,
+      },
+      underlined: {
+        textDecorationLine: 'underline',
+        color: 'white',
       },
   });
   
