@@ -6,6 +6,7 @@ import RegisterScreen from './components/RegisterScreen';
 import ForgotPasswordScreen from "./components/ForgotPasswordScreen";
 import Footer from './components/Footer';
 import FeedScreen from "./components/FeedScreen";
+import DefaultScreen from "./components/DefaultScreen";
 import HeaderMenu from "./headerMenu";
 import ProfileScreen from "./components/ProfileScreen";
 import AuthProvider, { AuthContext, Stack } from './navigation';
@@ -43,6 +44,12 @@ const ForgotPassword = () => {
 const Feed = () => {
   return (
     <FeedScreen />
+  );
+}
+
+const Default = () => {
+  return (
+    <DefaultScreen />
   );
 }
 
@@ -84,6 +91,8 @@ export default function App() {
               }}
             >
               {authContext.hasUser ? (
+                // If the user is logged in, show the Feed screen if there is a pubcrawl ongoing or planned today and the location is enabled
+                (authContext.hasPubcrawl && authContext.isLocationEnabled) ? (
                 <Stack.Screen
                   name="Feed"
                   component={Feed}
@@ -91,6 +100,16 @@ export default function App() {
                     title: "Pub Crawl Malaga",
                   }}
                 />
+                ) : (
+                  // If the user is logged in, show the Default screen if there is no pubcrawl ongoing or planned today or the location is disabled
+                  <Stack.Screen
+                    name="Default"
+                    component={Default}
+                    options={{
+                      title: "Pub Crawl Malaga",
+                    }}
+                  />
+                )
               ) : (
                 <Stack.Screen
                   name="Login"

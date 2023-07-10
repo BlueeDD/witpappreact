@@ -5,15 +5,17 @@ import { AuthContext } from '../navigation';
 import Footer from './Footer';
 import DefaultScreen from './DefaultScreen';
 
+
 const FeedScreen = () => {
   const { user } = useContext(AuthContext);
 
   // set the checkboxes
   const initialCheckboxes = {};
-  const [hasPubcrawl, setHasPubcrawl] = useState(false);
+  const {hasPubcrawl, setHasPubcrawl} = useContext(AuthContext);
   const [checkboxes, setCheckboxes] = useState({});
   const [currentStop, setCurrentStop] = useState(-1);
   const [pubcrawlID, setPubcrawlID] = useState(null);
+  const {isLocationEnabled, setIsLocationEnabled} = useContext(AuthContext);
 
   const [currentLocation, setCurrentLocation] = useState({ latitude: 0, longitude: 0 });
   const [distance, setDistance] = useState(null);
@@ -25,6 +27,7 @@ const FeedScreen = () => {
   const animatedSeparator = useRef(new Animated.Value(0)).current;
 
   const [timer, setTimer] = useState(0);
+
   const startTimer = () => {
     setTimer(100000); // Set the timer duration in milliseconds
   };
@@ -65,9 +68,9 @@ const FeedScreen = () => {
     });
   };
 
-
   useEffect(() => {
     getPubcrawlData();
+    checkLocation();
   }, []);
 
   useEffect(() => {
@@ -75,23 +78,6 @@ const FeedScreen = () => {
     animateSeparator();
     startTimer();
   }, [stops]);
-
-  useEffect(() => {
-    const requestLocationPermission = async () => {
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          console.log('Location permission denied');
-          return;
-        }
-        console.log('Location permission granted');
-      } catch (error) {
-        console.warn(error);
-      }
-    };
-  
-    requestLocationPermission();
-  }, []);
   
   useEffect(() => {
     const intervalId = setInterval(getCurrentLocation, 5000); // Update location every 5 seconds  
@@ -126,6 +112,24 @@ const FeedScreen = () => {
     }
   }, [timer, checkboxes]);
 
+  const checkLocationPermission = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        if (!isLocationEnabled) {
+        setIsLocationEnabled(true);
+        }
+      } else {
+        console.log('Location permission is denied');
+        if (isLocationEnabled) {
+        setIsLocationEnabled(false);
+        }
+      }
+    } catch (error) {
+      console.log('Error checking location permission:', error);
+    }
+  };
+
   const getCurrentLocation = async () => {
     try {
       const { coords } = await Location.getCurrentPositionAsync({
@@ -139,14 +143,19 @@ const FeedScreen = () => {
     }
   };
 
+  //check location with a timer of 5 seconds
+  const checkLocation = () => {
+    if (isLocationEnabled) {
+    setTimeout(() => {
+      checkLocationPermission();
+      checkLocation(); // Call checkLocation recursively
+    }, 5000);
+    }
+  };
+
   const setNextStop = async () => {
-    console.log("Setting next stop");
-    console.log("Current stop: " + currentStop);
-    console.log("Current pubcrawl: " + pubcrawlID);
-    console.log("Current location: " + currentLocation.latitude + ", " + currentLocation.longitude);
-    console.log("Distance: " + distance);
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/setNextStop.php' 
-    const response = await fetch('http://192.168.0.14/witp/API/setNextStop.php', {
+    const response = await fetch('http://192.168.0.70/witp/API/setNextStop.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -220,7 +229,7 @@ const FeedScreen = () => {
     //console.log("agent id : " + user.agentCityId);
 
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
-    const response = await fetch('http://192.168.0.14/witp/API/getStopsTodayByCityId.php', {
+    const response = await fetch('http://192.168.0.70/witp/API/getStopsTodayByCityId.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -231,7 +240,7 @@ const FeedScreen = () => {
       }),
     });
     const dataRes = await response.json();
-    if (dataRes.code == 0) {
+    if (dataRes.code === 0) {
       // if no error (user found)
       if (dataRes.data.pubcrawl.last_visited_place < 0) {
         initialCheckboxes["checkbox0"] = false;
@@ -259,7 +268,6 @@ const FeedScreen = () => {
 
   return (
     <View style={{ flex: 1 }}>
-    { hasPubcrawl ? (
       <View style={styles.container}>
         <StatusBar barStyle="light-content" />
         {currentLocation && (
@@ -329,9 +337,6 @@ const FeedScreen = () => {
           </ScrollView>
         <Footer />
       </View>
-    ) : (
-      <DefaultScreen />
-    )}
     </View>
   );
 };

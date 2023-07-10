@@ -18,6 +18,10 @@ export const AuthContext = createContext({
   setUser: () => { },
   isConnected: true,
   setIsConnected: () => { },
+  isLocationEnabled: false,
+  setIsLocationEnabled: () => { },
+  hasPubcrawl: false,
+  setHasPubcrawl: () => { },
 });
 
 export const Stack = createStackNavigator();
@@ -27,6 +31,8 @@ const AuthProvider = ({ children }) => {
   const [hasUser, setHasUser] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
+  const [isLocationEnabled, setIsLocationEnabled] = useState(false);
+  const [hasPubcrawl, setHasPubcrawl] = useState(false);
 
   const handleSetUser = (userData) => {
     setUser(userData);
@@ -43,6 +49,10 @@ const AuthProvider = ({ children }) => {
         setUser: handleSetUser,
         isConnected,
         setIsConnected,
+        isLocationEnabled,
+        setIsLocationEnabled,
+        hasPubcrawl,
+        setHasPubcrawl,
       }}
     >
       {children}
