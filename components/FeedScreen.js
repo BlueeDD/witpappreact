@@ -111,21 +111,37 @@ const FeedScreen = () => {
 
   const checkLocationPermission = async () => {
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        if (!isLocationEnabled) {
-        setIsLocationEnabled(true);
+      // Check foreground location permission
+      const foregroundPermission = await Location.requestForegroundPermissionsAsync();
+      if (foregroundPermission.status === 'granted') {
+        try {
+            // Check background location permission
+          const backgroundPermission = await Location.requestBackgroundPermissionsAsync();
+          if (backgroundPermission.status === 'granted') {
+            if (!isLocationEnabled) {
+              setIsLocationEnabled(true);
+            }
+          } else {
+            console.log('Background location permission is denied');
+            if (isLocationEnabled) {
+              setIsLocationEnabled(false);
+            }
+          }
+
+        } catch (error) {
+          console.log('Error checking location permission:', error);
         }
       } else {
-        console.log('Location permission is denied');
+        console.log('Foreground location permission is denied');
         if (isLocationEnabled) {
-        setIsLocationEnabled(false);
+          setIsLocationEnabled(false);
         }
       }
     } catch (error) {
       console.log('Error checking location permission:', error);
     }
   };
+
 
   const getCurrentLocation = async () => {
     try {
@@ -280,7 +296,9 @@ const FeedScreen = () => {
                 {...disabled}
               >
                 {!checkboxes["checkbox0"] && timer > 0 && (
-                  <Text style={styles.checkboxTimer}>{formatTimerValue(timer)}</Text>
+                  <Text style={styles.checkboxTimer}>
+                  {/* {formatTimerValue(timer)} */}
+                  </Text>
                 )}
               </TouchableOpacity>
               {stops.map((stop) => (
@@ -304,7 +322,9 @@ const FeedScreen = () => {
                     {...disabled}
                   >
                     {!checkboxes["checkbox" + stop.place_order] && checkboxes["checkbox" + (stop.place_order -1)] && timer > 0 && (
-                     <Text style={styles.checkboxTimer}>{formatTimerValue(timer)}</Text>
+                      <Text style={styles.checkboxTimer}>
+                    {/* {formatTimerValue(timer)} */}
+                    </Text>
                     )}
                   </TouchableOpacity>
                 </View>

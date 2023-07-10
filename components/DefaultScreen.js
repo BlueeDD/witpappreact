@@ -24,13 +24,31 @@ const DefaultScreen = () => {
   //check location permission
   const checkLocationPermission = async () => {
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        console.log('Location permission is granted');
-        if (!isLocationEnabled) {
-        setIsLocationEnabled(true);
+      // Check foreground location permission
+      const foregroundPermission = await Location.requestForegroundPermissionsAsync();
+      if (foregroundPermission.status === 'granted') {
+        try {
+            // Check background location permission
+          const backgroundPermission = await Location.requestBackgroundPermissionsAsync();
+          if (backgroundPermission.status === 'granted') {
+            console.log('Background location permission is granted');
+            if (!isLocationEnabled) {
+              setIsLocationEnabled(true);
+            }
+          } else {
+            if (isLocationEnabled) {
+              setIsLocationEnabled(false);
+            }
+          }
+
+        } catch (error) {
+          console.log('Error checking location permission:', error);
         }
       } else {
+        console.log('Foreground location permission is denied');
+        if (isLocationEnabled) {
+          setIsLocationEnabled(false);
+        }
       }
     } catch (error) {
       console.log('Error checking location permission:', error);
@@ -83,7 +101,7 @@ const DefaultScreen = () => {
             <View style={styles.banner}>
               <MaterialCommunityIcons name="crosshairs-gps" size={20} color={"white"} marginRight={10}/>
               <Text style={{ color: 'white'}}>
-                Enable location in your settings to see the pubcrawls
+                The access to your location should be "Always" to use the app
               </Text>
             </View>
             )}
