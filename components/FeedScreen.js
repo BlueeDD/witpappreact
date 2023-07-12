@@ -8,11 +8,13 @@ import Footer from './Footer';
 const FeedScreen = () => {
   // set the checkboxes
   const initialCheckboxes = {};
+  const initialDisabled = {};
   const {hasPubcrawl, setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user} = useContext(AuthContext);
   const [checkboxes, setCheckboxes] = useState({});
+  const [disabled, setDisabled] = useState({});
   const [currentStop, setCurrentStop] = useState(-1);
   const [pubcrawlID, setPubcrawlID] = useState(null);
-  const disabled = user.role === "Agent" ? { disabled: true } : {};
+  const [isDisabled, setIsDisabled] = useState(false);
 
   const [currentLocation, setCurrentLocation] = useState({ latitude: 0, longitude: 0 });
   const [distance, setDistance] = useState(null);
@@ -44,26 +46,44 @@ const FeedScreen = () => {
   /**
    * toggle the checkbox status
    * @param {*} checkboxName
-   * if the checkbox is checked, set every previous checkbox to checked
-   * if the checkbox is unchecked, set every next checkbox to unchecked
    */
   const handleCheckboxToggle = (checkboxName) => {
     startTimer(); // Reset the timer when a checkbox is clicked
     setCheckboxes((prevValue) => {
       const newState = { ...prevValue };
       newState[checkboxName] = !newState[checkboxName];
+  
+      // Update the currentStop based on the checkboxName
+      const checkboxIndex = parseInt(checkboxName.slice(-1));
       if (newState[checkboxName]) {
-        for (let i = 0; i < checkboxName.slice(-1); i++) {
-          newState["checkbox" + i] = true;
-        }
+        setCurrentStop(checkboxIndex);
       } else {
-        for (let i = parseInt(checkboxName.slice(-1)) + 1; i <= stops.length; i++) {
-          newState["checkbox" + i] = false;
+        if (currentStop === checkboxIndex) {
+          // Find the new currentStop when unchecking the last checked checkbox
+          for (let i = checkboxIndex - 1; i >= 0; i--) {
+            if (newState["checkbox" + i]) {
+              setCurrentStop(i);
+              break;
+            }
+          }
+        }
+      }
+  
+      // Update the disabled property based on the currentStop
+      if (currentStop !== -1) {
+        for (let i = 0; i < currentStop; i++) {
+          setDisabled((prevValue) => {
+            const newState = { ...prevValue };
+            newState["checkbox" + i] = true;
+            return newState;
+          }
+          );
         }
       }
       return newState;
     });
   };
+  
 
   useEffect(() => {
     getPubcrawlData();
@@ -168,7 +188,7 @@ const FeedScreen = () => {
 
   const setNextStop = async () => {
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/setNextStop.php' 
-    const response = await fetch('http://192.168.0.70/witp/API/setNextStop.php', {
+    const response = await fetch('http://192.168.1.21/witp/API/setNextStop.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -189,10 +209,15 @@ const FeedScreen = () => {
         const newState = { ...prevValue };
         newState["checkbox" + dataRes.last_visited_place] = true;
         return newState;
+      });
+      setDisabled((prevValue) => {
+        const newState = { ...prevValue };
+        newState["checkbox" + dataRes.last_visited_place] = true;
+        return newState;
       });      
     } else  if (dataRes.code == 2) {
-      console.log("The next stop is not close enough");
-      console.log("distance: " + dataRes.data.distance + " m")
+      //console.log("The next stop is not close enough");
+      //console.log("distance: " + dataRes.data.distance + " m")
       setDistance(Math.round(dataRes.data.distance));
     } else {
       console.log("Error updating the next stop");
@@ -242,7 +267,7 @@ const FeedScreen = () => {
     //console.log("agent id : " + user.agentCityId);
 
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
-    const response = await fetch('http://192.168.0.70/witp/API/getStopsTodayByCityId.php', {
+    const response = await fetch('http://192.168.1.21/witp/API/getStopsTodayByCityId.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -253,8 +278,13 @@ const FeedScreen = () => {
       }),
     });
     const dataRes = await response.json();
-    if (dataRes.code === 0) {
+    if (dataRes.code === 0 || dataRes.code === 6) {
       // if no error (user found)
+      if (dataRes.code === 6) {
+        setIsDisabled(true);
+      } else {
+        setIsDisabled(false);
+      }
       if (dataRes.data.pubcrawl.last_visited_place < 0) {
         initialCheckboxes["checkbox0"] = false;
       } else {
@@ -263,10 +293,16 @@ const FeedScreen = () => {
       dataRes.data.stops.forEach((item) => {
         if (item.place_order <= dataRes.data.pubcrawl.last_visited_place) {
           initialCheckboxes["checkbox" + item.place_order] = true; // Set initial state to true for the first checkbox (using place order)
-        } else
+          initialDisabled["checkbox" + (item.place_order - 1)] = true;
+        } else {
         initialCheckboxes["checkbox" + item.place_order] = false; // Set initial state to false for each checkbox (using place order)
-      });
+        initialDisabled["checkbox" + (item.place_order -1)] = false;
+      }});
+      initialDisabled["checkbox" + (dataRes.data.stops.length)] = false;
       setCheckboxes(initialCheckboxes);
+      setDisabled(initialDisabled);
+      console.log("initialCheckboxes : " + JSON.stringify(initialCheckboxes));
+      console.log("initialDisabled : " + JSON.stringify(initialDisabled));
       setMeetingPoint(dataRes.data.pubcrawl.meeting_point);
       setStops(dataRes.data.stops);
       setCurrentStop(dataRes.data.pubcrawl.last_visited_place);
@@ -293,8 +329,8 @@ const FeedScreen = () => {
               <TouchableOpacity
                 style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
                 onPress={() => handleCheckboxToggle("checkbox0")}
-                {...disabled}
-              >
+                disabled={isDisabled ? isDisabled : disabled["checkbox0"]}
+                >
                 {!checkboxes["checkbox0"] && timer > 0 && (
                   <Text style={styles.checkboxTimer}>
                   {/* {formatTimerValue(timer)} */}
@@ -319,8 +355,8 @@ const FeedScreen = () => {
                   <TouchableOpacity
                     style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
                     onPress={() => handleCheckboxToggle("checkbox" + stop.place_order)}
-                    {...disabled}
-                  >
+                    disabled={isDisabled ? isDisabled : disabled["checkbox" + (stop.place_order - 1)]}
+                    >
                     {!checkboxes["checkbox" + stop.place_order] && checkboxes["checkbox" + (stop.place_order -1)] && timer > 0 && (
                       <Text style={styles.checkboxTimer}>
                     {/* {formatTimerValue(timer)} */}

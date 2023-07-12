@@ -75,7 +75,7 @@ const DefaultScreen = () => {
     //get pubcrawl data
     const getPubcrawlData = async () => {
       try {
-        const response = await fetch('http://192.168.0.70/witp/API/getStopsTodayByCityId.php', {
+        const response = await fetch('http://192.168.1.21/witp/API/getStopsTodayByCityId.php', {
           method: 'POST',
           headers: {
             "Content-Type": "application/json",
@@ -85,7 +85,7 @@ const DefaultScreen = () => {
           }),
         });
         const dataRes = await response.json();
-        if (dataRes.code === 0) {
+        if (dataRes.code === 0 || dataRes.code === 6) {
           setHasPubcrawl(true);
         }
       } catch (error) {
