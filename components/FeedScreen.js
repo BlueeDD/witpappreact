@@ -3,6 +3,7 @@ import { View, Text, StatusBar, TouchableOpacity, Animated, ScrollView } from 'r
 import * as Location from 'expo-location';
 import { AuthContext } from '../navigation';
 import Footer from './Footer';
+import Popup from './PopUp';
 
 
 const FeedScreen = () => {
@@ -15,6 +16,7 @@ const FeedScreen = () => {
   const [currentStop, setCurrentStop] = useState(-2);
   const [pubcrawlID, setPubcrawlID] = useState(null);
   const [isDisabled, setIsDisabled] = useState(false);
+  const [popupOpen, setPopupOpen] = useState(true);
 
   const [currentLocation, setCurrentLocation] = useState({ latitude: 0, longitude: 0 });
   const [distance, setDistance] = useState(null);
@@ -27,8 +29,10 @@ const FeedScreen = () => {
 
   const [timer, setTimer] = useState(0);
 
+  //-----------------------------------TIMER-----------------------------------
+
   const startTimer = () => {
-    setTimer(100000); // Set the timer duration in milliseconds
+    setTimer(1000000); // Set the timer duration in milliseconds
   };
   
   const formatTimerValue = (timer) => {
@@ -78,8 +82,28 @@ const FeedScreen = () => {
       return newState;
     });
   };
+
+  //----------------------------------------POPUP---------------------------------------------------------
   
-  
+  const handleOpenPopup = () => {
+    setPopupOpen(true);
+  };
+
+  const handleClosePopup = () => {
+    setPopupOpen(false);
+  };
+
+  const handleButtonOneClick = () => {
+    // Handle button one click action
+    handleClosePopup();
+  };
+
+  const handleButtonTwoClick = () => {
+    // Handle button two click action
+    handleClosePopup();
+  };
+
+  //----------------------------------------USE EFFECTS---------------------------------------------------------
 
   useEffect(() => {
     getPubcrawlData();
@@ -124,6 +148,8 @@ const FeedScreen = () => {
       return () => clearInterval(intervalId); // This is important to clear the interval when the component unmounts
     }
   }, [timer, checkboxes]);
+
+  //----------------------------------------LOCATION---------------------------------------------------------
 
   const checkLocationPermission = async () => {
     try {
@@ -182,83 +208,9 @@ const FeedScreen = () => {
     }
   };
 
-  const setNextStop = async () => {
-    // TODO : replace with // 'https://whereisthepubcrawl.com/API/setNextStop.php' 
-    const response = await fetch('http://192.168.1.21/witp/API/setNextStop.php', {
-      method: 'POST',
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        "pubcrawl_id": pubcrawlID,
-        "last_visited_place": currentStop,
-        "latitude": currentLocation.latitude,
-        "longitude": currentLocation.longitude
-      }),
-    });
-    const dataRes = await response.json();
-    if (dataRes.code == 0) {
-      console.log("Successfully updated the next stop");
-      setCurrentStop(dataRes.data.next_stop.place_order);
-      setDistance(Math.round(dataRes.data.distance));
-      setCheckboxes((prevValue) => {
-        const newState = { ...prevValue };
-        newState["checkbox" + dataRes.last_visited_place] = true;
-        return newState;
-      });
-      setDisabled((prevValue) => {
-        const newState = { ...prevValue };
-        newState["checkbox" + dataRes.last_visited_place] = true;
-        return newState;
-      });      
-    } else  if (dataRes.code == 2) {
-      //console.log("The next stop is not close enough");
-      //console.log("distance: " + dataRes.data.distance + " m")
-      setDistance(Math.round(dataRes.data.distance));
-    } else {
-      console.log("Error updating the next stop");
-    }
-  };
+  //----------------------------------------API CALLS---------------------------------------------------------
 
-  const animateDots = () => {
-    animatedDots.setValue(0); // Reset animation value
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(animatedDots, {
-          toValue: 1,
-          duration: 1500,
-          useNativeDriver: false,
-        }),
-        Animated.timing(animatedDots, {
-          toValue: 0,
-          duration: 1500,
-          useNativeDriver: false,
-        }),
-      ])
-    ).start();
-  };
-
-  const animateSeparator = () => {
-    animatedSeparator.setValue(0); // Reset animation value
-
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(animatedSeparator, {
-            toValue: 1,
-            duration: 1500, // Duration for each state (0 and 1)
-            useNativeDriver: false,
-          }),
-          Animated.timing(animatedSeparator, {
-            toValue: 0,
-            duration: 1500, // Duration for each state (0 and 1)
-            useNativeDriver: false,
-          }),
-        ])
-      ).start();
-  };
   
-
   const getPubcrawlData = async () => {
     //console.log("agent id : " + user.agentCityId);
 
@@ -311,6 +263,87 @@ const FeedScreen = () => {
     }
   };
 
+  const setNextStop = async () => {
+    // TODO : replace with // 'https://whereisthepubcrawl.com/API/setNextStop.php' 
+    const response = await fetch('http://192.168.1.21/witp/API/setNextStop.php', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        "pubcrawl_id": pubcrawlID,
+        "last_visited_place": currentStop,
+        "latitude": currentLocation.latitude,
+        "longitude": currentLocation.longitude
+      }),
+    });
+    const dataRes = await response.json();
+    if (dataRes.code == 0) {
+      console.log("Successfully updated the next stop");
+      setCurrentStop(dataRes.data.next_stop.place_order);
+      setDistance(Math.round(dataRes.data.distance));
+      setCheckboxes((prevValue) => {
+        const newState = { ...prevValue };
+        newState["checkbox" + dataRes.last_visited_place] = true;
+        return newState;
+      });
+      setDisabled((prevValue) => {
+        const newState = { ...prevValue };
+        newState["checkbox" + dataRes.last_visited_place] = true;
+        return newState;
+      });      
+    } else  if (dataRes.code == 2) {
+      //console.log("The next stop is not close enough");
+      //console.log("distance: " + dataRes.data.distance + " m")
+      setDistance(Math.round(dataRes.data.distance));
+    } else {
+      console.log("Error updating the next stop");
+    }
+  };
+
+
+  //----------------------------------------ANIMATIONS---------------------------------------------------------
+
+  const animateDots = () => {
+    animatedDots.setValue(0); // Reset animation value
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(animatedDots, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: false,
+        }),
+        Animated.timing(animatedDots, {
+          toValue: 0,
+          duration: 1500,
+          useNativeDriver: false,
+        }),
+      ])
+    ).start();
+  };
+
+  const animateSeparator = () => {
+    animatedSeparator.setValue(0); // Reset animation value
+
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(animatedSeparator, {
+            toValue: 1,
+            duration: 1500, // Duration for each state (0 and 1)
+            useNativeDriver: false,
+          }),
+          Animated.timing(animatedSeparator, {
+            toValue: 0,
+            duration: 1500, // Duration for each state (0 and 1)
+            useNativeDriver: false,
+          }),
+        ])
+      ).start();
+  };
+  
+//----------------------------------------RENDER---------------------------------------------------------
+
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.container}>
@@ -320,6 +353,12 @@ const FeedScreen = () => {
               Next Stop is {distance} meters away
           </Text>
         )}
+        <Popup
+          isOpen={popupOpen}
+          onClose={handleClosePopup}
+          onButtonOneClick={handleButtonOneClick}
+          onButtonTwoClick={handleButtonTwoClick}
+        />
           <ScrollView contentContainerStyle={styles.row}>
             <View style={styles.column}>
               <TouchableOpacity
