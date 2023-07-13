@@ -12,7 +12,7 @@ const FeedScreen = () => {
   const {hasPubcrawl, setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user} = useContext(AuthContext);
   const [checkboxes, setCheckboxes] = useState({});
   const [disabled, setDisabled] = useState({});
-  const [currentStop, setCurrentStop] = useState(-1);
+  const [currentStop, setCurrentStop] = useState(-2);
   const [pubcrawlID, setPubcrawlID] = useState(null);
   const [isDisabled, setIsDisabled] = useState(false);
 
@@ -49,40 +49,43 @@ const FeedScreen = () => {
    */
   const handleCheckboxToggle = (checkboxName) => {
     startTimer(); // Reset the timer when a checkbox is clicked
+  
     setCheckboxes((prevValue) => {
       const newState = { ...prevValue };
       newState[checkboxName] = !newState[checkboxName];
   
-      // Update the currentStop based on the checkboxName
       const checkboxIndex = parseInt(checkboxName.slice(-1));
-      if (newState[checkboxName]) {
-        setCurrentStop(checkboxIndex);
-      } else {
-        if (currentStop === checkboxIndex) {
-          // Find the new currentStop when unchecking the last checked checkbox
-          for (let i = checkboxIndex - 1; i >= 0; i--) {
-            if (newState["checkbox" + i]) {
-              setCurrentStop(i);
-              break;
-            }
-          }
-        }
+  
+      for (let i = 0; i < checkboxIndex; i++) {
+        newState["checkbox" + i] = newState[checkboxName];
       }
   
-      // Update the disabled property based on the currentStop
-      if (currentStop !== -1) {
-        for (let i = 0; i < currentStop; i++) {
-          setDisabled((prevValue) => {
-            const newState = { ...prevValue };
-            newState["checkbox" + i] = true;
-            return newState;
+      if (!newState[checkboxName] && currentStop === checkboxIndex) {
+        // Find the new currentStop when unchecking the last checked checkbox
+        for (let i = checkboxIndex - 1; i >= 0; i--) {
+          if (newState["checkbox" + i]) {
+            setCurrentStop(i);
+            break;
           }
-          );
         }
+      } else {
+        setCurrentStop(checkboxIndex);
       }
+  
+      const disabledState = {};
+      for (let i = 0; i < stops.length + 1; i++) {
+        disabledState["checkbox" + i] = i < checkboxIndex ? true : false;
+      }
+      setDisabled(disabledState);
+  
+      console.log(checkboxIndex);
+      console.log(newState);
+      console.log(disabledState);
+  
       return newState;
     });
   };
+  
   
 
   useEffect(() => {
