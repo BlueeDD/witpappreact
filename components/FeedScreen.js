@@ -52,24 +52,17 @@ const FeedScreen = () => {
   
     setCheckboxes((prevValue) => {
       const newState = { ...prevValue };
-      newState[checkboxName] = !newState[checkboxName];
-  
       const checkboxIndex = parseInt(checkboxName.slice(-1));
-  
-      for (let i = 0; i < checkboxIndex; i++) {
-        newState["checkbox" + i] = newState[checkboxName];
-      }
-  
-      if (!newState[checkboxName] && currentStop === checkboxIndex) {
-        // Find the new currentStop when unchecking the last checked checkbox
-        for (let i = checkboxIndex - 1; i >= 0; i--) {
-          if (newState["checkbox" + i]) {
-            setCurrentStop(i);
-            break;
-          }
+      newState[checkboxName] = !newState[checkboxName];
+      if (newState[checkboxName]) {
+        setCurrentStop(checkboxIndex);
+        for (let i = 0; i < checkboxIndex; i++) {
+          newState["checkbox" + i] = true;
         }
       } else {
-        setCurrentStop(checkboxIndex);
+        for (let i = checkboxIndex + 1; i <= stops.length; i++) {
+          newState["checkbox" + i] = false;
+        }
       }
   
       const disabledState = {};
@@ -358,7 +351,7 @@ const FeedScreen = () => {
                   <TouchableOpacity
                     style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
                     onPress={() => handleCheckboxToggle("checkbox" + stop.place_order)}
-                    disabled={isDisabled ? isDisabled : disabled["checkbox" + (stop.place_order - 1)]}
+                    disabled={isDisabled ? isDisabled : disabled["checkbox" + stop.place_order]}
                     >
                     {!checkboxes["checkbox" + stop.place_order] && checkboxes["checkbox" + (stop.place_order -1)] && timer > 0 && (
                       <Text style={styles.checkboxTimer}>
