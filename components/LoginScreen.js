@@ -36,7 +36,7 @@ const LoginForm = () => {
         const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
         setIsValid(emailPattern.test(email));
         if (email == "") {
-            setIsValid(true);
+            setIsValid(true); // to earse validation message (but check of empty string is done in handleLoginPress)
         }
     };
 
@@ -53,7 +53,7 @@ const LoginForm = () => {
             alert("Please enter a valid email address.");
         } else {
             if (email !== "" && password !== "") {
-                const response = await fetch('http://192.168.0.70/witp/API/login.php', { // 'https://whereisthepubcrawl.com/API/login.php'
+                const response = await fetch('http://192.168.0.62/witp/API/login.php', { // 'https://whereisthepubcrawl.com/API/login.php'
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ const LoginForm = () => {
                     }),
                 });
                 const dataRes = await response.json();
-                if (dataRes.code == 0) { // if no error (user found)
+                if (dataRes.code == 0 || dataRes.code == 6) { // if no error (user found)
                     setHasUser(true);
                     setUser({
                         id: dataRes.data.id,

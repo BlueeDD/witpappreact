@@ -13,7 +13,7 @@ const RegisterScreen = () => {
 
     const getCitiesData = async () => {
 
-        const response = await fetch('http://192.168.0.70/witp/API/getCities.php', {
+        const response = await fetch('http://192.168.0.62/witp/API/getCities.php', {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
@@ -43,7 +43,7 @@ const RegisterScreen = () => {
             alert("Please enter a valid email address.");
         } else {
             if (email !== "" && name !== "") {
-                const response = await fetch('http://192.168.0.70/witp/API/register.php', { // 'https://whereisthepubcrawl.com/API/login.php'
+                const response = await fetch('http://192.168.0.62/witp/API/register.php', { // 'https://whereisthepubcrawl.com/API/login.php'
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -52,7 +52,6 @@ const RegisterScreen = () => {
                         name: name,
                         email: email,
                         city_id: city_id,
-
                     }),
                 });
                 const dataRes = await response.json();

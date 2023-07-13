@@ -155,7 +155,7 @@ const FeedScreen = () => {
 
   const setNextStop = async () => {
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/setNextStop.php' 
-    const response = await fetch('http://192.168.0.70/witp/API/setNextStop.php', {
+    const response = await fetch('http://192.168.0.62/witp/API/setNextStop.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -229,7 +229,7 @@ const FeedScreen = () => {
     //console.log("agent id : " + user.agentCityId);
 
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
-    const response = await fetch('http://192.168.0.70/witp/API/getStopsTodayByCityId.php', {
+    const response = await fetch('http://192.168.0.62/witp/API/getStopsTodayByCityId.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
