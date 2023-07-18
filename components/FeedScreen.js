@@ -253,7 +253,7 @@ const FeedScreen = () => {
       },
       body: JSON.stringify({
         // pass the email and password from the form to the API
-        city_id: 1, // we use user's city ID
+        city_id: user.agentCityId, // we use user's city ID
       }),
     });
     const dataRes = await response.json();
