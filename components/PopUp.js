@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 
-const Popup = ({ isOpen, onClose, onButtonOneClick, onButtonTwoClick }) => {
+const Popup = ({ isOpen, onClose, onButtonOneClick, onButtonTwoClick, popupTitle, popUpText, updateButton }) => {
   if (!isOpen) {
     return null;
   }
@@ -20,12 +20,14 @@ const Popup = ({ isOpen, onClose, onButtonOneClick, onButtonTwoClick }) => {
     <Modal visible={isOpen} animationType="slide" transparent>
       <View style={styles.popup}>
         <View style={styles.popupContent}>
-          <Text style={styles.popupTitle}>You're arrived at the next stop</Text>
-          <Text>Do you want to update the status of the pubcrawl ?</Text>
-          <View style={styles.popupButtons}>
-            <TouchableOpacity onPress={handleButtonOneClick} style={styles.button}>
-              <Text style={styles.buttonText}>Update</Text>
-            </TouchableOpacity>
+          <Text style={styles.popupTitle}>{popupTitle}</Text>
+          <Text>{popUpText}</Text>
+          <View style={updateButton ? styles.popupButtons : styles.popupButtons2}>
+            { updateButton && 
+              <TouchableOpacity onPress={handleButtonOneClick} style={styles.button}>
+                <Text style={styles.buttonText}>Update</Text>
+              </TouchableOpacity>
+            }
             <TouchableOpacity onPress={handleButtonTwoClick} style={styles.button}>
               <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
@@ -57,6 +59,11 @@ const styles = StyleSheet.create({
   popupButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  popupButtons2: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     marginTop: 20,
   },
   button: {

@@ -16,7 +16,14 @@ const FeedScreen = () => {
   const [currentStop, setCurrentStop] = useState(-2);
   const [pubcrawlID, setPubcrawlID] = useState(null);
   const [isDisabled, setIsDisabled] = useState(false);
-  const [popupOpen, setPopupOpen] = useState(true);
+
+  const [popupState, setPopupState] = useState({
+    popup1Open: false,
+    popup2Open: false,
+    popup3Open: false,
+  });
+
+  const [count, setCount] = useState(0);
 
   const [currentLocation, setCurrentLocation] = useState({ latitude: 0, longitude: 0 });
   const [distance, setDistance] = useState(null);
@@ -75,9 +82,9 @@ const FeedScreen = () => {
       }
       setDisabled(disabledState);
   
-      console.log(checkboxIndex);
-      console.log(newState);
-      console.log(disabledState);
+      // console.log(checkboxIndex);
+      // console.log(newState);
+      // console.log(disabledState);
   
       return newState;
     });
@@ -85,22 +92,29 @@ const FeedScreen = () => {
 
   //----------------------------------------POPUP---------------------------------------------------------
   
-  const handleOpenPopup = () => {
-    setPopupOpen(true);
+  const handleOpenPopup = (popupNumber) => {
+    setPopupState((prevState) => ({
+      ...prevState,
+      [`popup${popupNumber}Open`]: true,
+    }));
   };
 
-  const handleClosePopup = () => {
-    setPopupOpen(false);
+  const handleClosePopup = (popupNumber) => {
+    setPopupState((prevState) => ({
+      ...prevState,
+      [`popup${popupNumber}Open`]: false,
+    }));
   };
-
-  const handleButtonOneClick = () => {
-    // Handle button one click action
+  const handleButtonOneClick = (popupNumber) => {
+    handleCheckboxToggle("checkbox" + (currentStop + 1));
+    setCount(0);
     handleClosePopup();
   };
 
-  const handleButtonTwoClick = () => {
+  const handleButtonTwoClick = (popupNumber) => {
     // Handle button two click action
     handleClosePopup();
+    setCount(0);
   };
 
   //----------------------------------------USE EFFECTS---------------------------------------------------------
@@ -128,6 +142,23 @@ const FeedScreen = () => {
   }, [currentLocation]);  
 
   useEffect(() => {
+    console.log("count: " + count);
+    if (count === 3) {
+      console.log("popup1");
+      handleClosePopup(3);
+      handleOpenPopup(1);
+    } else if (count === 6) {
+      handleClosePopup(1);
+      handleOpenPopup(2);
+    } else if (count === 9) {
+      handleClosePopup(2);
+      handleOpenPopup(3);
+      handleCheckboxToggle("checkbox" + (currentStop + 1));
+      setCount(0);
+    }
+  }, [count]);
+
+  useEffect(() => {
     if (timer === 0) {
       // Timer is up, check the first unchecked checkbox
       const firstUncheckedCheckbox = Object.entries(checkboxes).find(([key, value]) => !value);
@@ -151,38 +182,38 @@ const FeedScreen = () => {
 
   //----------------------------------------LOCATION---------------------------------------------------------
 
-  const checkLocationPermission = async () => {
-    try {
-      // Check foreground location permission
-      const foregroundPermission = await Location.requestForegroundPermissionsAsync();
-      if (foregroundPermission.status === 'granted') {
-        try {
-            // Check background location permission
-          const backgroundPermission = await Location.requestBackgroundPermissionsAsync();
-          if (backgroundPermission.status === 'granted') {
-            if (!isLocationEnabled) {
-              setIsLocationEnabled(true);
-            }
-          } else {
-            console.log('Background location permission is denied');
-            if (isLocationEnabled) {
-              setIsLocationEnabled(false);
-            }
-          }
+  // const checkLocationPermission = async () => {
+  //   try {
+  //     // Check foreground location permission
+  //     const foregroundPermission = await Location.requestForegroundPermissionsAsync();
+  //     if (foregroundPermission.status === 'granted') {
+  //       try {
+  //           // Check background location permission
+  //         const backgroundPermission = await Location.requestBackgroundPermissionsAsync();
+  //         if (backgroundPermission.status === 'granted') {
+  //           if (!isLocationEnabled) {
+  //             setIsLocationEnabled(true);
+  //           }
+  //         } else {
+  //           console.log('Background location permission is denied');
+  //           if (isLocationEnabled) {
+  //             setIsLocationEnabled(false);
+  //           }
+  //         }
 
-        } catch (error) {
-          console.log('Error checking location permission:', error);
-        }
-      } else {
-        console.log('Foreground location permission is denied');
-        if (isLocationEnabled) {
-          setIsLocationEnabled(false);
-        }
-      }
-    } catch (error) {
-      console.log('Error checking location permission:', error);
-    }
-  };
+  //       } catch (error) {
+  //         console.log('Error checking location permission:', error);
+  //       }
+  //     } else {
+  //       console.log('Foreground location permission is denied');
+  //       if (isLocationEnabled) {
+  //         setIsLocationEnabled(false);
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.log('Error checking location permission:', error);
+  //   }
+  // };
 
 
   const getCurrentLocation = async () => {
@@ -202,7 +233,7 @@ const FeedScreen = () => {
   const checkLocation = () => {
     if (isLocationEnabled) {
     setTimeout(() => {
-      checkLocationPermission();
+      // checkLocationPermission();
       checkLocation(); // Call checkLocation recursively
     }, 5000);
     }
@@ -215,7 +246,7 @@ const FeedScreen = () => {
     //console.log("agent id : " + user.agentCityId);
 
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
-    const response = await fetch('http://192.168.1.21/witp/API/getStopsTodayByCityId.php', {
+    const response = await fetch('http://192.168.0.70/witp/API/getStopsTodayByCityId.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -249,8 +280,8 @@ const FeedScreen = () => {
       initialDisabled["checkbox" + (dataRes.data.stops.length)] = false;
       setCheckboxes(initialCheckboxes);
       setDisabled(initialDisabled);
-      console.log("initialCheckboxes : " + JSON.stringify(initialCheckboxes));
-      console.log("initialDisabled : " + JSON.stringify(initialDisabled));
+      // console.log("initialCheckboxes : " + JSON.stringify(initialCheckboxes));
+      // console.log("initialDisabled : " + JSON.stringify(initialDisabled));
       setMeetingPoint(dataRes.data.pubcrawl.meeting_point);
       setStops(dataRes.data.stops);
       setCurrentStop(dataRes.data.pubcrawl.last_visited_place);
@@ -265,7 +296,7 @@ const FeedScreen = () => {
 
   const setNextStop = async () => {
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/setNextStop.php' 
-    const response = await fetch('http://192.168.1.21/witp/API/setNextStop.php', {
+    const response = await fetch('http://192.168.0.70/witp/API/setNextStop.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -295,6 +326,7 @@ const FeedScreen = () => {
     } else  if (dataRes.code == 2) {
       //console.log("The next stop is not close enough");
       //console.log("distance: " + dataRes.data.distance + " m")
+      setCount(count + 1);
       setDistance(Math.round(dataRes.data.distance));
     } else {
       console.log("Error updating the next stop");
@@ -354,10 +386,31 @@ const FeedScreen = () => {
           </Text>
         )}
         <Popup
-          isOpen={popupOpen}
-          onClose={handleClosePopup}
-          onButtonOneClick={handleButtonOneClick}
-          onButtonTwoClick={handleButtonTwoClick}
+          isOpen={popupState.popup1Open}
+          onClose={() => handleClosePopup(1)} 
+          onButtonOneClick={() => handleButtonOneClick(1)} 
+          onButtonTwoClick={() => handleButtonTwoClick(1)} 
+          popupTitle={"You are near the next stop"}
+          popupText={"Do you want to update the status of the pubcrawl ?"}
+          updateButton={true}
+        />
+        <Popup
+          isOpen={popupState.popup2Open}
+          onClose={() => handleClosePopup(2)} 
+          onButtonOneClick={() => handleButtonOneClick(2)} 
+          onButtonTwoClick={() => handleButtonTwoClick(2)}
+          popupTitle={"You are still near the next stop"}
+          popupText={"Do you want to update the status of the pubcrawl now ?"}
+          updateButton={true}
+        />
+        <Popup
+          isOpen={popupState.popup3Open}
+          onClose={() => handleClosePopup(3)} 
+          onButtonOneClick={() => handleButtonOneClick(3)} 
+          onButtonTwoClick={() => handleButtonTwoClick(3)}
+          popupTitle={"You stayed long enough at the next stop"}
+          popupText={"The pubcrawl will be updated now."}
+          updateButton={false}
         />
           <ScrollView contentContainerStyle={styles.row}>
             <View style={styles.column}>
