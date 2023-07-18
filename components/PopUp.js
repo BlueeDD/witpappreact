@@ -29,7 +29,7 @@ const Popup = ({ isOpen, onClose, onButtonOneClick, onButtonTwoClick, popupTitle
               </TouchableOpacity>
             }
             <TouchableOpacity onPress={handleButtonTwoClick} style={styles.button}>
-              <Text style={styles.buttonText}>Cancel</Text>
+              <Text style={styles.buttonText}>{updateButton ? "Cancel" : "Close"}</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -16,14 +16,17 @@ const FeedScreen = () => {
   const [currentStop, setCurrentStop] = useState(-2);
   const [pubcrawlID, setPubcrawlID] = useState(null);
   const [isDisabled, setIsDisabled] = useState(false);
+  const [isStopFinished, setIsStopFinished] = useState(false);
 
   const [popupState, setPopupState] = useState({
     popup1Open: false,
     popup2Open: false,
     popup3Open: false,
+    popup4Open: false,
   });
 
-  const [count, setCount] = useState(0);
+  const [countIn, setCountIn] = useState(0);
+  const [countOut, setCountOut] = useState(0);
 
   const [currentLocation, setCurrentLocation] = useState({ latitude: 0, longitude: 0 });
   const [distance, setDistance] = useState(null);
@@ -105,16 +108,20 @@ const FeedScreen = () => {
       [`popup${popupNumber}Open`]: false,
     }));
   };
-  const handleButtonOneClick = (popupNumber) => {
-    handleCheckboxToggle("checkbox" + (currentStop + 1));
-    setCount(0);
-    handleClosePopup();
+  const handleButtonOneClick = () => {
+    if (!popupState.popup4Open) {
+      handleCheckboxToggle("checkbox" + (currentStop + 1));
+    } else {
+      setIsStopFinished(true);
+      setCountOut(0);
+    }
   };
 
-  const handleButtonTwoClick = (popupNumber) => {
+  const handleButtonTwoClick = () => {
     // Handle button two click action
-    handleClosePopup();
-    setCount(0);
+    if (popupState.popup4Open) {
+      setCountOut(0);
+    }
   };
 
   //----------------------------------------USE EFFECTS---------------------------------------------------------
@@ -142,21 +149,25 @@ const FeedScreen = () => {
   }, [currentLocation]);  
 
   useEffect(() => {
-    console.log("count: " + count);
-    if (count === 3) {
+    console.log("countOut: " + countOut);
+    console.log("countIn: " + countIn);
+    if (countIn === 1) {
       console.log("popup1");
-      handleClosePopup(3);
+      handleClosePopup(4);
       handleOpenPopup(1);
-    } else if (count === 6) {
+    } else if (countIn === 4) {
       handleClosePopup(1);
       handleOpenPopup(2);
-    } else if (count === 9) {
+    } else if (countIn === 8) {
       handleClosePopup(2);
       handleOpenPopup(3);
       handleCheckboxToggle("checkbox" + (currentStop + 1));
-      setCount(0);
+      setCountOut(0);
+    } else if (countOut === 3) {
+      handleClosePopup(3);
+      handleOpenPopup(4);
     }
-  }, [count]);
+  }, [countOut,countIn]);
 
   useEffect(() => {
     if (timer === 0) {
@@ -254,6 +265,7 @@ const FeedScreen = () => {
       body: JSON.stringify({
         // pass the email and password from the form to the API
         city_id: user.agentCityId, // we use user's city ID
+        user_id: user.id
       }),
     });
     const dataRes = await response.json();
@@ -302,31 +314,39 @@ const FeedScreen = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        "pubcrawl_id": pubcrawlID,
-        "last_visited_place": currentStop,
-        "latitude": currentLocation.latitude,
-        "longitude": currentLocation.longitude
+        pubcrawl_id: pubcrawlID,
+        last_visited_place: currentStop,
+        latitude: currentLocation.latitude,
+        longitude: currentLocation.longitude
       }),
     });
     const dataRes = await response.json();
     if (dataRes.code == 0) {
       console.log("Successfully updated the next stop");
-      setCurrentStop(dataRes.data.next_stop.place_order);
+      setCountIn(countIn + 1);
       setDistance(Math.round(dataRes.data.distance));
-      setCheckboxes((prevValue) => {
-        const newState = { ...prevValue };
-        newState["checkbox" + dataRes.last_visited_place] = true;
-        return newState;
-      });
-      setDisabled((prevValue) => {
-        const newState = { ...prevValue };
-        newState["checkbox" + dataRes.last_visited_place] = true;
-        return newState;
-      });      
+      if (isStopFinished) {
+        setCountOut(0);
+        setCurrentStop(dataRes.data.next_stop.place_order);
+        setCheckboxes((prevValue) => {
+          const newState = { ...prevValue };
+          newState["checkbox" + dataRes.last_visited_place] = true;
+          return newState;
+        });
+      }
+      if (countIn == 120) {
+        setIsStopFinished(false);
+        setCountIn(0);
+        setDisabled((prevValue) => {
+          const newState = { ...prevValue };
+          newState["checkbox" + dataRes.last_visited_place] = true;
+          return newState;
+        }); 
+      }   
     } else  if (dataRes.code == 2) {
       //console.log("The next stop is not close enough");
       //console.log("distance: " + dataRes.data.distance + " m")
-      setCount(count + 1);
+      setCountOut(countOut + 1);
       setDistance(Math.round(dataRes.data.distance));
     } else {
       console.log("Error updating the next stop");
@@ -388,29 +408,38 @@ const FeedScreen = () => {
         <Popup
           isOpen={popupState.popup1Open}
           onClose={() => handleClosePopup(1)} 
-          onButtonOneClick={() => handleButtonOneClick(1)} 
-          onButtonTwoClick={() => handleButtonTwoClick(1)} 
-          popupTitle={"You are near the next stop"}
+          onButtonOneClick={handleButtonOneClick}
+          onButtonTwoClick={handleButtonTwoClick} 
+          popupTitle={"You reached the next stop"}
           popupText={"Do you want to update the status of the pubcrawl ?"}
           updateButton={true}
         />
         <Popup
           isOpen={popupState.popup2Open}
           onClose={() => handleClosePopup(2)} 
-          onButtonOneClick={() => handleButtonOneClick(2)} 
-          onButtonTwoClick={() => handleButtonTwoClick(2)}
-          popupTitle={"You are still near the next stop"}
+          onButtonOneClick={handleButtonOneClick} 
+          onButtonTwoClick={handleButtonTwoClick}
+          popupTitle={"You are still in the next stop"}
           popupText={"Do you want to update the status of the pubcrawl now ?"}
           updateButton={true}
         />
         <Popup
           isOpen={popupState.popup3Open}
           onClose={() => handleClosePopup(3)} 
-          onButtonOneClick={() => handleButtonOneClick(3)} 
-          onButtonTwoClick={() => handleButtonTwoClick(3)}
+          onButtonOneClick={handleButtonOneClick} 
+          onButtonTwoClick={handleButtonTwoClick}
           popupTitle={"You stayed long enough at the next stop"}
           popupText={"The pubcrawl will be updated now."}
           updateButton={false}
+        />
+        <Popup
+          isOpen={popupState.popup4Open}
+          onClose={() => handleClosePopup(4)}
+          onButtonOneClick={handleButtonOneClick}
+          onButtonTwoClick={handleButtonTwoClick}
+          popupTitle={"You seem to be leaving the current stop"}
+          popupText={"Do you want to update the status of the pubcrawl now ?"}
+          updateButton={true}
         />
           <ScrollView contentContainerStyle={styles.row}>
             <View style={styles.column}>
