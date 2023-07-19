@@ -263,9 +263,9 @@ const FeedScreen = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // pass the email and password from the form to the API
+        // pass city and user ids to the API
         city_id: user.agentCityId, // we use user's city ID
-        user_id: user.id
+        user_id: user.id // we use user's ID
       }),
     });
     const dataRes = await response.json();
