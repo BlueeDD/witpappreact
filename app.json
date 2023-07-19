@@ -15,9 +15,16 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Your location is required to provide relevant information.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Your location is required to provide relevant information even when the app is in the background."
+      }
     },
     "android": {
+      "permissions": [
+        "LOCATION"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
