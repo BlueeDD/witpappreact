@@ -314,7 +314,7 @@ const FeedScreen = () => {
         last_visited_place: currentStop,
         latitude: currentLocation.latitude,
         longitude: currentLocation.longitude,
-        isStopFinished: isStopFinished,
+        is_stop_finished: isStopFinished,
       }),
     });
     const dataRes = await response.json();
@@ -322,6 +322,7 @@ const FeedScreen = () => {
     if (dataRes.code == 0) {
       if (!isStopFinished) {
       console.log("Successfully updated the next stop");
+      setCurrentStop(dataRes.data.next_stop.last_visited_place);
       }
       setDistance(Math.round(dataRes.data.distance));
       // if we finished the previous stop we reset the countOut,
@@ -331,10 +332,9 @@ const FeedScreen = () => {
         setCountIn(countIn + 1);
         // if the previous stop is finished we reset the countOut
         setCountOut(0);
-        setCurrentStop(dataRes.data.next_stop.place_order);
         setCheckboxes((prevValue) => {
           const newState = { ...prevValue };
-          newState["checkbox" + dataRes.last_visited_place] = true;
+          newState["checkbox" + dataRes.data.next_stop.place_order] = true;
           return newState;
         });
       }
