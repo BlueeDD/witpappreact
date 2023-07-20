@@ -85,10 +85,6 @@ const FeedScreen = () => {
       }
       setDisabled(disabledState);
   
-      // console.log(checkboxIndex);
-      // console.log(newState);
-      // console.log(disabledState);
-  
       return newState;
     });
   };
@@ -146,13 +142,13 @@ const FeedScreen = () => {
 
   useEffect(() => {
     setNextStop();
+    console.log("------------");
+    console.log("countOut: " + countOut);
+    console.log("countIn: " + countIn);
   }, [currentLocation]);  
 
   useEffect(() => {
-    console.log("countOut: " + countOut);
-    console.log("countIn: " + countIn);
     if (countIn === 1) {
-      console.log("popup1");
       handleClosePopup(4);
       handleOpenPopup(1);
     } else if (countIn === 4) {
@@ -254,10 +250,8 @@ const FeedScreen = () => {
 
   
   const getPubcrawlData = async () => {
-    //console.log("agent id : " + user.agentCityId);
-
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
-    const response = await fetch('http://192.168.0.70/witp/API/getStopsTodayByCityId.php', {
+    const response = await fetch('http://192.168.0.20/witp/API/getStopsTodayByCityId.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -292,8 +286,6 @@ const FeedScreen = () => {
       initialDisabled["checkbox" + (dataRes.data.stops.length)] = false;
       setCheckboxes(initialCheckboxes);
       setDisabled(initialDisabled);
-      // console.log("initialCheckboxes : " + JSON.stringify(initialCheckboxes));
-      // console.log("initialDisabled : " + JSON.stringify(initialDisabled));
       setMeetingPoint(dataRes.data.pubcrawl.meeting_point);
       setStops(dataRes.data.stops);
       setCurrentStop(dataRes.data.pubcrawl.last_visited_place);
@@ -308,7 +300,7 @@ const FeedScreen = () => {
 
   const setNextStop = async () => {
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/setNextStop.php' 
-    const response = await fetch('http://192.168.0.70/witp/API/setNextStop.php', {
+    const response = await fetch('http://192.168.0.20/witp/API/setNextStop.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -344,9 +336,9 @@ const FeedScreen = () => {
         }); 
       }   
     } else  if (dataRes.code == 2) {
-      //console.log("The next stop is not close enough");
-      //console.log("distance: " + dataRes.data.distance + " m")
-      setCountOut(countOut + 1);
+      if (!isStopFinished){
+        setCountOut(countOut + 1);
+      }
       setDistance(Math.round(dataRes.data.distance));
     } else {
       console.log("Error updating the next stop");
@@ -456,7 +448,7 @@ const FeedScreen = () => {
               </TouchableOpacity>
               {stops.map((stop) => (
                 <View key={stop.place_order} style={{ alignItems: "center" }}>
-                  {checkboxes["checkbox" + (stop.place_order - 1)] &&
+                  {checkboxes["checkbox" + (stop.place_order - 1)] && isStopFinished &&
                   !checkboxes["checkbox" + stop.place_order] ? (
                     <Animated.Text
                       style={[
@@ -467,7 +459,7 @@ const FeedScreen = () => {
                       ]}
                     />
                   ) : (
-                    <Text style={[styles.separator, !checkboxes["checkbox" + (stop.place_order - 1)] && styles.hiddenSeparator]} />
+                    <Text style={[styles.separator, (!checkboxes["checkbox" + (stop.place_order - 1)] || checkboxes["checkbox" + (stop.place_order - 1)] && !isStopFinished && !checkboxes["checkbox" + stop.place_order] ) && styles.hiddenSeparator]} />
                   )}
                   <TouchableOpacity
                     style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
@@ -487,7 +479,7 @@ const FeedScreen = () => {
               <Text style={styles.title}>{meetingPoint}</Text>
               {stops.map((stop) => (
                 <View key={stop.place_order}>
-                  {checkboxes["checkbox" + (stop.place_order - 1)] &&
+                  {checkboxes["checkbox" + (stop.place_order - 1)] && isStopFinished &&
                   !checkboxes["checkbox" + stop.place_order] ? (
                     <Animated.Text
                       style={[
