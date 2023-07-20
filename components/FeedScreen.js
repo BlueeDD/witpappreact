@@ -56,6 +56,7 @@ const FeedScreen = () => {
     }
   };
   
+  //-----------------------------------CHECKBOXES-----------------------------------
 
   /**
    * toggle the checkbox status
@@ -67,6 +68,14 @@ const FeedScreen = () => {
     setCheckboxes((prevValue) => {
       const newState = { ...prevValue };
       const checkboxIndex = parseInt(checkboxName.slice(-1));
+      if (newState[checkboxName]) {
+        setIsStopFinished(true);
+        setCountOut(0);
+      } else {
+        setIsStopFinished(false);
+        setCountIn(0);
+      }
+      setIsStopFinished(!isStopFinished);
       newState[checkboxName] = !newState[checkboxName];
       if (newState[checkboxName]) {
         setCurrentStop(checkboxIndex);
@@ -411,9 +420,14 @@ const FeedScreen = () => {
     <View style={{ flex: 1 }}>
       <View style={styles.container}>
         <StatusBar barStyle="light-content" />
-        {currentLocation && (
+        {currentLocation && isStopFinished && (
           <Text>
               Next Stop is {distance} meters away
+          </Text>
+        )}
+        {currentLocation && !isStopFinished && (
+          <Text>
+              You are in a stop
           </Text>
         )}
         <Popup
