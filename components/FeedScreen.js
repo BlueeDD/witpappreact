@@ -165,27 +165,31 @@ const FeedScreen = () => {
     }
   }, [countOut,countIn]);
 
-  useEffect(() => {
-    if (timer === 0) {
-      // Timer is up, check the first unchecked checkbox
-      const firstUncheckedCheckbox = Object.entries(checkboxes).find(([key, value]) => !value);
-      if (firstUncheckedCheckbox) {
-        setCheckboxes((prevValue) => {
-          const newState = { ...prevValue };
-          newState[firstUncheckedCheckbox[0]] = true;
-          return newState;
-        });
-        startTimer(); // Start the timer again if there are still unchecked checkboxes
-      }
-    } else {
-      // Timer is still running, decrease the timer value every second
-      const intervalId = setInterval(() => {
-        setTimer((prevValue) => prevValue - 1000);
-      }
-      , 1000);
-      return () => clearInterval(intervalId); // This is important to clear the interval when the component unmounts
-    }
-  }, [timer, checkboxes]);
+  /*
+  The next useEffect is to use if the agent wants to update the stops using a timer and not location
+  */
+
+  // useEffect(() => {
+  //   if (timer === 0) {
+  //     // Timer is up, check the first unchecked checkbox
+  //     const firstUncheckedCheckbox = Object.entries(checkboxes).find(([key, value]) => !value);
+  //     if (firstUncheckedCheckbox) {
+  //       setCheckboxes((prevValue) => {
+  //         const newState = { ...prevValue };
+  //         newState[firstUncheckedCheckbox[0]] = true;
+  //         return newState;
+  //       });
+  //       startTimer(); // Start the timer again if there are still unchecked checkboxes
+  //     }
+  //   } else {
+  //     // Timer is still running, decrease the timer value every second
+  //     const intervalId = setInterval(() => {
+  //       setTimer((prevValue) => prevValue - 1000);
+  //     }
+  //     , 1000);
+  //     return () => clearInterval(intervalId); // This is important to clear the interval when the component unmounts
+  //   }
+  // }, [timer, checkboxes]);
 
   //----------------------------------------LOCATION---------------------------------------------------------
 
@@ -309,15 +313,23 @@ const FeedScreen = () => {
         pubcrawl_id: pubcrawlID,
         last_visited_place: currentStop,
         latitude: currentLocation.latitude,
-        longitude: currentLocation.longitude
+        longitude: currentLocation.longitude,
+        isStopFinished: isStopFinished,
       }),
     });
     const dataRes = await response.json();
+    // if we're close enough to the next stop
     if (dataRes.code == 0) {
+      if (!isStopFinished) {
       console.log("Successfully updated the next stop");
-      setCountIn(countIn + 1);
+      }
       setDistance(Math.round(dataRes.data.distance));
+      // if we finished the previous stop we reset the countOut,
+      // set this stop as the current stop and update the checkboxes display
       if (isStopFinished) {
+        // if we're at the next stop we count each time we're at the next stop to manage the popup alerts
+        setCountIn(countIn + 1);
+        // if the previous stop is finished we reset the countOut
         setCountOut(0);
         setCurrentStop(dataRes.data.next_stop.place_order);
         setCheckboxes((prevValue) => {
@@ -326,6 +338,8 @@ const FeedScreen = () => {
           return newState;
         });
       }
+      // if we're at the next stop for 10 minutes, it means we don't need to go backward ,
+      // so we disable the previous checkbox and don't need to check if we're still in the stop area
       if (countIn == 120) {
         setIsStopFinished(false);
         setCountIn(0);
@@ -334,11 +348,15 @@ const FeedScreen = () => {
           newState["checkbox" + dataRes.last_visited_place] = true;
           return newState;
         }); 
-      }   
-    } else  if (dataRes.code == 2) {
+      } 
+    } 
+    // if we're not close enough to the next stop
+    else  if (dataRes.code == 2) {
+      // if the current stop is not finished we count each time the user leaves the stop area
       if (!isStopFinished){
         setCountOut(countOut + 1);
       }
+      // we update the distance to the next stop
       setDistance(Math.round(dataRes.data.distance));
     } else {
       console.log("Error updating the next stop");
