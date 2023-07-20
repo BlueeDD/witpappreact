@@ -158,6 +158,7 @@ const FeedScreen = () => {
       handleClosePopup(2);
       handleOpenPopup(3);
       handleCheckboxToggle("checkbox" + (currentStop + 1));
+      setIsStopFinished(true);
       setCountOut(0);
     } else if (countOut === 3) {
       handleClosePopup(3);
