@@ -17,6 +17,8 @@ const FeedScreen = () => {
   const [pubcrawlID, setPubcrawlID] = useState(null);
   const [isDisabled, setIsDisabled] = useState(false);
   const [isStopFinished, setIsStopFinished] = useState(false);
+  const manual = useRef(false);
+  const checked = useRef(false);
 
   const [popupState, setPopupState] = useState({
     popup1Open: false,
@@ -64,36 +66,37 @@ const FeedScreen = () => {
    */
   const handleCheckboxToggle = (checkboxName) => {
     startTimer(); // Reset the timer when a checkbox is clicked
-  
+    manual.current = true;
     setCheckboxes((prevValue) => {
       const newState = { ...prevValue };
       const checkboxIndex = parseInt(checkboxName.slice(-1));
       if (newState[checkboxName]) {
-        setIsStopFinished(true);
         setCountOut(0);
       } else {
-        setIsStopFinished(false);
         setCountIn(0);
       }
-      setIsStopFinished(!isStopFinished);
+      setIsStopFinished(false);
       newState[checkboxName] = !newState[checkboxName];
+      checked.current = newState[checkboxName];
       if (newState[checkboxName]) {
         setCurrentStop(checkboxIndex);
         for (let i = 0; i < checkboxIndex; i++) {
           newState["checkbox" + i] = true;
         }
       } else {
+        setCurrentStop(checkboxIndex - 1);
         for (let i = checkboxIndex + 1; i <= stops.length; i++) {
           newState["checkbox" + i] = false;
         }
       }
+      setNextStop();
   
       const disabledState = {};
       for (let i = 0; i < stops.length + 1; i++) {
         disabledState["checkbox" + i] = i < checkboxIndex ? true : false;
       }
       setDisabled(disabledState);
-  
+      manual.current = false;
       return newState;
     });
   };
@@ -117,8 +120,8 @@ const FeedScreen = () => {
     if (!popupState.popup4Open) {
       handleCheckboxToggle("checkbox" + (currentStop + 1));
     } else {
-      setIsStopFinished(true);
       setCountOut(0);
+      setIsStopFinished(true);
     }
   };
 
@@ -265,7 +268,7 @@ const FeedScreen = () => {
   
   const getPubcrawlData = async () => {
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
-    const response = await fetch('http://192.168.0.20/witp/API/getStopsTodayByCityId.php', {
+    const response = await fetch('http://192.168.0.19/witp/API/getStopsTodayByCityId.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -314,7 +317,7 @@ const FeedScreen = () => {
 
   const setNextStop = async () => {
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/setNextStop.php' 
-    const response = await fetch('http://192.168.0.20/witp/API/setNextStop.php', {
+    const response = await fetch('http://192.168.0.19/witp/API/setNextStop.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -325,6 +328,8 @@ const FeedScreen = () => {
         latitude: currentLocation.latitude,
         longitude: currentLocation.longitude,
         is_stop_finished: isStopFinished,
+        manual: manual.current,
+        checked : checked.current,
       }),
     });
     const dataRes = await response.json();
@@ -332,7 +337,7 @@ const FeedScreen = () => {
     if (dataRes.code == 0) {
       if (!isStopFinished) {
       console.log("Successfully updated the next stop");
-      setCurrentStop(dataRes.data.next_stop.last_visited_place);
+      setCurrentStop(dataRes.data.next_stop.place_order);
       }
       setDistance(Math.round(dataRes.data.distance));
       // if we finished the previous stop we reset the countOut,
