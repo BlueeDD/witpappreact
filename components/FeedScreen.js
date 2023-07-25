@@ -17,6 +17,8 @@ const FeedScreen = () => {
   const [pubcrawlID, setPubcrawlID] = useState(null);
   const [isDisabled, setIsDisabled] = useState(false);
   const [isStopFinished, setIsStopFinished] = useState(false);
+  const manual = useRef(false);
+  const checked = useRef(false);
 
   const [popupState, setPopupState] = useState({
     popup1Open: false,
@@ -56,6 +58,7 @@ const FeedScreen = () => {
     }
   };
   
+  //-----------------------------------CHECKBOXES-----------------------------------
 
   /**
    * toggle the checkbox status
@@ -63,32 +66,37 @@ const FeedScreen = () => {
    */
   const handleCheckboxToggle = (checkboxName) => {
     startTimer(); // Reset the timer when a checkbox is clicked
-  
+    manual.current = true;
     setCheckboxes((prevValue) => {
       const newState = { ...prevValue };
       const checkboxIndex = parseInt(checkboxName.slice(-1));
+      if (newState[checkboxName]) {
+        setCountOut(0);
+      } else {
+        setCountIn(0);
+      }
+      setIsStopFinished(false);
       newState[checkboxName] = !newState[checkboxName];
+      checked.current = newState[checkboxName];
       if (newState[checkboxName]) {
         setCurrentStop(checkboxIndex);
         for (let i = 0; i < checkboxIndex; i++) {
           newState["checkbox" + i] = true;
         }
       } else {
+        setCurrentStop(checkboxIndex - 1);
         for (let i = checkboxIndex + 1; i <= stops.length; i++) {
           newState["checkbox" + i] = false;
         }
       }
+      setNextStop();
   
       const disabledState = {};
       for (let i = 0; i < stops.length + 1; i++) {
         disabledState["checkbox" + i] = i < checkboxIndex ? true : false;
       }
       setDisabled(disabledState);
-  
-      // console.log(checkboxIndex);
-      // console.log(newState);
-      // console.log(disabledState);
-  
+      manual.current = false;
       return newState;
     });
   };
@@ -112,8 +120,8 @@ const FeedScreen = () => {
     if (!popupState.popup4Open) {
       handleCheckboxToggle("checkbox" + (currentStop + 1));
     } else {
-      setIsStopFinished(true);
       setCountOut(0);
+      setIsStopFinished(true);
     }
   };
 
@@ -146,13 +154,13 @@ const FeedScreen = () => {
 
   useEffect(() => {
     setNextStop();
+    console.log("------------");
+    console.log("countOut: " + countOut);
+    console.log("countIn: " + countIn);
   }, [currentLocation]);  
 
   useEffect(() => {
-    console.log("countOut: " + countOut);
-    console.log("countIn: " + countIn);
     if (countIn === 1) {
-      console.log("popup1");
       handleClosePopup(4);
       handleOpenPopup(1);
     } else if (countIn === 4) {
@@ -162,6 +170,7 @@ const FeedScreen = () => {
       handleClosePopup(2);
       handleOpenPopup(3);
       handleCheckboxToggle("checkbox" + (currentStop + 1));
+      setIsStopFinished(true);
       setCountOut(0);
     } else if (countOut === 3) {
       handleClosePopup(3);
@@ -169,27 +178,31 @@ const FeedScreen = () => {
     }
   }, [countOut,countIn]);
 
-  useEffect(() => {
-    if (timer === 0) {
-      // Timer is up, check the first unchecked checkbox
-      const firstUncheckedCheckbox = Object.entries(checkboxes).find(([key, value]) => !value);
-      if (firstUncheckedCheckbox) {
-        setCheckboxes((prevValue) => {
-          const newState = { ...prevValue };
-          newState[firstUncheckedCheckbox[0]] = true;
-          return newState;
-        });
-        startTimer(); // Start the timer again if there are still unchecked checkboxes
-      }
-    } else {
-      // Timer is still running, decrease the timer value every second
-      const intervalId = setInterval(() => {
-        setTimer((prevValue) => prevValue - 1000);
-      }
-      , 1000);
-      return () => clearInterval(intervalId); // This is important to clear the interval when the component unmounts
-    }
-  }, [timer, checkboxes]);
+  /*
+  The next useEffect is to use if the agent wants to update the stops using a timer and not location
+  */
+
+  // useEffect(() => {
+  //   if (timer === 0) {
+  //     // Timer is up, check the first unchecked checkbox
+  //     const firstUncheckedCheckbox = Object.entries(checkboxes).find(([key, value]) => !value);
+  //     if (firstUncheckedCheckbox) {
+  //       setCheckboxes((prevValue) => {
+  //         const newState = { ...prevValue };
+  //         newState[firstUncheckedCheckbox[0]] = true;
+  //         return newState;
+  //       });
+  //       startTimer(); // Start the timer again if there are still unchecked checkboxes
+  //     }
+  //   } else {
+  //     // Timer is still running, decrease the timer value every second
+  //     const intervalId = setInterval(() => {
+  //       setTimer((prevValue) => prevValue - 1000);
+  //     }
+  //     , 1000);
+  //     return () => clearInterval(intervalId); // This is important to clear the interval when the component unmounts
+  //   }
+  // }, [timer, checkboxes]);
 
   //----------------------------------------LOCATION---------------------------------------------------------
 
@@ -254,10 +267,8 @@ const FeedScreen = () => {
 
   
   const getPubcrawlData = async () => {
-    //console.log("agent id : " + user.agentCityId);
-
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
-    const response = await fetch('http://192.168.0.70/witp/API/getStopsTodayByCityId.php', {
+    const response = await fetch('http://192.168.0.19/witp/API/getStopsTodayByCityId.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -292,8 +303,6 @@ const FeedScreen = () => {
       initialDisabled["checkbox" + (dataRes.data.stops.length)] = false;
       setCheckboxes(initialCheckboxes);
       setDisabled(initialDisabled);
-      // console.log("initialCheckboxes : " + JSON.stringify(initialCheckboxes));
-      // console.log("initialDisabled : " + JSON.stringify(initialDisabled));
       setMeetingPoint(dataRes.data.pubcrawl.meeting_point);
       setStops(dataRes.data.stops);
       setCurrentStop(dataRes.data.pubcrawl.last_visited_place);
@@ -308,7 +317,7 @@ const FeedScreen = () => {
 
   const setNextStop = async () => {
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/setNextStop.php' 
-    const response = await fetch('http://192.168.0.70/witp/API/setNextStop.php', {
+    const response = await fetch('http://192.168.0.19/witp/API/setNextStop.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -317,23 +326,35 @@ const FeedScreen = () => {
         pubcrawl_id: pubcrawlID,
         last_visited_place: currentStop,
         latitude: currentLocation.latitude,
-        longitude: currentLocation.longitude
+        longitude: currentLocation.longitude,
+        is_stop_finished: isStopFinished,
+        manual: manual.current,
+        checked : checked.current,
       }),
     });
     const dataRes = await response.json();
+    // if we're close enough to the next stop
     if (dataRes.code == 0) {
+      if (!isStopFinished) {
       console.log("Successfully updated the next stop");
-      setCountIn(countIn + 1);
+      setCurrentStop(dataRes.data.next_stop.place_order);
+      }
       setDistance(Math.round(dataRes.data.distance));
+      // if we finished the previous stop we reset the countOut,
+      // set this stop as the current stop and update the checkboxes display
       if (isStopFinished) {
+        // if we're at the next stop we count each time we're at the next stop to manage the popup alerts
+        setCountIn(countIn + 1);
+        // if the previous stop is finished we reset the countOut
         setCountOut(0);
-        setCurrentStop(dataRes.data.next_stop.place_order);
         setCheckboxes((prevValue) => {
           const newState = { ...prevValue };
-          newState["checkbox" + dataRes.last_visited_place] = true;
+          newState["checkbox" + dataRes.data.next_stop.place_order] = true;
           return newState;
         });
       }
+      // if we're at the next stop for 10 minutes, it means we don't need to go backward ,
+      // so we disable the previous checkbox and don't need to check if we're still in the stop area
       if (countIn == 120) {
         setIsStopFinished(false);
         setCountIn(0);
@@ -342,11 +363,15 @@ const FeedScreen = () => {
           newState["checkbox" + dataRes.last_visited_place] = true;
           return newState;
         }); 
-      }   
-    } else  if (dataRes.code == 2) {
-      //console.log("The next stop is not close enough");
-      //console.log("distance: " + dataRes.data.distance + " m")
-      setCountOut(countOut + 1);
+      } 
+    } 
+    // if we're not close enough to the next stop
+    else  if (dataRes.code == 2) {
+      // if the current stop is not finished we count each time the user leaves the stop area
+      if (!isStopFinished){
+        setCountOut(countOut + 1);
+      }
+      // we update the distance to the next stop
       setDistance(Math.round(dataRes.data.distance));
     } else {
       console.log("Error updating the next stop");
@@ -400,9 +425,14 @@ const FeedScreen = () => {
     <View style={{ flex: 1 }}>
       <View style={styles.container}>
         <StatusBar barStyle="light-content" />
-        {currentLocation && (
+        {currentLocation && isStopFinished && (
           <Text>
               Next Stop is {distance} meters away
+          </Text>
+        )}
+        {currentLocation && !isStopFinished && (
+          <Text>
+              You are in a stop
           </Text>
         )}
         <Popup
@@ -456,7 +486,7 @@ const FeedScreen = () => {
               </TouchableOpacity>
               {stops.map((stop) => (
                 <View key={stop.place_order} style={{ alignItems: "center" }}>
-                  {checkboxes["checkbox" + (stop.place_order - 1)] &&
+                  {checkboxes["checkbox" + (stop.place_order - 1)] && isStopFinished &&
                   !checkboxes["checkbox" + stop.place_order] ? (
                     <Animated.Text
                       style={[
@@ -467,7 +497,7 @@ const FeedScreen = () => {
                       ]}
                     />
                   ) : (
-                    <Text style={[styles.separator, !checkboxes["checkbox" + (stop.place_order - 1)] && styles.hiddenSeparator]} />
+                    <Text style={[styles.separator, (!checkboxes["checkbox" + (stop.place_order - 1)] || checkboxes["checkbox" + (stop.place_order - 1)] && !isStopFinished && !checkboxes["checkbox" + stop.place_order] ) && styles.hiddenSeparator]} />
                   )}
                   <TouchableOpacity
                     style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
@@ -487,7 +517,7 @@ const FeedScreen = () => {
               <Text style={styles.title}>{meetingPoint}</Text>
               {stops.map((stop) => (
                 <View key={stop.place_order}>
-                  {checkboxes["checkbox" + (stop.place_order - 1)] &&
+                  {checkboxes["checkbox" + (stop.place_order - 1)] && isStopFinished &&
                   !checkboxes["checkbox" + stop.place_order] ? (
                     <Animated.Text
                       style={[
