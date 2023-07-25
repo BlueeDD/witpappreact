@@ -487,8 +487,8 @@ const FeedScreen = () => {
           onClose={() => handleClosePopup(4)}
           onButtonOneClick={handleButtonOneClick}
           onButtonTwoClick={handleButtonTwoClick}
-          popupTitle={"You seem to be leaving the current stop"}
-          popupText={"Do you want to update the status of the pubcrawl now ?"}
+          popupTitle={currentStop=== -1 ? "You seem to be at the meeting point" : "You seem to be leaving the current stop"}
+          popupText={currentStop=== -1 ? "Do you want to start the pubcrawl ?" : "Do you want to update the status of the pubcrawl now ?"}
           updateButton={true}
         />
           <ScrollView contentContainerStyle={styles.row}>
