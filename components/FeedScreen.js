@@ -166,12 +166,12 @@ const FeedScreen = () => {
     };
   }, []);
 
-  // useEffect(() => {
-  //   setNextStop();
-  //   console.log("------------");
-  //   console.log("countOut: " + countOut);
-  //   console.log("countIn: " + countIn);
-  // }, [currentLocation]);  
+  useEffect(() => {
+    setNextStop();
+    console.log("------------");
+    console.log("countOut: " + countOut);
+    console.log("countIn: " + countIn);
+  }, [currentLocation]);  
 
   useEffect(() => {
     if (countIn === 1) {
@@ -327,6 +327,8 @@ const FeedScreen = () => {
       setHasPubcrawl(true);
     } else if (dataRes.code == 2) {
       setHasPubcrawl(false);
+    } else if (dataRes.code == 5) {
+      alert("You have already finished today pubcrawl.");
     } else {
         alert("We encountered a problem to get the pubcrawl data. Please try again later.");
     }
@@ -391,8 +393,10 @@ const FeedScreen = () => {
       }
       // we update the distance to the next stop
       setDistance(Math.round(dataRes.data.distance));
+    } else if (dataRes.code == 1) {
+      console.log(dataRes.message);
     } else {
-      console.log("Error updating the next stop");
+      console.log("We encountered a problem to update the next stop. Please try again later.");
     }
   };
 
