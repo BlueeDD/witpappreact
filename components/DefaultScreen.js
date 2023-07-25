@@ -75,7 +75,7 @@ const DefaultScreen = () => {
     //get pubcrawl data
     const getPubcrawlData = async () => {
       try {
-        const response = await fetch('http://192.168.0.19/witp/API/getStopsTodayByCityId.php', {
+        const response = await fetch('http://192.168.0.36/witp/API/getStopsTodayByCityId.php', {
           method: 'POST',
           headers: {
             "Content-Type": "application/json",

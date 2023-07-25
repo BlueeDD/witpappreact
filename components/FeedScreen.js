@@ -76,25 +76,39 @@ const FeedScreen = () => {
         setCountIn(0);
       }
       setIsStopFinished(false);
+      const disabledState = {};
       newState[checkboxName] = !newState[checkboxName];
       checked.current = newState[checkboxName];
+      // if we checked the checkbox we need to disable the previous one and enable the next one
       if (newState[checkboxName]) {
         setCurrentStop(checkboxIndex);
         for (let i = 0; i < checkboxIndex; i++) {
           newState["checkbox" + i] = true;
         }
+        for (let i = 0; i < stops.length + 1; i++) {
+          if (i === checkboxIndex) {
+            disabledState["checkbox" + i] = false;
+          } else {
+            disabledState["checkbox" + i] = i === (checkboxIndex + 1) ? false : true; 
+          }
+        }
+        // if we unchecked the checkbox we need to enable the previous one and disable the next one
       } else {
         setCurrentStop(checkboxIndex - 1);
         for (let i = checkboxIndex + 1; i <= stops.length; i++) {
           newState["checkbox" + i] = false;
         }
+        for (let i = 0; i < stops.length + 1; i++) {
+          if (i === checkboxIndex) {
+            disabledState["checkbox" + i] = false;
+          } else {
+            disabledState["checkbox" + i] = i === (checkboxIndex - 1) ? false : true; 
+          }
+        }
       }
       setNextStop();
   
-      const disabledState = {};
-      for (let i = 0; i < stops.length + 1; i++) {
-        disabledState["checkbox" + i] = i < checkboxIndex ? true : false;
-      }
+      
       setDisabled(disabledState);
       manual.current = false;
       return newState;
@@ -152,12 +166,12 @@ const FeedScreen = () => {
     };
   }, []);
 
-  useEffect(() => {
-    setNextStop();
-    console.log("------------");
-    console.log("countOut: " + countOut);
-    console.log("countIn: " + countIn);
-  }, [currentLocation]);  
+  // useEffect(() => {
+  //   setNextStop();
+  //   console.log("------------");
+  //   console.log("countOut: " + countOut);
+  //   console.log("countIn: " + countIn);
+  // }, [currentLocation]);  
 
   useEffect(() => {
     if (countIn === 1) {
@@ -268,7 +282,7 @@ const FeedScreen = () => {
   
   const getPubcrawlData = async () => {
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
-    const response = await fetch('http://192.168.0.19/witp/API/getStopsTodayByCityId.php', {
+    const response = await fetch('http://192.168.0.36/witp/API/getStopsTodayByCityId.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -293,14 +307,17 @@ const FeedScreen = () => {
         initialCheckboxes["checkbox0"] = true;
       }
       dataRes.data.stops.forEach((item) => {
-        if (item.place_order <= dataRes.data.pubcrawl.last_visited_place) {
+        if (item.place_order < dataRes.data.pubcrawl.last_visited_place) {
           initialCheckboxes["checkbox" + item.place_order] = true; // Set initial state to true for the first checkbox (using place order)
           initialDisabled["checkbox" + (item.place_order - 1)] = true;
+        } else if (item.place_order == dataRes.data.pubcrawl.last_visited_place) {
+          initialCheckboxes["checkbox" + item.place_order] = true; // Set initial state to true for the current checkbox (using place order)
+          initialDisabled["checkbox" + (item.place_order -1)] = false;
+          initialDisabled["checkbox" + (item.place_order)] = false;
         } else {
         initialCheckboxes["checkbox" + item.place_order] = false; // Set initial state to false for each checkbox (using place order)
-        initialDisabled["checkbox" + (item.place_order -1)] = false;
+        initialDisabled["checkbox" + (item.place_order)] = true;
       }});
-      initialDisabled["checkbox" + (dataRes.data.stops.length)] = false;
       setCheckboxes(initialCheckboxes);
       setDisabled(initialDisabled);
       setMeetingPoint(dataRes.data.pubcrawl.meeting_point);
@@ -317,7 +334,7 @@ const FeedScreen = () => {
 
   const setNextStop = async () => {
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/setNextStop.php' 
-    const response = await fetch('http://192.168.0.19/witp/API/setNextStop.php', {
+    const response = await fetch('http://192.168.0.36/witp/API/setNextStop.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -333,6 +350,7 @@ const FeedScreen = () => {
       }),
     });
     const dataRes = await response.json();
+    console.log(dataRes);
     // if we're close enough to the next stop
     if (dataRes.code == 0) {
       if (!isStopFinished) {
