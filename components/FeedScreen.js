@@ -328,7 +328,8 @@ const FeedScreen = () => {
     } else if (dataRes.code == 2) {
       setHasPubcrawl(false);
     } else if (dataRes.code == 5) {
-      alert("You have already finished today pubcrawl.");
+      setHasPubcrawl(false);
+      console.log("You have already finished today pubcrawl.");
     } else {
         alert("We encountered a problem to get the pubcrawl data. Please try again later.");
     }
@@ -352,12 +353,11 @@ const FeedScreen = () => {
       }),
     });
     const dataRes = await response.json();
-    console.log(dataRes);
     // if we're close enough to the next stop
     if (dataRes.code == 0) {
       if (!isStopFinished) {
       console.log("Successfully updated the next stop");
-      setCurrentStop(dataRes.data.next_stop.place_order);
+      setCurrentStop(dataRes.data.last_visited_place);
       }
       setDistance(Math.round(dataRes.data.distance));
       // if we finished the previous stop we reset the countOut,
@@ -393,10 +393,8 @@ const FeedScreen = () => {
       }
       // we update the distance to the next stop
       setDistance(Math.round(dataRes.data.distance));
-    } else if (dataRes.code == 1) {
-      console.log(dataRes.message);
     } else {
-      console.log("We encountered a problem to update the next stop. Please try again later.");
+      console.log(dataRes.message);
     }
   };
 
