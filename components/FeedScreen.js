@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
-import { View, Text, StatusBar, TouchableOpacity, Animated, ScrollView } from 'react-native';
+import { View, Text, StatusBar, TouchableOpacity, Animated, ScrollView, ActivityIndicator } from 'react-native';
 import * as Location from 'expo-location';
 import { AuthContext } from '../navigation';
 import Footer from './Footer';
@@ -10,9 +10,10 @@ const FeedScreen = () => {
   // set the checkboxes
   const initialCheckboxes = {};
   const initialDisabled = {};
-  const {hasPubcrawl, setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user} = useContext(AuthContext);
+  const {setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user} = useContext(AuthContext);
   const [checkboxes, setCheckboxes] = useState({});
   const [disabled, setDisabled] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
   const [currentStop, setCurrentStop] = useState(-2);
   const [pubcrawlID, setPubcrawlID] = useState(null);
   const [isDisabled, setIsDisabled] = useState(false);
@@ -154,6 +155,9 @@ const FeedScreen = () => {
   useEffect(() => {
     getPubcrawlData();
     checkLocation();
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
   }, []);
 
   useEffect(() => {
@@ -285,7 +289,7 @@ const FeedScreen = () => {
   
   const getPubcrawlData = async () => {
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
-    const response = await fetch('http://192.168.0.36/witp/API/getStopsTodayByCityId.php', {
+    const response = await fetch('http://192.168.0.19/witp/API/getStopsTodayByCityId.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -343,7 +347,7 @@ const FeedScreen = () => {
     console.log("current stop : " + currentStop);
     console.log("isStopFinished : " + isStopFinished.current);
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/setNextStop.php' 
-    const response = await fetch('http://192.168.0.36/witp/API/setNextStop.php', {
+    const response = await fetch('http://192.168.0.19/witp/API/setNextStop.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -452,15 +456,21 @@ const FeedScreen = () => {
 
   return (
     <View style={{ flex: 1 }}>
+      {isLoading ?(
+        <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#f48024" />
+        <Text style={{fontSize:30, marginTop: 15}}>Loading...</Text>
+      </View>
+      ) : (
       <View style={styles.container}>
         <StatusBar barStyle="light-content" />
         {currentLocation && isStopFinished.current && (
-          <Text>
+          <Text style={{fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen"}}>
               { currentStop === -1 ? "Meeting point" : "Next Stop"} is {distance} meters away
           </Text>
         )}
         {currentLocation && !isStopFinished.current && (
-          <Text>
+          <Text style={{fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen"}}>
               You are { currentStop === 0 ? "at the Meeting point" : "in a stop"}
           </Text>
         )}
@@ -568,6 +578,7 @@ const FeedScreen = () => {
           </ScrollView>
         <Footer />
       </View>
+      )}
     </View>
   );
 };
@@ -649,6 +660,18 @@ const styles = {
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 70,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "white",
+    zIndex: 9999,
   },
 };
 
