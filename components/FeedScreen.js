@@ -16,7 +16,7 @@ const FeedScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentStop, setCurrentStop] = useState(-2);
   const [pubcrawlID, setPubcrawlID] = useState(null);
-  const [isDisabled, setIsDisabled] = useState(false);
+  const isLeader = useRef(false);
   const isStopFinished = useRef(false);
   const manual = useRef(false);
   const checked = useRef(false);
@@ -301,13 +301,7 @@ const FeedScreen = () => {
       }),
     });
     const dataRes = await response.json();
-    if (dataRes.code === 0 || dataRes.code === 6) {
-      // if no error (user found)
-      if (dataRes.code === 6) {
-        setIsDisabled(true);
-      } else {
-        setIsDisabled(false);
-      }
+    if (dataRes.code === 0) {
       if (dataRes.data.pubcrawl.last_visited_place < 0) {
         initialCheckboxes["checkbox0"] = false;
       } else {
@@ -332,6 +326,8 @@ const FeedScreen = () => {
       setCurrentStop(dataRes.data.pubcrawl.last_visited_place);
       setPubcrawlID(dataRes.data.pubcrawl.id);
       setHasPubcrawl(true);
+      isLeader.current=(dataRes.data.pubcrawl.leader_id===user.id);
+      console.log("isLeader : " + isLeader.current);
       {dataRes.data.pubcrawl.last_visited_place === -1 ? isStopFinished.current = true : isStopFinished.current = false;}
     } else if (dataRes.code == 2) {
       setHasPubcrawl(false);
@@ -515,7 +511,7 @@ const FeedScreen = () => {
               <TouchableOpacity
                 style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
                 onPress={() => handleCheckboxToggle("checkbox0")}
-                disabled={isDisabled ? isDisabled : disabled["checkbox0"]}
+                disabled={isLeader.current ? disabled["checkbox0"] : true}
                 >
                 {!checkboxes["checkbox0"] && timer > 0 && (
                   <Text style={styles.checkboxTimer}>
@@ -541,7 +537,7 @@ const FeedScreen = () => {
                   <TouchableOpacity
                     style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
                     onPress={() => handleCheckboxToggle("checkbox" + stop.place_order)}
-                    disabled={isDisabled ? isDisabled : disabled["checkbox" + stop.place_order]}
+                    disabled={isLeader.current ? disabled["checkbox" + stop.place_order] : true}
                     >
                     {!checkboxes["checkbox" + stop.place_order] && checkboxes["checkbox" + (stop.place_order -1)] && timer > 0 && (
                       <Text style={styles.checkboxTimer}>
