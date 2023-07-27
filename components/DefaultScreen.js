@@ -75,7 +75,7 @@ const DefaultScreen = () => {
     //get pubcrawl data
     const getPubcrawlData = async () => {
       try {
-        const response = await fetch('http://whereisthepubcrawl.com/API/getStopsTodayByCityId.php', {
+        const response = await fetch('https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php', {
           method: 'POST',
           headers: {
             "Content-Type": "application/json",

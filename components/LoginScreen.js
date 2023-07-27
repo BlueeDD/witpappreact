@@ -53,7 +53,7 @@ const LoginForm = () => {
             alert("Please enter a valid email address.");
         } else {
             if (email !== "" && password !== "") {
-                const response = await fetch('http://whereisthepubcrawl.com/API/login.php', { // 'https://whereisthepubcrawl.com/API/login.php'
+                const response = await fetch('https://whereisthepubcrawl.com/API/login.php', { // 'https://whereisthepubcrawl.com/API/login.php'
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

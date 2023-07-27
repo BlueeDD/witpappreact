@@ -287,7 +287,7 @@ const checkLocationPermission = async () => {
   
   const getPubcrawlData = async () => {
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
-    const response = await fetch('http://whereisthepubcrawl.com/API/getStopsTodayByCityId.php', {
+    const response = await fetch('https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -340,7 +340,7 @@ const checkLocationPermission = async () => {
   const setNextStop = async () => {
     console.log("current stop : " + currentStop);
     console.log("isStopFinished : " + isStopFinished.current);
-    const response = await fetch('http://whereisthepubcrawl.com/API/setNextStop.php', {
+    const response = await fetch('https://whereisthepubcrawl.com/API/setNextStop.php', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
