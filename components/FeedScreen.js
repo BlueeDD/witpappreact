@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
-import { View, Text, StatusBar, TouchableOpacity, Animated, ScrollView } from 'react-native';
+import { View, Text, StatusBar, TouchableOpacity, Animated, ScrollView, ActivityIndicator } from 'react-native';
 import * as Location from 'expo-location';
 import { AuthContext } from '../navigation';
 import Footer from './Footer';
@@ -10,13 +10,14 @@ const FeedScreen = () => {
   // set the checkboxes
   const initialCheckboxes = {};
   const initialDisabled = {};
-  const {hasPubcrawl, setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user} = useContext(AuthContext);
+  const {setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user} = useContext(AuthContext);
   const [checkboxes, setCheckboxes] = useState({});
   const [disabled, setDisabled] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
   const [currentStop, setCurrentStop] = useState(-2);
   const [pubcrawlID, setPubcrawlID] = useState(null);
-  const [isDisabled, setIsDisabled] = useState(false);
-  const [isStopFinished, setIsStopFinished] = useState(false);
+  const isLeader = useRef(false);
+  const isStopFinished = useRef(false);
   const manual = useRef(false);
   const checked = useRef(false);
 
@@ -70,31 +71,42 @@ const FeedScreen = () => {
     setCheckboxes((prevValue) => {
       const newState = { ...prevValue };
       const checkboxIndex = parseInt(checkboxName.slice(-1));
-      if (newState[checkboxName]) {
-        setCountOut(0);
-      } else {
-        setCountIn(0);
-      }
-      setIsStopFinished(false);
+      setCountOut(0);
+      setCountIn(0);
+      isStopFinished.current = false;
+      const disabledState = {};
       newState[checkboxName] = !newState[checkboxName];
       checked.current = newState[checkboxName];
+      // if we checked the checkbox we need to disable the previous one and enable the next one
       if (newState[checkboxName]) {
         setCurrentStop(checkboxIndex);
         for (let i = 0; i < checkboxIndex; i++) {
           newState["checkbox" + i] = true;
         }
+        for (let i = 0; i < stops.length + 1; i++) {
+          if (i === checkboxIndex) {
+            disabledState["checkbox" + i] = false;
+          } else {
+            disabledState["checkbox" + i] = i === (checkboxIndex + 1) ? false : true; 
+          }
+        }
+        // if we unchecked the checkbox we need to disable the next one
       } else {
         setCurrentStop(checkboxIndex - 1);
         for (let i = checkboxIndex + 1; i <= stops.length; i++) {
           newState["checkbox" + i] = false;
         }
+        for (let i = 0; i < stops.length + 1; i++) {
+          if (i === checkboxIndex) {
+            disabledState["checkbox" + i] = false;
+          } else {
+            disabledState["checkbox" + i] = true; 
+          }
+        }
       }
       setNextStop();
   
-      const disabledState = {};
-      for (let i = 0; i < stops.length + 1; i++) {
-        disabledState["checkbox" + i] = i < checkboxIndex ? true : false;
-      }
+      
       setDisabled(disabledState);
       manual.current = false;
       return newState;
@@ -120,8 +132,14 @@ const FeedScreen = () => {
     if (!popupState.popup4Open) {
       handleCheckboxToggle("checkbox" + (currentStop + 1));
     } else {
-      setCountOut(0);
-      setIsStopFinished(true);
+      if (currentStop === -1) {
+        setCountOut(0);
+        isStopFinished.current = true;
+        handleCheckboxToggle("checkbox" + (currentStop + 1));
+    } else {
+        setCountOut(0);
+        isStopFinished.current = true;
+      }        
     }
   };
 
@@ -137,6 +155,9 @@ const FeedScreen = () => {
   useEffect(() => {
     getPubcrawlData();
     checkLocation();
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
   }, []);
 
   useEffect(() => {
@@ -154,9 +175,9 @@ const FeedScreen = () => {
 
   useEffect(() => {
     setNextStop();
-    console.log("------------");
     console.log("countOut: " + countOut);
     console.log("countIn: " + countIn);
+    console.log("------------");
   }, [currentLocation]);  
 
   useEffect(() => {
@@ -170,7 +191,7 @@ const FeedScreen = () => {
       handleClosePopup(2);
       handleOpenPopup(3);
       handleCheckboxToggle("checkbox" + (currentStop + 1));
-      setIsStopFinished(true);
+      isStopFinished.current = true;
       setCountOut(0);
     } else if (countOut === 3) {
       handleClosePopup(3);
@@ -280,27 +301,24 @@ const FeedScreen = () => {
       }),
     });
     const dataRes = await response.json();
-    if (dataRes.code === 0 || dataRes.code === 6) {
-      // if no error (user found)
-      if (dataRes.code === 6) {
-        setIsDisabled(true);
-      } else {
-        setIsDisabled(false);
-      }
+    if (dataRes.code === 0) {
       if (dataRes.data.pubcrawl.last_visited_place < 0) {
         initialCheckboxes["checkbox0"] = false;
       } else {
         initialCheckboxes["checkbox0"] = true;
       }
       dataRes.data.stops.forEach((item) => {
-        if (item.place_order <= dataRes.data.pubcrawl.last_visited_place) {
+        if (item.place_order < dataRes.data.pubcrawl.last_visited_place) {
           initialCheckboxes["checkbox" + item.place_order] = true; // Set initial state to true for the first checkbox (using place order)
           initialDisabled["checkbox" + (item.place_order - 1)] = true;
+        } else if (item.place_order == dataRes.data.pubcrawl.last_visited_place) {
+          initialCheckboxes["checkbox" + item.place_order] = true; // Set initial state to true for the current checkbox (using place order)
+          initialDisabled["checkbox" + (item.place_order -1)] = false;
+          initialDisabled["checkbox" + (item.place_order)] = false;
         } else {
         initialCheckboxes["checkbox" + item.place_order] = false; // Set initial state to false for each checkbox (using place order)
-        initialDisabled["checkbox" + (item.place_order -1)] = false;
+        initialDisabled["checkbox" + (item.place_order)] = true;
       }});
-      initialDisabled["checkbox" + (dataRes.data.stops.length)] = false;
       setCheckboxes(initialCheckboxes);
       setDisabled(initialDisabled);
       setMeetingPoint(dataRes.data.pubcrawl.meeting_point);
@@ -308,14 +326,22 @@ const FeedScreen = () => {
       setCurrentStop(dataRes.data.pubcrawl.last_visited_place);
       setPubcrawlID(dataRes.data.pubcrawl.id);
       setHasPubcrawl(true);
+      isLeader.current=(dataRes.data.pubcrawl.leader_id===user.id);
+      console.log("isLeader : " + isLeader.current);
+      {dataRes.data.pubcrawl.last_visited_place === -1 ? isStopFinished.current = true : isStopFinished.current = false;}
     } else if (dataRes.code == 2) {
       setHasPubcrawl(false);
+    } else if (dataRes.code == 5) {
+      setHasPubcrawl(false);
+      console.log("You have already finished today pubcrawl.");
     } else {
         alert("We encountered a problem to get the pubcrawl data. Please try again later.");
     }
   };
 
   const setNextStop = async () => {
+    console.log("current stop : " + currentStop);
+    console.log("isStopFinished : " + isStopFinished.current);
     // TODO : replace with // 'https://whereisthepubcrawl.com/API/setNextStop.php' 
     const response = await fetch('http://192.168.0.19/witp/API/setNextStop.php', {
       method: 'POST',
@@ -327,7 +353,7 @@ const FeedScreen = () => {
         last_visited_place: currentStop,
         latitude: currentLocation.latitude,
         longitude: currentLocation.longitude,
-        is_stop_finished: isStopFinished,
+        is_stop_finished: isStopFinished.current,
         manual: manual.current,
         checked : checked.current,
       }),
@@ -335,14 +361,15 @@ const FeedScreen = () => {
     const dataRes = await response.json();
     // if we're close enough to the next stop
     if (dataRes.code == 0) {
-      if (!isStopFinished) {
+      if (!isStopFinished.current) {
       console.log("Successfully updated the next stop");
-      setCurrentStop(dataRes.data.next_stop.place_order);
+      setCurrentStop(dataRes.data.last_visited_place);
+      {dataRes.data.pubcrawl.last_visited_place === -1 ? isStopFinished.current = true : isStopFinished.current = false;}
       }
       setDistance(Math.round(dataRes.data.distance));
       // if we finished the previous stop we reset the countOut,
       // set this stop as the current stop and update the checkboxes display
-      if (isStopFinished) {
+      if (isStopFinished.current) {
         // if we're at the next stop we count each time we're at the next stop to manage the popup alerts
         setCountIn(countIn + 1);
         // if the previous stop is finished we reset the countOut
@@ -356,7 +383,7 @@ const FeedScreen = () => {
       // if we're at the next stop for 10 minutes, it means we don't need to go backward ,
       // so we disable the previous checkbox and don't need to check if we're still in the stop area
       if (countIn == 120) {
-        setIsStopFinished(false);
+        isStopFinished.current = false;
         setCountIn(0);
         setDisabled((prevValue) => {
           const newState = { ...prevValue };
@@ -368,13 +395,15 @@ const FeedScreen = () => {
     // if we're not close enough to the next stop
     else  if (dataRes.code == 2) {
       // if the current stop is not finished we count each time the user leaves the stop area
-      if (!isStopFinished){
+      if (!isStopFinished.current){
         setCountOut(countOut + 1);
       }
       // we update the distance to the next stop
       setDistance(Math.round(dataRes.data.distance));
+    } else if (dataRes.code == 1) {
+      isStopFinished.current = true;
     } else {
-      console.log("Error updating the next stop");
+      console.log(dataRes.message);
     }
   };
 
@@ -423,16 +452,22 @@ const FeedScreen = () => {
 
   return (
     <View style={{ flex: 1 }}>
+      {isLoading ?(
+        <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#f48024" />
+        <Text style={{fontSize:30, marginTop: 15}}>Loading...</Text>
+      </View>
+      ) : (
       <View style={styles.container}>
         <StatusBar barStyle="light-content" />
-        {currentLocation && isStopFinished && (
-          <Text>
-              Next Stop is {distance} meters away
+        {currentLocation && isStopFinished.current && (
+          <Text style={{fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen"}}>
+              { currentStop === -1 ? "Meeting point" : "Next Stop"} is {distance} meters away
           </Text>
         )}
-        {currentLocation && !isStopFinished && (
-          <Text>
-              You are in a stop
+        {currentLocation && !isStopFinished.current && (
+          <Text style={{fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen"}}>
+              You are { currentStop === 0 ? "at the Meeting point" : "in a stop"}
           </Text>
         )}
         <Popup
@@ -440,8 +475,8 @@ const FeedScreen = () => {
           onClose={() => handleClosePopup(1)} 
           onButtonOneClick={handleButtonOneClick}
           onButtonTwoClick={handleButtonTwoClick} 
-          popupTitle={"You reached the next stop"}
-          popupText={"Do you want to update the status of the pubcrawl ?"}
+          popupTitle={currentStop=== -1 ? "You seem to be at the meeting point" : "You reached the next stop"}
+          popupText={currentStop=== -1 ? "Do you want to start the pubcrawl ?" : "Do you want to update the status of the pubcrawl ?"}
           updateButton={true}
         />
         <Popup
@@ -449,8 +484,8 @@ const FeedScreen = () => {
           onClose={() => handleClosePopup(2)} 
           onButtonOneClick={handleButtonOneClick} 
           onButtonTwoClick={handleButtonTwoClick}
-          popupTitle={"You are still in the next stop"}
-          popupText={"Do you want to update the status of the pubcrawl now ?"}
+          popupTitle={currentStop=== -1 ? "You're still on the meeting point" : "You are still in the next stop"}
+          popupText={currentStop=== -1 ? "Do you want to start the pubcrawl now ?" : "Do you want to update the status of the pubcrawl now ?"}
           updateButton={true}
         />
         <Popup
@@ -458,8 +493,8 @@ const FeedScreen = () => {
           onClose={() => handleClosePopup(3)} 
           onButtonOneClick={handleButtonOneClick} 
           onButtonTwoClick={handleButtonTwoClick}
-          popupTitle={"You stayed long enough at the next stop"}
-          popupText={"The pubcrawl will be updated now."}
+          popupTitle={currentStop=== -1 ? "You stayed long enough at the meeting point" : "You stayed long enough at the next stop"}
+          popupText={currentStop=== -1 ? "The pubcrawl will start now" : "The pubcrawl will be updated now."}
           updateButton={false}
         />
         <Popup
@@ -476,7 +511,7 @@ const FeedScreen = () => {
               <TouchableOpacity
                 style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
                 onPress={() => handleCheckboxToggle("checkbox0")}
-                disabled={isDisabled ? isDisabled : disabled["checkbox0"]}
+                disabled={isLeader.current ? disabled["checkbox0"] : true}
                 >
                 {!checkboxes["checkbox0"] && timer > 0 && (
                   <Text style={styles.checkboxTimer}>
@@ -486,7 +521,7 @@ const FeedScreen = () => {
               </TouchableOpacity>
               {stops.map((stop) => (
                 <View key={stop.place_order} style={{ alignItems: "center" }}>
-                  {checkboxes["checkbox" + (stop.place_order - 1)] && isStopFinished &&
+                  {checkboxes["checkbox" + (stop.place_order - 1)] && isStopFinished.current &&
                   !checkboxes["checkbox" + stop.place_order] ? (
                     <Animated.Text
                       style={[
@@ -497,12 +532,12 @@ const FeedScreen = () => {
                       ]}
                     />
                   ) : (
-                    <Text style={[styles.separator, (!checkboxes["checkbox" + (stop.place_order - 1)] || checkboxes["checkbox" + (stop.place_order - 1)] && !isStopFinished && !checkboxes["checkbox" + stop.place_order] ) && styles.hiddenSeparator]} />
+                    <Text style={[styles.separator, (!checkboxes["checkbox" + (stop.place_order - 1)] || checkboxes["checkbox" + (stop.place_order - 1)] && !isStopFinished.current && !checkboxes["checkbox" + stop.place_order] ) && styles.hiddenSeparator]} />
                   )}
                   <TouchableOpacity
                     style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
                     onPress={() => handleCheckboxToggle("checkbox" + stop.place_order)}
-                    disabled={isDisabled ? isDisabled : disabled["checkbox" + stop.place_order]}
+                    disabled={isLeader.current ? disabled["checkbox" + stop.place_order] : true}
                     >
                     {!checkboxes["checkbox" + stop.place_order] && checkboxes["checkbox" + (stop.place_order -1)] && timer > 0 && (
                       <Text style={styles.checkboxTimer}>
@@ -517,7 +552,7 @@ const FeedScreen = () => {
               <Text style={styles.title}>{meetingPoint}</Text>
               {stops.map((stop) => (
                 <View key={stop.place_order}>
-                  {checkboxes["checkbox" + (stop.place_order - 1)] && isStopFinished &&
+                  {checkboxes["checkbox" + (stop.place_order - 1)] && isStopFinished.current &&
                   !checkboxes["checkbox" + stop.place_order] ? (
                     <Animated.Text
                       style={[
@@ -539,6 +574,7 @@ const FeedScreen = () => {
           </ScrollView>
         <Footer />
       </View>
+      )}
     </View>
   );
 };
@@ -620,6 +656,18 @@ const styles = {
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 70,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "white",
+    zIndex: 9999,
   },
 };
 

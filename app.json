@@ -19,7 +19,8 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Your location is required to provide relevant information.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Your location is required to provide relevant information even when the app is in the background."
-      }
+      },
+      "bundleIdentifier": "com.blueedd.witpappreact"
     },
     "android": {
       "permissions": [
@@ -32,6 +33,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "f0bd8182-5611-413a-b05c-f2df96a91666"
+      }
     }
   }
 }

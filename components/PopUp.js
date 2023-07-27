@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 
-const Popup = ({ isOpen, onClose, onButtonOneClick, onButtonTwoClick, popupTitle, popUpText, updateButton }) => {
+const Popup = ({ isOpen, onClose, onButtonOneClick, onButtonTwoClick, popupTitle, popupText, updateButton }) => {
   if (!isOpen) {
     return null;
   }
@@ -21,11 +21,11 @@ const Popup = ({ isOpen, onClose, onButtonOneClick, onButtonTwoClick, popupTitle
       <View style={styles.popup}>
         <View style={styles.popupContent}>
           <Text style={styles.popupTitle}>{popupTitle}</Text>
-          <Text>{popUpText}</Text>
+          <Text style={styles.popUpText}>{popupText}</Text>
           <View style={updateButton ? styles.popupButtons : styles.popupButtons2}>
             { updateButton && 
               <TouchableOpacity onPress={handleButtonOneClick} style={styles.button}>
-                <Text style={styles.buttonText}>Update</Text>
+                <Text style={styles.buttonText}>Yes</Text>
               </TouchableOpacity>
             }
             <TouchableOpacity onPress={handleButtonTwoClick} style={styles.button}>
@@ -55,6 +55,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
+  },
+  popupText: {
+    fontSize: 16,
+    marginBottom: 20,
   },
   popupButtons: {
     flexDirection: 'row',
