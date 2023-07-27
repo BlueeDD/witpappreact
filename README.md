@@ -32,8 +32,8 @@ Ensure that you have eas-cli installed (if not use `npm install -g eas-cli`)
 Run the following commands:
 
 - `eas login` which will ask you to log in your expo account
-- `eas build -p android` for android
-- `eas build -p ios` for iOS
+- `eas build -p android --profile preview` for android
+- `eas build -p ios --profile preview` for iOS
 
 ## Dependencies
 
