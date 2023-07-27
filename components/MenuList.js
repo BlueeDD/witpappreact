@@ -1,30 +1,41 @@
 import React, { useContext } from 'react';
-import { View, Image, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../navigation';
 
 const MenuList = () => {
 
-  const { setUser } = useContext(AuthContext);
+  const { setHasUser, setIsDropdownOpen } = useContext(AuthContext);
+  const navigation = useNavigation();
 
   const handleLogout = () => {
-    setUser(false);
-    };
+    setIsDropdownOpen(false);
+    setHasUser(false);
+    navigation.navigate('Feed');
+  };
+
+  const handleProfilePress = () => {
+    setIsDropdownOpen(false);
+    navigation.navigate('Profile');
+  };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.item}>
+      <TouchableOpacity
+        style={styles.item}
+        onPress={handleProfilePress}>
         <View style={styles.imageContainer}>
-          <Image 
-            source={require('../assets/settings.png')} 
+          <Image
+            source={require('../assets/settings.png')}
             style={styles.image} />
         </View>
       </TouchableOpacity>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.item}
         onPress={handleLogout}>
         <View style={styles.imageContainer}>
-          <Image 
-            source={require('../assets/logout.png')} 
+          <Image
+            source={require('../assets/logout.png')}
             style={styles.image} />
         </View>
       </TouchableOpacity>
@@ -35,13 +46,13 @@ const MenuList = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 37, 
-    right: 5, 
+    top: 45,
+    right: 5,
     padding: 10,
     zIndex: 1,
   },
   item: {
-    marginBottom: 5,
+    marginBottom: 10,
     textAlign: 'center',
     backgroundColor: '#f48024',
     borderRadius: 50,

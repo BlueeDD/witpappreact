@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { StyleSheet, View, StatusBar, Image, TouchableOpacity } from 'react-native';
+import React, { useEffect } from "react";
+import { StyleSheet, View, StatusBar, Image } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import LoginScreen from './components/LoginScreen';
 import RegisterScreen from './components/RegisterScreen';
+import ForgotPasswordScreen from "./components/ForgotPasswordScreen";
 import Footer from './components/Footer';
 import FeedScreen from "./components/FeedScreen";
+import DefaultScreen from "./components/DefaultScreen";
 import HeaderMenu from "./headerMenu";
-import { AuthContext, Stack } from './navigation';
-
+import ProfileScreen from "./components/ProfileScreen";
+import AuthProvider, { AuthContext, Stack } from './navigation';
+import * as Notifications from 'expo-notifications';
 
 
 const Login = () => {
@@ -30,65 +33,150 @@ const Register = () => {
   );
 }
 
-const Feed = () => {
+const ForgotPassword = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <FeedScreen />
+      <ForgotPasswordScreen />
+      <Footer />
+    </View>
+  );
+}
+
+const Feed = () => {
+  return (
+    <FeedScreen />
+  );
+}
+
+const Default = () => {
+  return (
+    <DefaultScreen />
+  );
+}
+
+const Profile = () => {
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      <ProfileScreen />
       <Footer />
     </View>
   );
 }
 
 export default function App() {
+  useEffect(() => {
+    registerForPushNotifications();
 
-  const [hasUser, setUser] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    // Handle incoming push notifications
+    Notifications.addNotificationReceivedListener(handleNotification);
+
+    return () => {
+      Notifications.removeNotificationReceivedListener(handleNotification);
+    };
+  }, []);
+
+  const registerForPushNotifications = async () => {
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status !== 'granted') {
+      const { status: newStatus } = await Notifications.requestPermissionsAsync();
+      if (newStatus !== 'granted') {
+        return;
+      }
+    }
+
+    const token = (await Notifications.getExpoPushTokenAsync()).data;
+    // Store the token in your backend for sending push notifications
+    console.log('Expo Push Token:', token);
+  };
+
+  const handleNotification = (notification) => {
+    // Handle the received push notification
+    console.log('Received push notification:', notification);
+  };
 
   return (
-    <AuthContext.Provider value={{ hasUser, setUser, isDropdownOpen, setIsDropdownOpen }}>
-    <NavigationContainer>
-      <Stack.Navigator
-      screenOptions={
-        {headerBackImage: () => <Image source={require('./assets/back.png')} style={{width: 30, height: 30, marginLeft: 15}}/>,
-        headerBackTitleVisible: false,
-        headerTintColor: 'white',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
-        headerRight: () => (
-          <HeaderMenu hasUser={hasUser} />
-        ),  
-        headerStyle: {
-          backgroundColor: '#f48024',
-        },
-      }
-      }>
-      {hasUser ? (
-        <Stack.Screen 
-        name="Feed" 
-        component={Feed}
-        options={{
-          title: 'Pub Crawl Malaga',
-        }} />
-      ) : (
-        <Stack.Screen 
-        name="LoginScreen" 
-        component={Login}
-        options={{
-          title: 'Pub Crawl Malaga',
-        }} />
-      )}
-        <Stack.Screen 
-        name="Register" 
-        component={Register}
-        options={{
-          title: 'Pub Crawl Malaga',
-        }} />
-      </Stack.Navigator>
-    </NavigationContainer>
-    </AuthContext.Provider>
-
+    <AuthProvider>
+      <NavigationContainer>
+        <AuthContext.Consumer>
+          {(authContext) => (
+            <Stack.Navigator
+              screenOptions={{
+                headerBackImage: () => (
+                  <Image
+                    source={require("./assets/back.png")}
+                    style={{ width: 30, height: 30, marginLeft: 15 }}
+                  />
+                ),
+                headerBackTitleVisible: false,
+                headerTintColor: "white",
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                },
+                headerRight: () => (
+                  <HeaderMenu hasUser={authContext.hasUser} />
+                ),
+                headerStyle: {
+                  backgroundColor: "#f48024",
+                },
+              }}
+            >
+              {authContext.hasUser ? (
+                // If the user is logged in, show the Feed screen if there is a pubcrawl ongoing or planned today and the location is enabled
+                (authContext.hasPubcrawl && authContext.isLocationEnabled) ? (
+                <Stack.Screen
+                  name="Feed"
+                  component={Feed}
+                  options={{
+                    title: "Pub Crawl Malaga",
+                  }}
+                />
+                ) : (
+                  // If the user is logged in, show the Default screen if there is no pubcrawl ongoing or planned today or the location is disabled
+                  <Stack.Screen
+                    name="Default"
+                    component={Default}
+                    options={{
+                      title: "Pub Crawl Malaga",
+                    }}
+                  />
+                )
+              ) : (
+                <Stack.Screen
+                  name="Login"
+                  component={Login}
+                  options={{
+                    title: "Pub Crawl Malaga",
+                  }}
+                />
+              )}
+              <Stack.Screen
+                name="Register"
+                component={Register}
+                options={{
+                  title: "Pub Crawl Malaga",
+                }}
+              />
+              <Stack.Screen
+                name="Profile"
+                component={Profile}
+                options={{
+                  title: "Pub Crawl Malaga",
+                }}
+              />
+              <Stack.Screen
+                name="ForgotPassword"
+                component={ForgotPassword}
+                options={{
+                  title: "Pub Crawl Malaga",
+                }}
+              />
+            </Stack.Navigator>
+          )}
+        </AuthContext.Consumer>
+      </NavigationContainer>
+    </AuthProvider>
   );
 }
 
