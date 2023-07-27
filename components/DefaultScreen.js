@@ -21,45 +21,45 @@ const DefaultScreen = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  //check location permission
-  // const checkLocationPermission = async () => {
-  //   try {
-  //     // Check foreground location permission
-  //     const foregroundPermission = await Location.requestForegroundPermissionsAsync();
-  //     if (foregroundPermission.status === 'granted') {
-  //       try {
-  //           // Check background location permission
-  //         const backgroundPermission = await Location.requestBackgroundPermissionsAsync();
-  //         if (backgroundPermission.status === 'granted') {
-  //           console.log('Background location permission is granted');
-  //           if (!isLocationEnabled) {
-  //             setIsLocationEnabled(true);
-  //           }
-  //         } else {
-  //           if (isLocationEnabled) {
-  //             setIsLocationEnabled(false);
-  //           }
-  //         }
+  // check location permission
+  const checkLocationPermission = async () => {
+    try {
+      // Check foreground location permission
+      const foregroundPermission = await Location.requestForegroundPermissionsAsync();
+      if (foregroundPermission.status === 'granted') {
+        try {
+            // Check background location permission
+          const backgroundPermission = await Location.requestBackgroundPermissionsAsync();
+          if (backgroundPermission.status === 'granted') {
+            console.log('Background location permission is granted');
+            if (!isLocationEnabled) {
+              setIsLocationEnabled(true);
+            }
+          } else {
+            if (isLocationEnabled) {
+              setIsLocationEnabled(false);
+            }
+          }
 
-  //       } catch (error) {
-  //         console.log('Error checking location permission:', error);
-  //       }
-  //     } else {
-  //       console.log('Foreground location permission is denied');
-  //       if (isLocationEnabled) {
-  //         setIsLocationEnabled(false);
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.log('Error checking location permission:', error);
-  //   }
-  // };
+        } catch (error) {
+          console.log('Error checking location permission:', error);
+        }
+      } else {
+        console.log('Foreground location permission is denied');
+        if (isLocationEnabled) {
+          setIsLocationEnabled(false);
+        }
+      }
+    } catch (error) {
+      console.log('Error checking location permission:', error);
+    }
+  };
     
     //check location with a timer of 5 seconds
     const checkLocation = () => {
       if (!isLocationEnabled) {
       setTimeout(() => {
-        // checkLocationPermission();
+        checkLocationPermission();
         checkLocation(); // Call checkLocation recursively
       }, 5000);
       }
@@ -75,7 +75,7 @@ const DefaultScreen = () => {
     //get pubcrawl data
     const getPubcrawlData = async () => {
       try {
-        const response = await fetch('http://192.168.0.19/witp/API/getStopsTodayByCityId.php', {
+        const response = await fetch('https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php', {
           method: 'POST',
           headers: {
             "Content-Type": "application/json",
