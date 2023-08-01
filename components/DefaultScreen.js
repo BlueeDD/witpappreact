@@ -21,16 +21,34 @@ const DefaultScreen = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  //check location permission
+  // check location permission
   const checkLocationPermission = async () => {
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        console.log('Location permission is granted');
-        if (!isLocationEnabled) {
-        setIsLocationEnabled(true);
+      // Check foreground location permission
+      const foregroundPermission = await Location.requestForegroundPermissionsAsync();
+      if (foregroundPermission.status === 'granted') {
+        try {
+            // Check background location permission
+          const backgroundPermission = await Location.requestBackgroundPermissionsAsync();
+          if (backgroundPermission.status === 'granted') {
+            console.log('Background location permission is granted');
+            if (!isLocationEnabled) {
+              setIsLocationEnabled(true);
+            }
+          } else {
+            if (isLocationEnabled) {
+              setIsLocationEnabled(false);
+            }
+          }
+
+        } catch (error) {
+          console.log('Error checking location permission:', error);
         }
       } else {
+        console.log('Foreground location permission is denied');
+        if (isLocationEnabled) {
+          setIsLocationEnabled(false);
+        }
       }
     } catch (error) {
       console.log('Error checking location permission:', error);
@@ -57,7 +75,7 @@ const DefaultScreen = () => {
     //get pubcrawl data
     const getPubcrawlData = async () => {
       try {
-        const response = await fetch('http://192.168.0.62/witp/API/getStopsTodayByCityId.php', {
+        const response = await fetch('https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php', {
           method: 'POST',
           headers: {
             "Content-Type": "application/json",
@@ -67,7 +85,7 @@ const DefaultScreen = () => {
           }),
         });
         const dataRes = await response.json();
-        if (dataRes.code === 0) {
+        if (dataRes.code === 0 || dataRes.code === 6) {
           setHasPubcrawl(true);
         }
       } catch (error) {
@@ -83,7 +101,7 @@ const DefaultScreen = () => {
             <View style={styles.banner}>
               <MaterialCommunityIcons name="crosshairs-gps" size={20} color={"white"} marginRight={10}/>
               <Text style={{ color: 'white'}}>
-                Enable location in your settings to see the pubcrawls
+                The access to your location should be "Always" to use the app
               </Text>
             </View>
             )}

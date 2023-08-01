@@ -25,6 +25,16 @@ You can also start a web version with expo by typing `w` in your terminal.
 
 To have a debug menu on your mobile device type `m` .
 
+
+
+Ensure that you have eas-cli installed (if not use `npm install -g eas-cli`)
+
+Run the following commands:
+
+- `eas login` which will ask you to log in your expo account
+- `eas build -p android --profile preview` for android
+- `eas build -p ios --profile preview` for iOS
+
 ## Dependencies
 
 The project uses the following major dependencies:
@@ -52,4 +62,3 @@ Feel free to customize and extend the application according to your requirements
 
 - Pierre Lafon @BlueeDD
 - Maxime Frémeaux @unshiny99
-
