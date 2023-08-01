@@ -62,4 +62,3 @@ Feel free to customize and extend the application according to your requirements
 
 - Pierre Lafon @BlueeDD
 - Maxime Frémeaux @unshiny99
-
