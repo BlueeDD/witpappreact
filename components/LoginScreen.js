@@ -64,7 +64,7 @@ const LoginForm = () => {
                     }),
                 });
                 const dataRes = await response.json();
-                if (dataRes.code == 0 || dataRes.code == 6) { // if no error (user found)
+                if (dataRes.code == 0) { // if no error (user found)
                     setHasUser(true);
                     setUser({
                         id: dataRes.data.id,
