@@ -177,18 +177,22 @@ const FeedScreen = () => {
   }, [currentLocation]);  
 
   useEffect(() => {
+    // if 1 in, the "you reached the pub" popup will open
     if (countIn === 1) {
       handleClosePopup(4);
       handleOpenPopup(1);
+      //after 2 minutes in, the "you're still here" popup will open
     } else if (countIn === 25) {
       handleClosePopup(1);
       handleOpenPopup(2);
+      //after 4 minutes in, the "now it will update" popup will open
     } else if (countIn === 50) {
       handleClosePopup(2);
       handleOpenPopup(3);
       handleCheckboxToggle("checkbox" + (currentStop + 1));
       isStopFinished.current = true;
       setCountOut(0);
+      //after 1 minute out, the "do you want to leave" popup will open
     } else if (countOut === 12) {
       handleClosePopup(3);
       handleOpenPopup(4);
