@@ -67,7 +67,7 @@ const FeedScreen = () => {
    * @param {*} checkboxName
    */
   const handleCheckboxToggle = (checkboxName) => {
-    startTimer(); // Reset the timer when a checkbox is clicked
+    // startTimer(); // Reset the timer when a checkbox is clicked
     manual.current = true;
     setCheckboxes((prevValue) => {
       const newState = { ...prevValue };
@@ -134,14 +134,9 @@ const FeedScreen = () => {
       handleCheckboxToggle("checkbox" + (currentStop + 1));
       setCountOut(0);
     } else {
-      if (currentStop === -1) {
         setCountOut(0);
         isStopFinished.current = true;
         handleCheckboxToggle("checkbox" + (currentStop + 1));
-    } else {
-        setCountOut(0);
-        isStopFinished.current = true;
-      }        
     }
   };
 
@@ -530,7 +525,7 @@ const checkLocationPermission = async () => {
             <View style={styles.column}>
               <TouchableOpacity
                 style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
-                onPress={() => {isStopFinished.current && !checkboxes["checkbox0"] ? handleOpenPopup(5) : handleCheckboxToggle("checkbox0")}}
+                onPress={() => { !isStopFinished.current && !checkboxes["checkbox0"] ? handleOpenPopup(5) : handleCheckboxToggle("checkbox0")}}
                 disabled={isLeader.current ? disabled["checkbox0"] : true}
                 >
                 {!checkboxes["checkbox0"] && timer > 0 && (
@@ -556,7 +551,7 @@ const checkLocationPermission = async () => {
                   )}
                   <TouchableOpacity
                     style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
-                    onPress={() => { isStopFinished.current && !checkboxes["checkbox" + stop.place_order] ? handleOpenPopup(5) : handleCheckboxToggle("checkbox" + stop.place_order)}}
+                    onPress={() => { !isStopFinished.current && !checkboxes["checkbox" + stop.place_order] ? handleOpenPopup(5) : handleCheckboxToggle("checkbox" + stop.place_order)}}
                     disabled={isLeader.current ? disabled["checkbox" + stop.place_order] : true}
                     >
                     {!checkboxes["checkbox" + stop.place_order] && checkboxes["checkbox" + (stop.place_order -1)] && timer > 0 && (
