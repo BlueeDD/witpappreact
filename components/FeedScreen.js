@@ -180,16 +180,16 @@ const FeedScreen = () => {
     if (countIn === 1) {
       handleClosePopup(4);
       handleOpenPopup(1);
-    } else if (countIn === 4) {
+    } else if (countIn === 25) {
       handleClosePopup(1);
       handleOpenPopup(2);
-    } else if (countIn === 8) {
+    } else if (countIn === 50) {
       handleClosePopup(2);
       handleOpenPopup(3);
       handleCheckboxToggle("checkbox" + (currentStop + 1));
       isStopFinished.current = true;
       setCountOut(0);
-    } else if (countOut === 3) {
+    } else if (countOut === 12) {
       handleClosePopup(3);
       handleOpenPopup(4);
     }
