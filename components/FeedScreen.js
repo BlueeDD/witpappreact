@@ -172,8 +172,8 @@ const FeedScreen = () => {
 
   useEffect(() => {
     setNextStop();
-    console.log("countOut: " + countOut);
-    console.log("countIn: " + countIn);
+    // console.log("countOut: " + countOut);
+    // console.log("countIn: " + countIn);
   }, [currentLocation]);  
 
   useEffect(() => {
@@ -328,14 +328,13 @@ const checkLocationPermission = async () => {
       }
       setCheckboxes(initialCheckboxes);
       setDisabled(initialDisabled);
-      console.log("initialDisabled : " + JSON.stringify(initialDisabled));
       setMeetingPoint(dataRes.data.pubcrawl.meeting_point);
       setStops(dataRes.data.stops);
       setCurrentStop(dataRes.data.pubcrawl.last_visited_place);
       setPubcrawlID(dataRes.data.pubcrawl.id);
       setHasPubcrawl(true);
       isLeader.current=(dataRes.data.pubcrawl.leader_id===user.id);
-      console.log("isLeader : " + isLeader.current);
+      // console.log("isLeader : " + isLeader.current);
       {dataRes.data.pubcrawl.last_visited_place === -1 ? isStopFinished.current = true : isStopFinished.current = false;}
     } else if (dataRes.code == 2) {
       setHasPubcrawl(false);
@@ -348,8 +347,8 @@ const checkLocationPermission = async () => {
   };
 
   const setNextStop = async () => {
-    console.log("current stop : " + currentStop);
-    console.log("isStopFinished : " + isStopFinished.current);
+    // console.log("current stop : " + currentStop);
+    // console.log("isStopFinished : " + isStopFinished.current);
     const response = await fetch('https://whereisthepubcrawl.com/API/setNextStop.php', {
       method: 'POST',
       headers: {
