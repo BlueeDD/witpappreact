@@ -444,47 +444,6 @@ const checkLocationPermission = async () => {
         ])
       ).start();
   };
-
-  const getPubcrawlData = async () => {
-    //console.log("agent id : " + user.agentCityId);
-
-    // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
-    const response = await fetch('http://192.168.0.62/witp/API/getStopsTodayByCityId.php', {
-      method: 'POST',
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        // pass the email and password from the form to the API
-        city_id: 1, // we use user's city ID
-      }),
-    });
-    const dataRes = await response.json();
-    if (dataRes.code === 0) {
-      // if no error (user found)
-      if (dataRes.data.pubcrawl.last_visited_place < 0) {
-        initialCheckboxes["checkbox0"] = false;
-      } else {
-        initialCheckboxes["checkbox0"] = true;
-      }
-      dataRes.data.stops.forEach((item) => {
-        if (item.place_order <= dataRes.data.pubcrawl.last_visited_place) {
-          initialCheckboxes["checkbox" + item.place_order] = true; // Set initial state to true for the first checkbox (using place order)
-        } else
-        initialCheckboxes["checkbox" + item.place_order] = false; // Set initial state to false for each checkbox (using place order)
-      });
-      setCheckboxes(initialCheckboxes);
-      setMeetingPoint(dataRes.data.pubcrawl.meeting_point);
-      setStops(dataRes.data.stops);
-      setCurrentStop(dataRes.data.pubcrawl.last_visited_place);
-      setPubcrawlID(dataRes.data.pubcrawl.id);
-      setHasPubcrawl(true);
-    } else if (dataRes.code == 2) {
-      setHasPubcrawl(false);
-    } else {
-        alert("We encountered a problem to get the pubcrawl data. Please try again later.");
-    }
-  };
 //----------------------------------------RENDER---------------------------------------------------------
 
   return (
