@@ -130,13 +130,12 @@ const FeedScreen = () => {
     }));
   };
   const handleButtonOneClick = () => {
-    if (!popupState.popup4Open && !popupState.popup5Open) {
+    if (!popupState.popup4Open) {
       handleCheckboxToggle("checkbox" + (currentStop + 1));
       setCountOut(0);
     } else {
-        setCountOut(0);
-        isStopFinished.current = true;
-        handleCheckboxToggle("checkbox" + (currentStop + 1));
+      setCountOut(0);
+      isStopFinished.current = true;
     }
   };
 
@@ -172,8 +171,8 @@ const FeedScreen = () => {
 
   useEffect(() => {
     setNextStop();
-    // console.log("countOut: " + countOut);
-    // console.log("countIn: " + countIn);
+    console.log("countOut: " + countOut);
+    console.log("countIn: " + countIn);
   }, [currentLocation]);  
 
   useEffect(() => {
@@ -332,13 +331,15 @@ const checkLocationPermission = async () => {
       }
       setCheckboxes(initialCheckboxes);
       setDisabled(initialDisabled);
+      // console.log("disabled : " + JSON.stringify(initialDisabled));
       setMeetingPoint(dataRes.data.pubcrawl.meeting_point);
       setStops(dataRes.data.stops);
       setCurrentStop(dataRes.data.pubcrawl.last_visited_place);
       setPubcrawlID(dataRes.data.pubcrawl.id);
       setHasPubcrawl(true);
       isLeader.current=(dataRes.data.pubcrawl.leader_id===user.id);
-      // console.log("isLeader : " + isLeader.current);
+      // console.log("isLeader : " + dataRes.data.pubcrawl.leader_id);
+      // console.log("user id : " + user.id);
       {dataRes.data.pubcrawl.last_visited_place === -1 ? isStopFinished.current = true : isStopFinished.current = false;}
     } else if (dataRes.code == 2) {
       setHasPubcrawl(false);
@@ -528,7 +529,7 @@ const checkLocationPermission = async () => {
             <View style={styles.column}>
               <TouchableOpacity
                 style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
-                onPress={() => { !isStopFinished.current && !checkboxes["checkbox0"] ? handleOpenPopup(5) : handleCheckboxToggle("checkbox0")}}
+                onPress={() => { isStopFinished.current && !checkboxes["checkbox0"] ? handleOpenPopup(5) : handleCheckboxToggle("checkbox0")}}
                 disabled={isLeader.current ? disabled["checkbox0"] : true}
                 >
                 {!checkboxes["checkbox0"] && timer > 0 && (
