@@ -36,7 +36,7 @@ const LoginForm = () => {
         const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
         setIsValid(emailPattern.test(email));
         if (email == "") {
-            setIsValid(true);
+            setIsValid(true); // to erase validation message (but check of empty string is done in handleLoginPress)
         }
     };
 
@@ -53,7 +53,7 @@ const LoginForm = () => {
             alert("Please enter a valid email address.");
         } else {
             if (email !== "" && password !== "") {
-                const response = await fetch('https://whereisthepubcrawl.com/API/login.php', { // 'https://whereisthepubcrawl.com/API/login.php'
+                const response = await fetch('https://whereisthepubcrawl.com/API/login.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

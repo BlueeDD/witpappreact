@@ -27,7 +27,7 @@ const ForgotPasswordForm = () => {
         } else {
             if (email !== "") {
                 // API that sends an email to the user with a link to reset his password (must use the WEB site to reset it)
-                const response = await fetch('https://whereisthepubcrawl.com/API/changePassword.php', { // 'https://whereisthepubcrawl.com/API/changePassword.php'
+                const response = await fetch('https://whereisthepubcrawl.com/API/changePassword.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
