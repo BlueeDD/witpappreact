@@ -36,7 +36,7 @@ const LoginForm = () => {
         const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
         setIsValid(emailPattern.test(email));
         if (email == "") {
-            setIsValid(true); // to earse validation message (but check of empty string is done in handleLoginPress)
+            setIsValid(true); // to erase validation message (but check of empty string is done in handleLoginPress)
         }
     };
 
