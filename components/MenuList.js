@@ -5,12 +5,13 @@ import { AuthContext } from '../navigation';
 
 const MenuList = () => {
 
-  const { setHasUser, setIsDropdownOpen } = useContext(AuthContext);
+  const { setHasUser, setIsDropdownOpen, setCityName } = useContext(AuthContext);
   const navigation = useNavigation();
 
   const handleLogout = () => {
     setIsDropdownOpen(false);
     setHasUser(false);
+    setCityName("South Tours");
     navigation.navigate('Feed');
   };
 

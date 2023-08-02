@@ -10,12 +10,13 @@ const FeedScreen = () => {
   // set the checkboxes
   const initialCheckboxes = {};
   const initialDisabled = {};
-  const {setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user} = useContext(AuthContext);
+  const {setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user, setCityName} = useContext(AuthContext);
   const [checkboxes, setCheckboxes] = useState({});
   const [disabled, setDisabled] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [currentStop, setCurrentStop] = useState(-2);
   const [pubcrawlID, setPubcrawlID] = useState(null);
+  const [leaderName, setLeaderName] = useState("");
   const isLeader = useRef(false);
   const isStopFinished = useRef(false);
   const manual = useRef(false);
@@ -163,11 +164,13 @@ const FeedScreen = () => {
   }, [stops]);
   
   useEffect(() => {
+    if (isLeader.current) {
     const intervalId = setInterval(getCurrentLocation, 5000); // Update location every 5 seconds  
     return () => {
       clearInterval(intervalId); // Clear the interval when the component unmounts
     };
-  }, []);
+  }
+  }, [isLeader.current]);
 
   useEffect(() => {
     setNextStop();
@@ -337,14 +340,18 @@ const checkLocationPermission = async () => {
       setCurrentStop(dataRes.data.pubcrawl.last_visited_place);
       setPubcrawlID(dataRes.data.pubcrawl.id);
       setHasPubcrawl(true);
-      isLeader.current=(dataRes.data.pubcrawl.leader_id===user.id);
-      // console.log("isLeader : " + dataRes.data.pubcrawl.leader_id);
-      // console.log("user id : " + user.id);
+      setLeaderName(dataRes.data.pubcrawl.leader_name);
+      isLeader.current=(dataRes.data.pubcrawl.leader_id==user.id);
+      console.log("isLeader : " + isLeader.current);
+      console.log("isLeaderID : " + dataRes.data.pubcrawl.leader_id);
+      console.log("user id : " + user.id);
       {dataRes.data.pubcrawl.last_visited_place === -1 ? isStopFinished.current = true : isStopFinished.current = false;}
     } else if (dataRes.code == 2) {
       setHasPubcrawl(false);
+      setCityName(dataRes.data.city_name);
     } else if (dataRes.code == 5) {
       setHasPubcrawl(false);
+      setCityName(dataRes.data.city_name);
       console.log("You have already finished today pubcrawl.");
     } else {
         alert("We encountered a problem to get the pubcrawl data. Please try again later.");
@@ -470,14 +477,19 @@ const checkLocationPermission = async () => {
       ) : (
       <View style={styles.container}>
         <StatusBar barStyle="light-content" />
-        {currentLocation && isStopFinished.current && (
+        {currentLocation && isStopFinished.current && isLeader.current && (
           <Text style={{fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen"}}>
               { currentStop === -1 ? "Meeting point" : "Next Stop"} is {distance} meters away
           </Text>
         )}
-        {currentLocation && !isStopFinished.current && (
+        {currentLocation && !isStopFinished.current && isLeader.current && (
           <Text style={{fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen"}}>
               You are { currentStop === 0 ? "at the Meeting point" : "in a stop"}
+          </Text>
+        )}
+        { !isLeader.current && (
+          <Text style={{fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen"}}>
+              The leader of the pubcrawl is {leaderName}
           </Text>
         )}
         <Popup

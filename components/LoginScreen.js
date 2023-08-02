@@ -6,11 +6,10 @@ import { AuthContext } from '../navigation';
 
 const LoginForm = () => {
     const navigation = useNavigation();
-    const { user, setHasUser, setUser } = useContext(AuthContext);
+    const { user, setHasUser, setUser, setIsLocationEnabled, setCityName } = useContext(AuthContext);
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [isValid, setIsValid] = useState(true);
-    const {isLocationEnabled, setIsLocationEnabled} = useContext(AuthContext);
 
     const checkLocationPermission = async () => {
         try {
@@ -73,6 +72,7 @@ const LoginForm = () => {
                         role: dataRes.data.role,
                         agentCityId: dataRes.data.agent_city_id,
                     });
+                    setCityName(dataRes.data.agent_city_name);
                 } else {
                     alert(dataRes.message);
                     setHasUser(false);
