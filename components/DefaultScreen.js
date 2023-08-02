@@ -8,8 +8,9 @@ import { AuthContext } from '../navigation';
 
 const DefaultScreen = () => {
    
-  const {isLocationEnabled, setIsLocationEnabled, hasPubcrawl, setHasPubcrawl} = useContext(AuthContext);
+  const {isLocationEnabled, setIsLocationEnabled, hasPubcrawl, setHasPubcrawl,cityName, setCityName} = useContext(AuthContext);
   const [isVisible, setIsVisible] = useState(false);
+  const [loop, setLoop] = useState(false);
   
   // Show the text after 500ms (avoid seeing it if you don't stay on the screen for long)
   useEffect(() => {
@@ -55,46 +56,48 @@ const DefaultScreen = () => {
     }
   };
     
-    //check location with a timer of 5 seconds
-    const checkLocation = () => {
-      if (!isLocationEnabled) {
-      setTimeout(() => {
-        checkLocationPermission();
-        checkLocation(); // Call checkLocation recursively
-      }, 5000);
-      }
-    };
+  //check location with a timer of 5 seconds
+  const checkLocation = () => {
+    if (!isLocationEnabled || !hasPubcrawl) {
+    setTimeout(() => {
+      checkLocationPermission();
+      setLoop(!loop); // Call checkLocation recursively
+    }, 5000);
+    }
+  };
 
 
-    //check pubcrawl and location
-    useEffect(() => {
-      getPubcrawlData();
-      checkLocation();
-    }, []);
+  //check pubcrawl and location
+  useEffect(() => {
+    getPubcrawlData();
+    checkLocation();
+  }, [loop]);
     
-    //get pubcrawl data
-    const getPubcrawlData = async () => {
-      try {
-        const response = await fetch('https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php', {
-          method: 'POST',
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            city_id: 1,
-          }),
-        });
-        const dataRes = await response.json();
-        if (dataRes.code === 0 || dataRes.code === 6) {
-          setHasPubcrawl(true);
-        }
-      } catch (error) {
-        console.log('Error fetching data from API', error);
+  //get pubcrawl data
+  const getPubcrawlData = async () => {
+    try {
+      const response = await fetch('https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          city_id: 1,
+        }),
+      });
+      const dataRes = await response.json();
+      console.log(dataRes);
+      setCityName(dataRes.data.city_name);
+      if (dataRes.code === 0) {
+        setHasPubcrawl(true);
       }
-    };
-      
+    } catch (error) {
+      console.log('Error fetching data from API', error);
+    }
+  };
+    
 
-    return (
+  return (
     <View style={styles.container}>
         <StatusBar barStyle="light-content" />
             {!isLocationEnabled && (
@@ -108,7 +111,7 @@ const DefaultScreen = () => {
             {!hasPubcrawl && isVisible && (
             <View style={styles.textContainer}>
                 <View style={styles.innerContainer}>
-                    <Text style={styles.text}>There is no Pubcrawl planned today</Text>
+                    <Text style={styles.text}>There is no Pubcrawl planned today in {cityName}</Text>
                 </View>
             </View>
             )}

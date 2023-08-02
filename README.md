@@ -25,7 +25,7 @@ You can also start a web version with expo by typing `w` in your terminal.
 
 To have a debug menu on your mobile device type `m` .
 
-
+## Building the App
 
 Ensure that you have eas-cli installed (if not use `npm install -g eas-cli`)
 

@@ -43,7 +43,7 @@ const RegisterScreen = () => {
             alert("Please enter a valid email address.");
         } else {
             if (email !== "" && name !== "") {
-                const response = await fetch('https://whereisthepubcrawl.com/API/register.php', { // 'https://whereisthepubcrawl.com/API/login.php'
+                const response = await fetch('https://whereisthepubcrawl.com/API/register.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -52,7 +52,6 @@ const RegisterScreen = () => {
                         name: name,
                         email: email,
                         city_id: city_id,
-
                     }),
                 });
                 const dataRes = await response.json();

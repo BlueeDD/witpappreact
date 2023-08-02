@@ -129,7 +129,7 @@ export default function App() {
                   name="Feed"
                   component={Feed}
                   options={{
-                    title: "Pub Crawl Malaga",
+                    title: "Pub Crawl " + authContext.cityName,
                   }}
                 />
                 ) : (
@@ -138,7 +138,7 @@ export default function App() {
                     name="Default"
                     component={Default}
                     options={{
-                      title: "Pub Crawl Malaga",
+                      title: "Pub Crawl " + authContext.cityName,
                     }}
                   />
                 )
@@ -147,7 +147,7 @@ export default function App() {
                   name="Login"
                   component={Login}
                   options={{
-                    title: "Pub Crawl Malaga",
+                    title: "Pub Crawl " + authContext.cityName,
                   }}
                 />
               )}
@@ -155,21 +155,21 @@ export default function App() {
                 name="Register"
                 component={Register}
                 options={{
-                  title: "Pub Crawl Malaga",
+                  title: "Pub Crawl " + authContext.cityName,
                 }}
               />
               <Stack.Screen
                 name="Profile"
                 component={Profile}
                 options={{
-                  title: "Pub Crawl Malaga",
+                  title: "Pub Crawl " + authContext.cityName,
                 }}
               />
               <Stack.Screen
                 name="ForgotPassword"
                 component={ForgotPassword}
                 options={{
-                  title: "Pub Crawl Malaga",
+                  title: "Pub Crawl " + authContext.cityName,
                 }}
               />
             </Stack.Navigator>

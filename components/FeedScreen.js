@@ -16,6 +16,7 @@ const FeedScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentStop, setCurrentStop] = useState(-2);
   const [pubcrawlID, setPubcrawlID] = useState(null);
+  const [leaderName, setLeaderName] = useState("");
   const isLeader = useRef(false);
   const isStopFinished = useRef(false);
   const manual = useRef(false);
@@ -26,6 +27,7 @@ const FeedScreen = () => {
     popup2Open: false,
     popup3Open: false,
     popup4Open: false,
+    popup5Open: false,
   });
 
   const [countIn, setCountIn] = useState(0);
@@ -66,7 +68,7 @@ const FeedScreen = () => {
    * @param {*} checkboxName
    */
   const handleCheckboxToggle = (checkboxName) => {
-    startTimer(); // Reset the timer when a checkbox is clicked
+    // startTimer(); // Reset the timer when a checkbox is clicked
     manual.current = true;
     setCheckboxes((prevValue) => {
       const newState = { ...prevValue };
@@ -131,15 +133,10 @@ const FeedScreen = () => {
   const handleButtonOneClick = () => {
     if (!popupState.popup4Open) {
       handleCheckboxToggle("checkbox" + (currentStop + 1));
+      setCountOut(0);
     } else {
-      if (currentStop === -1) {
-        setCountOut(0);
-        isStopFinished.current = true;
-        handleCheckboxToggle("checkbox" + (currentStop + 1));
-    } else {
-        setCountOut(0);
-        isStopFinished.current = true;
-      }        
+      setCountOut(0);
+      isStopFinished.current = true;
     }
   };
 
@@ -167,33 +164,38 @@ const FeedScreen = () => {
   }, [stops]);
   
   useEffect(() => {
+    if (isLeader.current) {
     const intervalId = setInterval(getCurrentLocation, 5000); // Update location every 5 seconds  
     return () => {
       clearInterval(intervalId); // Clear the interval when the component unmounts
     };
-  }, []);
+  }
+  }, [isLeader.current]);
 
   useEffect(() => {
     setNextStop();
     console.log("countOut: " + countOut);
     console.log("countIn: " + countIn);
-    console.log("------------");
   }, [currentLocation]);  
 
   useEffect(() => {
+    // if 1 in, the "you reached the pub" popup will open
     if (countIn === 1) {
       handleClosePopup(4);
       handleOpenPopup(1);
-    } else if (countIn === 4) {
+      //after 2 minutes in, the "you're still here" popup will open
+    } else if (countIn === 25) {
       handleClosePopup(1);
       handleOpenPopup(2);
-    } else if (countIn === 8) {
+      //after 4 minutes in, the "now it will update" popup will open
+    } else if (countIn === 50) {
       handleClosePopup(2);
       handleOpenPopup(3);
       handleCheckboxToggle("checkbox" + (currentStop + 1));
       isStopFinished.current = true;
       setCountOut(0);
-    } else if (countOut === 3) {
+      //after 1 minute out, the "do you want to leave" popup will open
+    } else if (countOut === 12) {
       handleClosePopup(3);
       handleOpenPopup(4);
     }
@@ -286,7 +288,6 @@ const checkLocationPermission = async () => {
 
   
   const getPubcrawlData = async () => {
-    // TODO : replace with // 'https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php' 
     const response = await fetch('https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php', {
       method: 'POST',
       headers: {
@@ -300,32 +301,50 @@ const checkLocationPermission = async () => {
     });
     const dataRes = await response.json();
     if (dataRes.code === 0) {
-      if (dataRes.data.pubcrawl.last_visited_place < 0) {
-        initialCheckboxes["checkbox0"] = false;
-      } else {
+      if (dataRes.data.pubcrawl.last_visited_place == 0) {
         initialCheckboxes["checkbox0"] = true;
-      }
-      dataRes.data.stops.forEach((item) => {
-        if (item.place_order < dataRes.data.pubcrawl.last_visited_place) {
-          initialCheckboxes["checkbox" + item.place_order] = true; // Set initial state to true for the first checkbox (using place order)
-          initialDisabled["checkbox" + (item.place_order - 1)] = true;
-        } else if (item.place_order == dataRes.data.pubcrawl.last_visited_place) {
-          initialCheckboxes["checkbox" + item.place_order] = true; // Set initial state to true for the current checkbox (using place order)
-          initialDisabled["checkbox" + (item.place_order -1)] = false;
-          initialDisabled["checkbox" + (item.place_order)] = false;
+        initialDisabled["checkbox0"] = false;
+        initialCheckboxes["checkbox1"] = false;
+        initialDisabled["checkbox1"] = false;
+        dataRes.data.stops.forEach((item) => {
+          if (item.place_order != 1) {
+            initialCheckboxes["checkbox" + item.place_order] = false; // Set initial state to true for the first checkbox (using place order)
+            initialDisabled["checkbox" + item.place_order] = true;
+          }
+        });
+      } else {
+        if (dataRes.data.pubcrawl.last_visited_place == -1) {
+          initialCheckboxes["checkbox0"] = false;
+          initialDisabled["checkbox0"] = false;
         } else {
-        initialCheckboxes["checkbox" + item.place_order] = false; // Set initial state to false for each checkbox (using place order)
-        initialDisabled["checkbox" + (item.place_order)] = true;
-      }});
+          initialCheckboxes["checkbox0"] = true;
+        }
+        dataRes.data.stops.forEach((item) => {
+          if (item.place_order < dataRes.data.pubcrawl.last_visited_place) {
+            initialCheckboxes["checkbox" + item.place_order] = true; // Set initial state to true for the first checkbox (using place order)
+            initialDisabled["checkbox" + (item.place_order - 1)] = true;
+          } else if (item.place_order == dataRes.data.pubcrawl.last_visited_place) {
+            initialCheckboxes["checkbox" + item.place_order] = true; // Set initial state to true for the current checkbox (using place order)
+            initialDisabled["checkbox" + (item.place_order -1)] = false;
+            initialDisabled["checkbox" + (item.place_order)] = false;
+          } else {
+          initialCheckboxes["checkbox" + item.place_order] = false; // Set initial state to false for each checkbox (using place order)
+          initialDisabled["checkbox" + (item.place_order)] = true;
+        }});
+      }
       setCheckboxes(initialCheckboxes);
       setDisabled(initialDisabled);
+      // console.log("disabled : " + JSON.stringify(initialDisabled));
       setMeetingPoint(dataRes.data.pubcrawl.meeting_point);
       setStops(dataRes.data.stops);
       setCurrentStop(dataRes.data.pubcrawl.last_visited_place);
       setPubcrawlID(dataRes.data.pubcrawl.id);
       setHasPubcrawl(true);
-      isLeader.current=(dataRes.data.pubcrawl.leader_id===user.id);
+      setLeaderName(dataRes.data.pubcrawl.leader_name);
+      isLeader.current=(dataRes.data.pubcrawl.leader_id==user.id);
       console.log("isLeader : " + isLeader.current);
+      console.log("isLeaderID : " + dataRes.data.pubcrawl.leader_id);
+      console.log("user id : " + user.id);
       {dataRes.data.pubcrawl.last_visited_place === -1 ? isStopFinished.current = true : isStopFinished.current = false;}
     } else if (dataRes.code == 2) {
       setHasPubcrawl(false);
@@ -338,8 +357,8 @@ const checkLocationPermission = async () => {
   };
 
   const setNextStop = async () => {
-    console.log("current stop : " + currentStop);
-    console.log("isStopFinished : " + isStopFinished.current);
+    // console.log("current stop : " + currentStop);
+    // console.log("isStopFinished : " + isStopFinished.current);
     const response = await fetch('https://whereisthepubcrawl.com/API/setNextStop.php', {
       method: 'POST',
       headers: {
@@ -444,7 +463,6 @@ const checkLocationPermission = async () => {
         ])
       ).start();
   };
-  
 //----------------------------------------RENDER---------------------------------------------------------
 
   return (
@@ -457,14 +475,19 @@ const checkLocationPermission = async () => {
       ) : (
       <View style={styles.container}>
         <StatusBar barStyle="light-content" />
-        {currentLocation && isStopFinished.current && (
+        {currentLocation && isStopFinished.current && isLeader.current && (
           <Text style={{fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen"}}>
               { currentStop === -1 ? "Meeting point" : "Next Stop"} is {distance} meters away
           </Text>
         )}
-        {currentLocation && !isStopFinished.current && (
+        {currentLocation && !isStopFinished.current && isLeader.current && (
           <Text style={{fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen"}}>
               You are { currentStop === 0 ? "at the Meeting point" : "in a stop"}
+          </Text>
+        )}
+        { !isLeader.current && (
+          <Text style={{fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen"}}>
+              The leader of the pubcrawl is {leaderName}
           </Text>
         )}
         <Popup
@@ -503,11 +526,20 @@ const checkLocationPermission = async () => {
           popupText={"Do you want to update the status of the pubcrawl now ?"}
           updateButton={true}
         />
+        <Popup
+          isOpen={popupState.popup5Open}
+          onClose={() => handleClosePopup(5)}
+          onButtonOneClick={handleButtonOneClick}
+          onButtonTwoClick={handleButtonTwoClick}
+          popupTitle={currentStop=== -1 ? "You clicked on the meeting point without reaching it yet" : "It hasn't been long since you changed stop"}
+          popupText={currentStop=== -1 ? "Do you want to start the pubcrawl manually ?" : "Do you still want to update the status of the pubcrawl ?"}
+          updateButton={true}
+        />
           <ScrollView contentContainerStyle={styles.row}>
             <View style={styles.column}>
               <TouchableOpacity
                 style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
-                onPress={() => handleCheckboxToggle("checkbox0")}
+                onPress={() => { isStopFinished.current && !checkboxes["checkbox0"] ? handleOpenPopup(5) : handleCheckboxToggle("checkbox0")}}
                 disabled={isLeader.current ? disabled["checkbox0"] : true}
                 >
                 {!checkboxes["checkbox0"] && timer > 0 && (
@@ -533,7 +565,7 @@ const checkLocationPermission = async () => {
                   )}
                   <TouchableOpacity
                     style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
-                    onPress={() => handleCheckboxToggle("checkbox" + stop.place_order)}
+                    onPress={() => { !isStopFinished.current && !checkboxes["checkbox" + stop.place_order] ? handleOpenPopup(5) : handleCheckboxToggle("checkbox" + stop.place_order)}}
                     disabled={isLeader.current ? disabled["checkbox" + stop.place_order] : true}
                     >
                     {!checkboxes["checkbox" + stop.place_order] && checkboxes["checkbox" + (stop.place_order -1)] && timer > 0 && (

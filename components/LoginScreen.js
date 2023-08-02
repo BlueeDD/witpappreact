@@ -6,11 +6,10 @@ import { AuthContext } from '../navigation';
 
 const LoginForm = () => {
     const navigation = useNavigation();
-    const { user, setHasUser, setUser } = useContext(AuthContext);
+    const { user, setHasUser, setUser, setIsLocationEnabled, setCityName } = useContext(AuthContext);
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [isValid, setIsValid] = useState(true);
-    const {isLocationEnabled, setIsLocationEnabled} = useContext(AuthContext);
 
     const checkLocationPermission = async () => {
         try {
@@ -36,7 +35,7 @@ const LoginForm = () => {
         const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
         setIsValid(emailPattern.test(email));
         if (email == "") {
-            setIsValid(true);
+            setIsValid(true); // to erase validation message (but check of empty string is done in handleLoginPress)
         }
     };
 
@@ -53,7 +52,7 @@ const LoginForm = () => {
             alert("Please enter a valid email address.");
         } else {
             if (email !== "" && password !== "") {
-                const response = await fetch('https://whereisthepubcrawl.com/API/login.php', { // 'https://whereisthepubcrawl.com/API/login.php'
+                const response = await fetch('https://whereisthepubcrawl.com/API/login.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -73,6 +72,7 @@ const LoginForm = () => {
                         role: dataRes.data.role,
                         agentCityId: dataRes.data.agent_city_id,
                     });
+                    setCityName(dataRes.data.city_name);
                 } else {
                     alert(dataRes.message);
                     setHasUser(false);
