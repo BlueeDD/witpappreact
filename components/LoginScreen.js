@@ -72,7 +72,7 @@ const LoginForm = () => {
                         role: dataRes.data.role,
                         agentCityId: dataRes.data.agent_city_id,
                     });
-                    setCityName(dataRes.data.agent_city_name);
+                    setCityName(dataRes.data.city_name);
                 } else {
                     alert(dataRes.message);
                     setHasUser(false);

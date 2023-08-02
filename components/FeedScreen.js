@@ -10,7 +10,7 @@ const FeedScreen = () => {
   // set the checkboxes
   const initialCheckboxes = {};
   const initialDisabled = {};
-  const {setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user, setCityName} = useContext(AuthContext);
+  const {setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user} = useContext(AuthContext);
   const [checkboxes, setCheckboxes] = useState({});
   const [disabled, setDisabled] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -348,10 +348,8 @@ const checkLocationPermission = async () => {
       {dataRes.data.pubcrawl.last_visited_place === -1 ? isStopFinished.current = true : isStopFinished.current = false;}
     } else if (dataRes.code == 2) {
       setHasPubcrawl(false);
-      setCityName(dataRes.data.city_name);
     } else if (dataRes.code == 5) {
       setHasPubcrawl(false);
-      setCityName(dataRes.data.city_name);
       console.log("You have already finished today pubcrawl.");
     } else {
         alert("We encountered a problem to get the pubcrawl data. Please try again later.");
