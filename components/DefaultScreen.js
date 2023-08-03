@@ -149,6 +149,7 @@ const DefaultScreen = () => {
         alignItems: 'center',
         backgroundColor: 'red',
         padding: 8,
+        paddingHorizontal: 12,
       },
       underlined: {
         textDecorationLine: 'underline',
