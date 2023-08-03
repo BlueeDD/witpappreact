@@ -9,6 +9,8 @@ const initialUser = {
   agentCityId: null,
 };
 
+const initialCity =  "South Tours";
+
 export const AuthContext = createContext({
   hasUser: false,
   setHasUser: () => { },
@@ -22,6 +24,10 @@ export const AuthContext = createContext({
   setIsLocationEnabled: () => { },
   hasPubcrawl: false,
   setHasPubcrawl: () => { },
+  cityName: initialCity,
+  setCityName: () => { },
+  isVisible: false,
+  setIsVisible: () => { },
 });
 
 export const Stack = createStackNavigator();
@@ -33,6 +39,8 @@ const AuthProvider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(true);
   const [isLocationEnabled, setIsLocationEnabled] = useState(false);
   const [hasPubcrawl, setHasPubcrawl] = useState(false);
+  const [cityName, setCityName] = useState(initialCity);
+  const [isVisible, setIsVisible] = useState(false);
 
   const handleSetUser = (userData) => {
     setUser(userData);
@@ -53,6 +61,10 @@ const AuthProvider = ({ children }) => {
         setIsLocationEnabled,
         hasPubcrawl,
         setHasPubcrawl,
+        cityName,
+        setCityName,
+        isVisible,
+        setIsVisible
       }}
     >
       {children}

@@ -16,6 +16,7 @@ const FeedScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentStop, setCurrentStop] = useState(-2);
   const [pubcrawlID, setPubcrawlID] = useState(null);
+  const [leaderName, setLeaderName] = useState("");
   const isLeader = useRef(false);
   const isStopFinished = useRef(false);
   const manual = useRef(false);
@@ -130,13 +131,12 @@ const FeedScreen = () => {
     }));
   };
   const handleButtonOneClick = () => {
-    if (!popupState.popup4Open && !popupState.popup5Open) {
+    if (!popupState.popup4Open) {
       handleCheckboxToggle("checkbox" + (currentStop + 1));
       setCountOut(0);
     } else {
-        setCountOut(0);
-        isStopFinished.current = true;
-        handleCheckboxToggle("checkbox" + (currentStop + 1));
+      setCountOut(0);
+      isStopFinished.current = true;
     }
   };
 
@@ -164,32 +164,38 @@ const FeedScreen = () => {
   }, [stops]);
   
   useEffect(() => {
+    if (isLeader.current) {
     const intervalId = setInterval(getCurrentLocation, 5000); // Update location every 5 seconds  
     return () => {
       clearInterval(intervalId); // Clear the interval when the component unmounts
     };
-  }, []);
+  }
+  }, [isLeader.current]);
 
   useEffect(() => {
     setNextStop();
-    // console.log("countOut: " + countOut);
-    // console.log("countIn: " + countIn);
+    console.log("countOut: " + countOut);
+    console.log("countIn: " + countIn);
   }, [currentLocation]);  
 
   useEffect(() => {
+    // if 1 in, the "you reached the pub" popup will open
     if (countIn === 1) {
       handleClosePopup(4);
       handleOpenPopup(1);
-    } else if (countIn === 4) {
+      //after 2 minutes in, the "you're still here" popup will open
+    } else if (countIn === 25) {
       handleClosePopup(1);
       handleOpenPopup(2);
-    } else if (countIn === 8) {
+      //after 4 minutes in, the "now it will update" popup will open
+    } else if (countIn === 50) {
       handleClosePopup(2);
       handleOpenPopup(3);
       handleCheckboxToggle("checkbox" + (currentStop + 1));
       isStopFinished.current = true;
       setCountOut(0);
-    } else if (countOut === 3) {
+      //after 1 minute out, the "do you want to leave" popup will open
+    } else if (countOut === 12) {
       handleClosePopup(3);
       handleOpenPopup(4);
     }
@@ -328,13 +334,17 @@ const checkLocationPermission = async () => {
       }
       setCheckboxes(initialCheckboxes);
       setDisabled(initialDisabled);
+      // console.log("disabled : " + JSON.stringify(initialDisabled));
       setMeetingPoint(dataRes.data.pubcrawl.meeting_point);
       setStops(dataRes.data.stops);
       setCurrentStop(dataRes.data.pubcrawl.last_visited_place);
       setPubcrawlID(dataRes.data.pubcrawl.id);
       setHasPubcrawl(true);
-      isLeader.current=(dataRes.data.pubcrawl.leader_id===user.id);
-      // console.log("isLeader : " + isLeader.current);
+      setLeaderName(dataRes.data.pubcrawl.leader_name);
+      isLeader.current=(dataRes.data.pubcrawl.leader_id==user.id);
+      console.log("isLeader : " + isLeader.current);
+      console.log("isLeaderID : " + dataRes.data.pubcrawl.leader_id);
+      console.log("user id : " + user.id);
       {dataRes.data.pubcrawl.last_visited_place === -1 ? isStopFinished.current = true : isStopFinished.current = false;}
     } else if (dataRes.code == 2) {
       setHasPubcrawl(false);
@@ -465,14 +475,19 @@ const checkLocationPermission = async () => {
       ) : (
       <View style={styles.container}>
         <StatusBar barStyle="light-content" />
-        {currentLocation && isStopFinished.current && (
+        {currentLocation && isStopFinished.current && isLeader.current && (
           <Text style={{fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen"}}>
               { currentStop === -1 ? "Meeting point" : "Next Stop"} is {distance} meters away
           </Text>
         )}
-        {currentLocation && !isStopFinished.current && (
+        {currentLocation && !isStopFinished.current && isLeader.current && (
           <Text style={{fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen"}}>
               You are { currentStop === 0 ? "at the Meeting point" : "in a stop"}
+          </Text>
+        )}
+        { !isLeader.current && (
+          <Text style={{fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen"}}>
+              The leader of the pubcrawl is {leaderName}
           </Text>
         )}
         <Popup
@@ -524,7 +539,7 @@ const checkLocationPermission = async () => {
             <View style={styles.column}>
               <TouchableOpacity
                 style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
-                onPress={() => { !isStopFinished.current && !checkboxes["checkbox0"] ? handleOpenPopup(5) : handleCheckboxToggle("checkbox0")}}
+                onPress={() => { isStopFinished.current && !checkboxes["checkbox0"] ? handleOpenPopup(5) : handleCheckboxToggle("checkbox0")}}
                 disabled={isLeader.current ? disabled["checkbox0"] : true}
                 >
                 {!checkboxes["checkbox0"] && timer > 0 && (
