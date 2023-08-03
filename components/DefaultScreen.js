@@ -8,8 +8,7 @@ import { AuthContext } from '../navigation';
 
 const DefaultScreen = () => {
    
-  const {isLocationEnabled, setIsLocationEnabled, hasPubcrawl, setHasPubcrawl,cityName, setCityName} = useContext(AuthContext);
-  const [isVisible, setIsVisible] = useState(false);
+  const {isLocationEnabled, setIsLocationEnabled, hasPubcrawl, setHasPubcrawl,cityName, setCityName, isVisible, setIsVisible} = useContext(AuthContext);
   const [loop, setLoop] = useState(false);
   
   // Show the text after 500ms (avoid seeing it if you don't stay on the screen for long)
