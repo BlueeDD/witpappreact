@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { View, Text } from 'react-native';
 import { TextInput, Image, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
 
-const RegisterScreen = () => {
+import { useNavigation } from '@react-navigation/native';
 
+const RegisterScreen = () => {
+    const navigation = useNavigation();
     const [email, setEmail] = React.useState("");
     const [name, setName] = React.useState("");
     const [cities, setCities] = React.useState([]);
@@ -39,10 +41,11 @@ const RegisterScreen = () => {
     };
 
     const handleCreateAccountPress = async () => {
+        console.log(city_id);
         if (!isValid) {
             alert("Please enter a valid email address.");
         } else {
-            if (email !== "" && name !== "") {
+            if (email !== "" && name !== "" && city_id !== "") {
                 const response = await fetch('https://whereisthepubcrawl.com/API/register.php', {
                     method: 'POST',
                     headers: {
@@ -57,14 +60,19 @@ const RegisterScreen = () => {
                 const dataRes = await response.json();
                 if (dataRes.code == 0) { // if no error (user found)
                     alert("A request has been sent to the administrator. You will receive an email when your account is created.");
-            } else if (dataRes.code !== 0) { 
-                alert(dataRes.message);
-            } else {
+                    navigation.navigate('Login');
+                } else if (dataRes.code !== 0) {
+                    alert(dataRes.message);
+                } else {
+                    alert("Please fill in all fields");
+                }
+            } else if (city_id == "") {
+                alert("Please select a city");
+            } else { // some fields are empty
                 alert("Please fill in all fields");
             }
         }
-    
-    }};
+    };
 
     useEffect(() => {
         getCitiesData();
