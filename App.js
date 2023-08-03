@@ -101,6 +101,7 @@ export default function App() {
       <NavigationContainer>
         <AuthContext.Consumer>
           {(authContext) =>
+          // If the user is logged in, show the feed (adn the other components inside the app)
             authContext.hasUser ? (
               <Stack.Navigator
                 screenOptions={{
@@ -149,6 +150,7 @@ export default function App() {
                 />
               </Stack.Navigator>
             ) : (
+              // otherwise show the login screen (and the other components outside the app)
               <Stack.Navigator
                 screenOptions={{
                   headerBackImage: () => (
