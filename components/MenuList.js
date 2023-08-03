@@ -13,6 +13,7 @@ const MenuList = () => {
     setHasUser(false);
     setIsVisible(false);
     setCityName("South Tours");
+    navigation.navigate('Login');
   };
 
   const handleProfilePress = () => {
