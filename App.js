@@ -172,6 +172,13 @@ export default function App() {
                   title: "Pub Crawl " + authContext.cityName,
                 }}
               />
+              <Stack.Screen
+                name="Login"
+                component={Login}
+                options={{
+                  title: "Pub Crawl " + authContext.cityName,
+                }}
+              />
             </Stack.Navigator>
           )}
         </AuthContext.Consumer>
