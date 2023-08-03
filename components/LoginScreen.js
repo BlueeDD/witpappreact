@@ -13,7 +13,7 @@ const LoginForm = () => {
 
     const checkLocationPermission = async () => {
         try {
-          const { status } = await Location.requestForegroundPermissionsAsync();
+          const { status } = await Location.requestBackgroundPermissionsAsync();
           if (status === 'granted') {
             console.log('Location permission is granted');
             setIsLocationEnabled(true);
