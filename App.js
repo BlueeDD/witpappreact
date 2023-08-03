@@ -100,31 +100,30 @@ export default function App() {
     <AuthProvider>
       <NavigationContainer>
         <AuthContext.Consumer>
-          {(authContext) => (
-              authContext.hasUser ? (
-                // If the user is logged in, show the Feed screen if there is a pubcrawl ongoing or planned today and the location is enabled
-                (authContext.hasPubcrawl && authContext.isLocationEnabled) ? (
-                  <Stack.Navigator
-                    screenOptions={{
-                      headerBackImage: () => (
-                        <Image
-                          source={require("./assets/back.png")}
-                          style={{ width: 30, height: 30, marginLeft: 15 }}
-                        />
-                      ),
-                      headerBackTitleVisible: false,
-                      headerTintColor: "white",
-                      headerTitleStyle: {
-                        fontWeight: "bold",
-                      },
-                      headerRight: () => (
-                        <HeaderMenu hasUser={authContext.hasUser} />
-                      ),
-                      headerStyle: {
-                        backgroundColor: "#f48024",
-                      },
-                    }}
-                  >
+          {(authContext) =>
+            authContext.hasUser ? (
+              <Stack.Navigator
+                screenOptions={{
+                  headerBackImage: () => (
+                    <Image
+                      source={require("./assets/back.png")}
+                      style={{ width: 30, height: 30, marginLeft: 15 }}
+                    />
+                  ),
+                  headerBackTitleVisible: false,
+                  headerTintColor: "white",
+                  headerTitleStyle: {
+                    fontWeight: "bold",
+                  },
+                  headerRight: () => (
+                    <HeaderMenu hasUser={authContext.hasUser} />
+                  ),
+                  headerStyle: {
+                    backgroundColor: "#f48024",
+                  },
+                }}
+              >
+                {authContext.hasPubcrawl && authContext.isLocationEnabled ? (
                   <Stack.Screen
                     name="Feed"
                     component={Feed}
@@ -132,37 +131,7 @@ export default function App() {
                       title: "Pub Crawl " + authContext.cityName,
                     }}
                   />
-                  <Stack.Screen
-                    name="Profile"
-                    component={Profile}
-                    options={{
-                      title: "Pub Crawl " + authContext.cityName,
-                    }}
-                  />
-                  </Stack.Navigator>
                 ) : (
-                  // If the user is logged in, show the Default screen if there is no pubcrawl ongoing or planned today or the location is disabled
-                  <Stack.Navigator
-                    screenOptions={{
-                      headerBackImage: () => (
-                        <Image
-                          source={require("./assets/back.png")}
-                          style={{ width: 30, height: 30, marginLeft: 15 }}
-                        />
-                      ),
-                      headerBackTitleVisible: false,
-                      headerTintColor: "white",
-                      headerTitleStyle: {
-                        fontWeight: "bold",
-                      },
-                      headerRight: () => (
-                        <HeaderMenu hasUser={authContext.hasUser} />
-                      ),
-                      headerStyle: {
-                        backgroundColor: "#f48024",
-                      },
-                    }}
-                  >
                   <Stack.Screen
                     name="Default"
                     component={Default}
@@ -170,54 +139,61 @@ export default function App() {
                       title: "Pub Crawl " + authContext.cityName,
                     }}
                   />
-                  </Stack.Navigator>
-                )
-              ) : (
-                <Stack.Navigator
-                    screenOptions={{
-                      headerBackImage: () => (
-                        <Image
-                          source={require("./assets/back.png")}
-                          style={{ width: 30, height: 30, marginLeft: 15 }}
-                        />
-                      ),
-                      headerBackTitleVisible: false,
-                      headerTintColor: "white",
-                      headerTitleStyle: {
-                        fontWeight: "bold",
-                      },
-                      headerRight: () => (
-                        <HeaderMenu hasUser={authContext.hasUser} />
-                      ),
-                      headerStyle: {
-                        backgroundColor: "#f48024",
-                      },
-                    }}
-                  >
-                  <Stack.Screen
-                    name="Login"
-                    component={Login}
-                    options={{
-                      title: "Pub Crawl " + authContext.cityName,
-                    }}
-                  />
-                  <Stack.Screen
-                    name="Register"
-                    component={Register}
-                    options={{
-                      title: "Pub Crawl " + authContext.cityName,
-                    }}
-                  />
-                  <Stack.Screen
-                    name="ForgotPassword"
-                    component={ForgotPassword}
-                    options={{
-                      title: "Pub Crawl " + authContext.cityName,
-                    }}
-                  />
-                </Stack.Navigator>
-              )
-          )}
+                )}
+                <Stack.Screen
+                  name="Profile"
+                  component={Profile}
+                  options={{
+                    title: "Pub Crawl " + authContext.cityName,
+                  }}
+                />
+              </Stack.Navigator>
+            ) : (
+              <Stack.Navigator
+                screenOptions={{
+                  headerBackImage: () => (
+                    <Image
+                      source={require("./assets/back.png")}
+                      style={{ width: 30, height: 30, marginLeft: 15 }}
+                    />
+                  ),
+                  headerBackTitleVisible: false,
+                  headerTintColor: "white",
+                  headerTitleStyle: {
+                    fontWeight: "bold",
+                  },
+                  headerRight: () => (
+                    <HeaderMenu hasUser={authContext.hasUser} />
+                  ),
+                  headerStyle: {
+                    backgroundColor: "#f48024",
+                  },
+                }}
+              >
+                <Stack.Screen
+                  name="Login"
+                  component={Login}
+                  options={{
+                    title: "Pub Crawl " + authContext.cityName,
+                  }}
+                />
+                <Stack.Screen
+                  name="Register"
+                  component={Register}
+                  options={{
+                    title: "Pub Crawl " + authContext.cityName,
+                  }}
+                />
+                <Stack.Screen
+                  name="ForgotPassword"
+                  component={ForgotPassword}
+                  options={{
+                    title: "Pub Crawl " + authContext.cityName,
+                  }}
+                />
+              </Stack.Navigator>
+            )
+          }
         </AuthContext.Consumer>
       </NavigationContainer>
     </AuthProvider>
