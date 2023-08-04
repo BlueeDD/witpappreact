@@ -1,8 +1,10 @@
 import React, { useContext, useState, useEffect } from "react";
-import { View, TextInput, Image, StyleSheet, Text, TouchableOpacity, KeyboardAvoidingView } from "react-native";
+import { View, TextInput, Image, StyleSheet, Text, TouchableOpacity } from "react-native";
 import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../navigation';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+
 
 const LoginForm = () => {
     const navigation = useNavigation();
@@ -84,64 +86,64 @@ const LoginForm = () => {
     };
 
     return (
-        <KeyboardAvoidingView
+        <KeyboardAwareScrollView
             behavior={"padding"}
-            keyboardVerticalOffset={0}>
-            <View style={styles.view}>
-                <Image style={{ alignSelf: "center", marginBottom: 20 }}
-                    source={require('../assets/logo.webp')} />
-                <TextInput style={styles.textInput}
-                    placeholder="Email"
-                    placeholderTextColor={"white"}
-                    onChangeText={text => handleEmailChange(text)}
-                    value={email}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    required={true}
-                    selectionColor={"grey"}
-                />
-                {!isValid && (
-                    <Text style={styles.errorText}>Please enter a valid email address.</Text>
-                )}
-                <TextInput style={styles.textInput}
-                    placeholder="Password"
-                    placeholderTextColor={"white"}
-                    onChangeText={text => setPassword(text)}
-                    value={password}
-                    secureTextEntry={true}
-                    selectionColor={"grey"}
-                />
-                <View style={{ width: 200 }}>
-                    <Text
-                        underlineColor="#f48024"
-                        style={[styles.registerText,{marginTop: -10}]}>You forgot your password ?
-                        <TouchableOpacity
-                            onPress={handleForgotPasswordPress} >
-                            <Text style={[styles.registerText, styles.underline]}>
-                                Reset it here
-                            </Text>
-                        </TouchableOpacity>
-                    </Text>
-                </View>
-                <TouchableOpacity
-                    style={[styles.button, { marginBottom: 15, marginTop: 30 }]}
-                    onPress={handleLoginPress}>
-                    <Text style={styles.buttonText}>Login</Text>
-                </TouchableOpacity>
-                <View style={{ width: 200 }}>
-                    <Text
-                        underlineColor="#f48024"
-                        style={styles.registerText}>You don't have an account ?
-                        <TouchableOpacity onPress={handleRegisterPress} >
-                            <Text style={[styles.registerText, styles.underline]}>
-                                Register here
-                            </Text>
-                        </TouchableOpacity>
-                    </Text>
-                </View>
+            keyboardVerticalOffset={0}
+            contentContainerStyle={styles.view}
+        >
+            <Image style={{ alignSelf: "center", marginBottom: 20 }}
+                source={require('../assets/logo.webp')} />
+            <TextInput style={styles.textInput}
+                placeholder="Email"
+                placeholderTextColor={"white"}
+                onChangeText={text => handleEmailChange(text)}
+                value={email}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                required={true}
+                selectionColor={"grey"}
+            />
+            {!isValid && (
+                <Text style={styles.errorText}>Please enter a valid email address.</Text>
+            )}
+            <TextInput style={styles.textInput}
+                placeholder="Password"
+                placeholderTextColor={"white"}
+                onChangeText={text => setPassword(text)}
+                value={password}
+                secureTextEntry={true}
+                selectionColor={"grey"}
+            />
+            <View style={{ width: 200 }}>
+                <Text
+                    underlineColor="#f48024"
+                    style={[styles.registerText,{marginTop: -10}]}>You forgot your password ?
+                    <TouchableOpacity
+                        onPress={handleForgotPasswordPress} >
+                        <Text style={[styles.registerText, styles.underline]}>
+                            Reset it here
+                        </Text>
+                    </TouchableOpacity>
+                </Text>
             </View>
-        </KeyboardAvoidingView>
+            <TouchableOpacity
+                style={[styles.button, { marginBottom: 15, marginTop: 30 }]}
+                onPress={handleLoginPress}>
+                <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
+            <View style={{ width: 200 }}>
+                <Text
+                    underlineColor="#f48024"
+                    style={styles.registerText}>You don't have an account ?
+                    <TouchableOpacity onPress={handleRegisterPress} >
+                        <Text style={[styles.registerText, styles.underline]}>
+                            Register here
+                        </Text>
+                    </TouchableOpacity>
+                </Text>
+            </View>
+        </KeyboardAwareScrollView>
     );
 }
 const styles = StyleSheet.create({

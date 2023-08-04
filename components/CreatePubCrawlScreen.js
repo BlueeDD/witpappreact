@@ -1,24 +1,37 @@
-import React, {useEffect, useState} from 'react';
-import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView } from 'react-native';
+import React, {useEffect, useState, useContext} from 'react';
+import { View, Text, TextInput, StyleSheet } from 'react-native';
 import SearchableDropdown from 'react-native-searchable-dropdown';
 import Toggle from 'react-native-toggle-input';
 import ModalDropdown from 'react-native-modal-dropdown';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { AuthContext } from '../navigation';
+
 
 const CreatePubCrawlScreen = () => {
+  const {user} = useContext(AuthContext);
   const [toggle, setToggle] = React.useState(false);
   const [serverData, setServerData] = useState([]);
   const [selectedValue, setSelectedValue] = useState('2');
   const options = ['2', '3', '4', '5', '6'];
 
   const [stops, setStops] = useState([
-    { label: 'Stop 1', duration: ''},
-    { label: 'Stop 2', duration: ''},
-    { label: 'Stop 3', duration: ''},
-    { label: 'Stop 4', duration: ''},
+    { label: 'Meeting Point', id: '', duration: ''},
+    { label: '1', id: '', duration: ''},
+    { label: '2', id: '', duration: ''},
+    { label: '3', id: '', duration: ''},
+    { label: '4', id: '', duration: ''},
   ]);
 
   const handleSelect = (index) => {
     setSelectedValue(options[index]);
+  };
+
+
+  const handleSelectItem = (index, item) => {
+    const updatedStops = [...stops];
+    console.log('item', item);
+    updatedStops[index].id = item.id;
+    setStops(updatedStops);
   };
 
   const handleTimeChange = (index, text) => {
@@ -27,22 +40,35 @@ const CreatePubCrawlScreen = () => {
     setStops(updatedStops);
   };
 
+  const getStopsData = async () => {
+    const response = await fetch('https://whereisthepubcrawl.com/API/getPlaces.php', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        // pass city and user ids to the API
+        city_id: user.agentCityId, // we use user's city ID
+      }),
+    });
+    const dataRes = await response.json();
+    //here is the content of dataRes: [{"city_id": "1", "id": "1", "latitude": "36.72371616684815", "longitude": "-4.417598247528076", "stop": "Merced 14. Plaza de la Merced 14"}, {"city_id": "1", "id": "2", "latitude": "36.72365219204769", "longitude": "-4.41709776603106", "stop": "Picasso Bar Tapas, Pl. de la Merced, 20"}, {"city_id": "1", "id": "3", "latitude": "36.7223829789638", "longitude": "-4.421585459408515", "stop": "Camden Lock Malaga, Calle Convalecientes"}, {"city_id": "1", "id": "4", "latitude": "36.72232749160218", "longitude": "-4.421705048630165", "stop": "Gallery Club, Calle Convalecientes"}, {"city_id": "1", "id": "5", "latitude": "36.72226183562587", "longitude": "-4.421773785371996", "stop": "The Museum, Calle Convalecientes"}, {"city_id": "1", "id": "6", "latitude": "36.722955203904306", "longitude": "-4.422135203429746", "stop": "Smile Inc, Calle Nosquera"}, {"city_id": "1", "id": "7", "latitude": "36.722829361712165", "longitude": "-4.421640370730702", "stop": "Seven O clock, Calle Comedias"}, {"city_id": "1", "id": "8", "latitude": "36.722162277629174", "longitude": "-4.422687147770784", "stop": "Sala Bubbles, Calle Martires"}, {"city_id": "1", "id": "9", "latitude": "36.72214151555827", 
+// "longitude": "-4.421288411859857", "stop": "Sala Gold, Calle Luis de Velazquez"}]
+    //put the list of stops with their name in serverData
+    setServerData(dataRes.data.map((item) => ({name: item.stop, id: item.id})));
+  };
+  
   useEffect(() => {
-    fetch('https://jsonplaceholder.typicode.com/users')
-      .then((response) => response.json())
-      .then((responseJson) => {
-        //Successful response from the API Call
-        setServerData(responseJson);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    getStopsData();
   }, []);
+
   
   return (
-    <KeyboardAvoidingView
-      behavior={"padding"}
-      keyboardVerticalOffset={0}>
+    // <KeyboardAwareScrollView
+    //   contentContainerStyle={styles.container}
+    //   behavior="padding"
+    //   keyboardVerticalOffset={0}
+    // >
       <View style={styles.container}>
         <Text style={styles.title}>Create Pub Crawl</Text>
         <View style={{borderColor: '#f48204', borderWidth: 2, width: 380, alignItems: 'center', padding: 5}}>
@@ -63,11 +89,11 @@ const CreatePubCrawlScreen = () => {
         </View>
         {stops.map((Stop, index) => (
           <View key={index} style={styles.row}>
-            <Text style={{color:'gray'}}>{Stop.label}</Text>
+            {index===0 ? <Text style={{color:'gray'}}>Meeting Point</Text> : <Text style={{color:'gray'}}>Stop {Stop.label}</Text>}
             <SearchableDropdown
               onTextChange={(text) => console.log(text)}
               //On text change listner on the searchable input
-              onItemSelect={(item) => alert(JSON.stringify(item))}
+              onItemSelect={(item) => handleSelectItem(index, item)}
               //onItemSelect called after the selection from the dropdown
               containerStyle={{ flex: 2, padding: 5 }}
               //suggestion container style
@@ -90,33 +116,32 @@ const CreatePubCrawlScreen = () => {
               underlineColorAndroid="transparent"
               //To remove the underline from the android input
             />
-            <Text style={{color: 'gray'}}>Duration: </Text>
-            <TextInput
+            {index !== 0 && (<Text style={{color: 'gray'}}>Duration: </Text>)}
+            {index !== 0 && (<TextInput
               style={[styles.timeInput]}
               value={Stop.duration}
               onChangeText={(text) => handleTimeChange(index, text)}
-            />
-            <Text style={{color: 'gray'}}> minutes</Text>
+            /> )} 
+            {index !== 0 && ( <Text style={{color: 'gray'}}> minutes</Text> )}
           </View>
         ))}
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      {/* </KeyboardAwareScrollView> */}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     alignItems:'center',
-    padding: 20,
     backgroundColor: '#fff',
   },
   title: {
     fontSize: 25,
     fontWeight: 'bold',
-    marginBottom: 30,
+    marginTop: 20,
+    marginBottom: 20,
     color: '#f48024',
   },
   input: {
@@ -153,8 +178,8 @@ const styles = StyleSheet.create({
     width: 40,
   },
   dropdown: {
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
