@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import { View, TextInput, Image, StyleSheet, Text, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
+import { View, TextInput, Image, StyleSheet, Text, TouchableOpacity, KeyboardAvoidingView } from "react-native";
 import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../navigation';
@@ -13,7 +13,7 @@ const LoginForm = () => {
 
     const checkLocationPermission = async () => {
         try {
-          const { status } = await Location.requestBackgroundPermissionsAsync();
+          const { status } = await Location.requestForegroundPermissionsAsync();
           if (status === 'granted') {
             console.log('Location permission is granted');
             setIsLocationEnabled(true);

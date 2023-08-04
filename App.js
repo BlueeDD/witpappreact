@@ -9,6 +9,7 @@ import FeedScreen from "./components/FeedScreen";
 import DefaultScreen from "./components/DefaultScreen";
 import HeaderMenu from "./headerMenu";
 import ProfileScreen from "./components/ProfileScreen";
+import CreatePubCrawlScreen from "./components/CreatePubCrawlScreen";
 import AuthProvider, { AuthContext, Stack } from './navigation';
 import * as Notifications from 'expo-notifications';
 
@@ -38,6 +39,16 @@ const ForgotPassword = () => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       <ForgotPasswordScreen />
+      <Footer />
+    </View>
+  );
+}
+
+const CreatePubCrawl = () => {
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      <CreatePubCrawlScreen />
       <Footer />
     </View>
   );
@@ -144,6 +155,13 @@ export default function App() {
                 <Stack.Screen
                   name="Profile"
                   component={Profile}
+                  options={{
+                    title: "Pub Crawl " + authContext.cityName,
+                  }}
+                />
+                <Stack.Screen
+                  name="CreatePubCrawl"
+                  component={CreatePubCrawl}
                   options={{
                     title: "Pub Crawl " + authContext.cityName,
                   }}
