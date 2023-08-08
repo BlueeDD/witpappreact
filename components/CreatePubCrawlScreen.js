@@ -11,11 +11,11 @@ const CreatePubCrawlScreen = () => {
   const [toggle, setToggle] = React.useState(false);
   const [serverData, setServerData] = useState([]);
   const [modalVisible, setModalVisible] = useState(-1);
-  const [selectedValue, setSelectedValue] = useState('2');
+  const [selectedDuration, setSelectedDuration] = useState('2');
   const options = ['2', '3', '4', '5', '6'];
 
   const [stops, setStops] = useState([
-    { label: 'Meeting Point', id: '', name:'', duration: ''},
+    { label: 'Meeting Point', id: '', name:''},
     { label: '1', id: '', name:'', duration: ''},
     { label: '2', id: '', name:'', duration: ''},
     { label: '3', id: '', name:'', duration: ''},
@@ -23,7 +23,7 @@ const CreatePubCrawlScreen = () => {
   ]);
 
   const handleSelect = (index) => {
-    setSelectedValue(options[index]);
+    setSelectedDuration(options[index]);
   };
 
 
@@ -41,6 +41,20 @@ const CreatePubCrawlScreen = () => {
     const updatedStops = [...stops];
     updatedStops[index].duration = text;
     setStops(updatedStops);
+  };
+
+  const handleCreatePress = () => {
+    // if any of the fields is empty, alert the user
+    if (stops.some(stop => stop.name === '' || stop.duration === '')) {
+      alert('Please fill in all the fields.');
+      // if the sum of the stops durations is greater than the total duration of the pub crawl, alert the user
+    } else if (selectedDuration*60 < stops.slice(1).reduce((acc, stop) => acc + parseInt(stop.duration), 0)) {
+      alert('The total duration of the pub crawl cannot be less than the sum of the stops durations.');
+    } else {
+      console.log('stops',stops);
+      console.log('selectedDuration',selectedDuration);
+      console.log('toggle',toggle);
+    }
   };
 
   const getStopsData = async () => {
@@ -101,28 +115,37 @@ const CreatePubCrawlScreen = () => {
       {/* <View style={styles.container}> */}
         <Text style={styles.title}>Create Pub Crawl</Text>
         <View style={{borderColor: '#f48204', borderWidth: 2, width: 380, alignItems: 'center', padding: 5}}>
-        <View style={[styles.row,{marginBottom: 30}]}>
+        <View style={[styles.row,{marginBottom: 15}]}>
           <Text style={{color: 'gray'}}>Duration (in hours):</Text>
           <ModalDropdown
             options={options}
             onSelect={handleSelect}
             style={styles.dropdown}
             textStyle={styles.dropdownText}
-            defaultValue={selectedValue}
+            defaultValue={selectedDuration}
             dropdownStyle={[styles.dropdownContainer,{position: 'absolute', left: 237}]}
           />
         </View>
-        <View style={[styles.row,{marginBottom: 30}]}>
+        <View style={[styles.row,{marginBottom: 15}]}>
           <Text style={{color: "gray", marginRight: 15}}>Enable Timeline </Text>
           <Toggle toggle={toggle} setToggle={setToggle} />
         </View>
         {stops.map((Stop, index) => (
           <View key={index} style={styles.row}>
             {index===0 ? <Text style={{color:'gray'}}>Meeting Point</Text> : <Text style={{color:'gray'}}>Stop {Stop.label}</Text>}
-            <TouchableOpacity onPress={() => setModalVisible(index)}>
-            {Stop.name !== '' ? <Text style={styles.stopText}> {serverData[(Stop.id)-1].name} </Text>
-             : <Text style={[styles.stopText,{textAlign: 'center'}]}>Select a stop</Text>}
-            </TouchableOpacity>
+            {index===0 ? 
+              <TouchableOpacity onPress={() => setModalVisible(index)}>
+                {Stop.name !== '' ?
+                <Text style={[styles.stopText,{width: 200}]}> {serverData[(Stop.id)-1].name} </Text>
+                : <Text style={[styles.stopText,{width:200,textAlign: 'center'}]}>Select a stop</Text>}
+              </TouchableOpacity> 
+            : 
+             <TouchableOpacity onPress={() => setModalVisible(index)}>
+                {Stop.name !== '' ?
+                <Text style={styles.stopText}> {serverData[(Stop.id)-1].name} </Text>
+                : <Text style={[styles.stopText,{textAlign: 'center'}]}>Select a stop</Text>}
+              </TouchableOpacity>
+            }
             {index !== 0 && (<Text style={{color: 'gray'}}>Duration: </Text>)}
             {index !== 0 && (<TextInput
               style={[styles.timeInput]}
@@ -133,6 +156,11 @@ const CreatePubCrawlScreen = () => {
           </View>
         ))}
         </View>
+        <TouchableOpacity
+                style={[styles.button, { marginBottom: 15, marginTop: 30 }]}
+                onPress={handleCreatePress}>
+                <Text style={styles.buttonText}>Create</Text>
+            </TouchableOpacity>
       </KeyboardAwareScrollView>
     // </View>
   );
@@ -147,8 +175,8 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 25,
     fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 20,
+    marginTop: 15,
+    marginBottom: 15,
     color: '#f48024',
   },
   input: {
@@ -161,7 +189,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 10,
   },
   textInput: {
     padding: 12,
@@ -225,6 +253,23 @@ const styles = StyleSheet.create({
   dropdownContainer: {
     width: 51,
     alignItems: 'center',
+  },
+  button: {
+    width: 180,
+    backgroundColor: "#f48024",
+    borderWidth: 1,
+    borderRadius: 30,
+    shadowColor: "grey",
+    shadowOpacity: 0.8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+  },
+  buttonText: {
+      color: "black",
+      fontWeight: "bold",
+      textAlign: "center",
+      paddingVertical: 15,
+      fontSize: 18,
   },
 });
 
