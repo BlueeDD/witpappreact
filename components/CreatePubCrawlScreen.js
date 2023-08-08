@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, Modal, TouchableOpacity } from 'reac
 import Toggle from 'react-native-toggle-input';
 import ModalDropdown from 'react-native-modal-dropdown';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { AuthContext } from '../navigation';
 
 
@@ -21,6 +22,17 @@ const CreatePubCrawlScreen = () => {
     { label: '3', id: '', name:'', duration: ''},
     { label: '4', id: '', name:'', duration: ''},
   ]);
+
+   // Calculate the next starting hour
+   // Calculate the next starting hour
+  const now = new Date();
+  const nextStartingHour = new Date(now);
+  nextStartingHour.setMinutes(0, 0, 0);
+  nextStartingHour.setHours(22);
+
+  // State for datetime picker visibility and default date
+  const [showDateTimePicker, setShowDateTimePicker] = useState(false);
+  const [selectedStartDate, setSelectedStartDate] = useState(nextStartingHour);
 
   const handleSelect = (index) => {
     setSelectedDuration(options[index]);
@@ -42,6 +54,18 @@ const CreatePubCrawlScreen = () => {
     updatedStops[index].duration = text;
     setStops(updatedStops);
   };
+
+
+    // Function to handle datetime picker confirm
+    const handleDateTimeConfirm = (date) => {
+      setSelectedStartDate(date);
+      setShowDateTimePicker(false);
+    };
+  
+    // Function to handle datetime picker cancel
+    const handleDateTimeCancel = () => {
+      setShowDateTimePicker(false);
+    };
 
   const handleCreatePress = () => {
     // if any of the fields is empty, alert the user
@@ -112,9 +136,23 @@ const CreatePubCrawlScreen = () => {
           </TouchableOpacity>
         </View>
       </Modal>
+      <DateTimePickerModal
+        isVisible={showDateTimePicker}
+        mode="datetime"
+        date={selectedStartDate}
+        onConfirm={handleDateTimeConfirm}
+        onCancel={handleDateTimeCancel}
+        style={styles.dateTimePickerModal}
+      />
       {/* <View style={styles.container}> */}
         <Text style={styles.title}>Create Pub Crawl</Text>
         <View style={{borderColor: '#f48204', borderWidth: 2, width: 380, alignItems: 'center', padding: 5}}>
+        <View style={[styles.row,{marginTop:10, marginBottom: 15}]}>
+          <Text style={{ color: 'gray' }}>Starting at: </Text>
+          <TouchableOpacity onPress={() => setShowDateTimePicker(true)}>
+            <Text>{selectedStartDate.toLocaleString()}</Text>
+          </TouchableOpacity>
+        </View>
         <View style={[styles.row,{marginBottom: 15}]}>
           <Text style={{color: 'gray'}}>Duration (in hours):</Text>
           <ModalDropdown
@@ -190,6 +228,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
+  },
+  dateTimePickerModal: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
   },
   textInput: {
     padding: 12,
