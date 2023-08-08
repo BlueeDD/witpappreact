@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, TextInput, StyleSheet, Modal, TouchableOpacity, ScrollView, KeyboardAvoidingView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Modal, TouchableOpacity, ScrollView } from 'react-native';
 import Toggle from 'react-native-toggle-input';
 import ModalDropdown from 'react-native-modal-dropdown';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';

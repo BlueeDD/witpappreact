@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { View, Text } from 'react-native';
-import { TextInput, Image, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, ScrollView } from 'react-native';
+import { TextInput, Image, StyleSheet, TouchableOpacity, Platform } from "react-native";
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import { useNavigation } from '@react-navigation/native';
 
@@ -79,60 +80,62 @@ const RegisterScreen = () => {
     }, []);
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 100}>
-            <View style={styles.view}>
-                <Image style={{ alignSelf: "center", marginBottom: 20 }}
-                    source={require('../assets/logo.webp')} />
-                <TextInput style={styles.textInput}
-                    placeholder="Name"
-                    placeholderTextColor={"white"}
-                    onChangeText={text => setName(text)}
-                    value={name}
-                    selectionColor={"grey"}
-                />
-                <TextInput style={styles.textInput}
-                    placeholder="Email"
-                    placeholderTextColor={"white"}
-                    onChangeText={text => handleEmailChange(text)}
-                    value={email}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    required={true}
-                    selectionColor={"grey"}
-                />
-                {!isValid && (
-                    <Text style={styles.errorText}>Please enter a valid email address.</Text>
-                )}
-                <Text style={[styles.text, {}]}>Select your city :</Text>
-                {cities.map((city) => (
-                    <TouchableOpacity
-                        key={city.id}
-                        style={[
-                            styles.item,
-                            selectedItem === city && styles.selectedItem,
-                        ]}
-                        onPress={() => handleItemPress(city)}
-                    >
-                        <Text
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
+            <KeyboardAwareScrollView
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 100}>
+                <View style={styles.view}>
+                    <Image style={{ alignSelf: "center", marginBottom: 20 }}
+                        source={require('../assets/logo.webp')} />
+                    <TextInput style={styles.textInput}
+                        placeholder="Name"
+                        placeholderTextColor={"white"}
+                        onChangeText={text => setName(text)}
+                        value={name}
+                        selectionColor={"grey"}
+                    />
+                    <TextInput style={styles.textInput}
+                        placeholder="Email"
+                        placeholderTextColor={"white"}
+                        onChangeText={text => handleEmailChange(text)}
+                        value={email}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        required={true}
+                        selectionColor={"grey"}
+                    />
+                    {!isValid && (
+                        <Text style={styles.errorText}>Please enter a valid email address.</Text>
+                    )}
+                    <Text style={[styles.text, {}]}>Select your city :</Text>
+                    {cities.map((city) => (
+                        <TouchableOpacity
+                            key={city.id}
                             style={[
-                                styles.itemText,
-                                selectedItem === city && styles.selectedItemText,
+                                styles.item,
+                                selectedItem === city && styles.selectedItem,
                             ]}
+                            onPress={() => handleItemPress(city)}
                         >
-                            {city.name}
-                        </Text>
+                            <Text
+                                style={[
+                                    styles.itemText,
+                                    selectedItem === city && styles.selectedItemText,
+                                ]}
+                            >
+                                {city.name}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={handleCreateAccountPress}>
+                        <Text style={styles.buttonText}>Create account</Text>
                     </TouchableOpacity>
-                ))}
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={handleCreateAccountPress}>
-                    <Text style={styles.buttonText}>Create account</Text>
-                </TouchableOpacity>
-            </View>
-        </KeyboardAvoidingView>
+                </View>
+            </KeyboardAwareScrollView>
+        </ScrollView>
     );
 }
 

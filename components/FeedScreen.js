@@ -10,7 +10,7 @@ const FeedScreen = () => {
   // set the checkboxes
   const initialCheckboxes = {};
   const initialDisabled = {};
-  const {setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user} = useContext(AuthContext);
+  const { setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user } = useContext(AuthContext);
   const [checkboxes, setCheckboxes] = useState({});
   const [disabled, setDisabled] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -49,18 +49,18 @@ const FeedScreen = () => {
   const startTimer = () => {
     setTimer(1000000); // Set the timer duration in milliseconds
   };
-  
+
   const formatTimerValue = (timer) => {
     const minutes = Math.floor(timer / 60000); // Convert milliseconds to minutes
     const seconds = Math.floor((timer % 60000) / 1000); // Remaining seconds
-  
+
     if (minutes > 0) {
       return `${minutes} min`;
     } else {
       return `${seconds} sec`;
     }
   };
-  
+
   //-----------------------------------CHECKBOXES-----------------------------------
 
   /**
@@ -89,7 +89,7 @@ const FeedScreen = () => {
           if (i === checkboxIndex) {
             disabledState["checkbox" + i] = false;
           } else {
-            disabledState["checkbox" + i] = i === (checkboxIndex + 1) ? false : true; 
+            disabledState["checkbox" + i] = i === (checkboxIndex + 1) ? false : true;
           }
         }
         // if we unchecked the checkbox we need to disable the next one
@@ -102,13 +102,13 @@ const FeedScreen = () => {
           if (i === checkboxIndex) {
             disabledState["checkbox" + i] = false;
           } else {
-            disabledState["checkbox" + i] = true; 
+            disabledState["checkbox" + i] = true;
           }
         }
       }
       setNextStop();
-  
-      
+
+
       setDisabled(disabledState);
       manual.current = false;
       return newState;
@@ -116,7 +116,7 @@ const FeedScreen = () => {
   };
 
   //----------------------------------------POPUP---------------------------------------------------------
-  
+
   const handleOpenPopup = (popupNumber) => {
     setPopupState((prevState) => ({
       ...prevState,
@@ -162,21 +162,21 @@ const FeedScreen = () => {
     animateSeparator();
     startTimer();
   }, [stops]);
-  
+
   useEffect(() => {
     if (isLeader.current) {
-    const intervalId = setInterval(getCurrentLocation, 5000); // Update location every 5 seconds  
-    return () => {
-      clearInterval(intervalId); // Clear the interval when the component unmounts
-    };
-  }
+      const intervalId = setInterval(getCurrentLocation, 5000); // Update location every 5 seconds  
+      return () => {
+        clearInterval(intervalId); // Clear the interval when the component unmounts
+      };
+    }
   }, [isLeader.current]);
 
   useEffect(() => {
     setNextStop();
     console.log("countOut: " + countOut);
     console.log("countIn: " + countIn);
-  }, [currentLocation]);  
+  }, [currentLocation]);
 
   useEffect(() => {
     // if 1 in, the "you reached the pub" popup will open
@@ -199,7 +199,7 @@ const FeedScreen = () => {
       handleClosePopup(3);
       handleOpenPopup(4);
     }
-  }, [countOut,countIn]);
+  }, [countOut, countIn]);
 
   /*
   The next useEffect is to use if the agent wants to update the stops using a timer and not location
@@ -227,13 +227,13 @@ const FeedScreen = () => {
   //   }
   // }, [timer, checkboxes]);
 
-const checkLocationPermission = async () => {
+  const checkLocationPermission = async () => {
     try {
       // Check foreground location permission
       const foregroundPermission = await Location.requestForegroundPermissionsAsync();
       if (foregroundPermission.status === 'granted') {
         try {
-            // Check background location permission
+          // Check background location permission
           const backgroundPermission = await Location.requestBackgroundPermissionsAsync();
           if (backgroundPermission.status === 'granted') {
             if (!isLocationEnabled) {
@@ -277,16 +277,16 @@ const checkLocationPermission = async () => {
   //check location with a timer of 5 seconds
   const checkLocation = () => {
     if (isLocationEnabled) {
-    setTimeout(() => {
-      checkLocationPermission();
-      checkLocation(); // Call checkLocation recursively
-    }, 5000);
+      setTimeout(() => {
+        checkLocationPermission();
+        checkLocation(); // Call checkLocation recursively
+      }, 5000);
     }
   };
 
   //----------------------------------------API CALLS---------------------------------------------------------
 
-  
+
   const getPubcrawlData = async () => {
     const response = await fetch('https://whereisthepubcrawl.com/API/getStopsTodayByCityId.php', {
       method: 'POST',
@@ -325,12 +325,13 @@ const checkLocationPermission = async () => {
             initialDisabled["checkbox" + (item.place_order - 1)] = true;
           } else if (item.place_order == dataRes.data.pubcrawl.last_visited_place) {
             initialCheckboxes["checkbox" + item.place_order] = true; // Set initial state to true for the current checkbox (using place order)
-            initialDisabled["checkbox" + (item.place_order -1)] = false;
+            initialDisabled["checkbox" + (item.place_order - 1)] = false;
             initialDisabled["checkbox" + (item.place_order)] = false;
           } else {
-          initialCheckboxes["checkbox" + item.place_order] = false; // Set initial state to false for each checkbox (using place order)
-          initialDisabled["checkbox" + (item.place_order)] = true;
-        }});
+            initialCheckboxes["checkbox" + item.place_order] = false; // Set initial state to false for each checkbox (using place order)
+            initialDisabled["checkbox" + (item.place_order)] = true;
+          }
+        });
       }
       setCheckboxes(initialCheckboxes);
       setDisabled(initialDisabled);
@@ -341,18 +342,18 @@ const checkLocationPermission = async () => {
       setPubcrawlID(dataRes.data.pubcrawl.id);
       setHasPubcrawl(true);
       setLeaderName(dataRes.data.pubcrawl.leader_name);
-      isLeader.current=(dataRes.data.pubcrawl.leader_id==user.id);
+      isLeader.current = (dataRes.data.pubcrawl.leader_id == user.id);
       console.log("isLeader : " + isLeader.current);
       console.log("isLeaderID : " + dataRes.data.pubcrawl.leader_id);
       console.log("user id : " + user.id);
-      {dataRes.data.pubcrawl.last_visited_place === -1 ? isStopFinished.current = true : isStopFinished.current = false;}
+      { dataRes.data.pubcrawl.last_visited_place === -1 ? isStopFinished.current = true : isStopFinished.current = false; }
     } else if (dataRes.code == 2) {
       setHasPubcrawl(false);
     } else if (dataRes.code == 5) {
       setHasPubcrawl(false);
       console.log("You have already finished today pubcrawl.");
     } else {
-        alert("We encountered a problem to get the pubcrawl data. Please try again later.");
+      alert("We encountered a problem to get the pubcrawl data. Please try again later.");
     }
   };
 
@@ -371,16 +372,16 @@ const checkLocationPermission = async () => {
         longitude: currentLocation.longitude,
         is_stop_finished: isStopFinished.current,
         manual: manual.current,
-        checked : checked.current,
+        checked: checked.current,
       }),
     });
     const dataRes = await response.json();
     // if we're close enough to the next stop
     if (dataRes.code == 0) {
       if (!isStopFinished.current) {
-      console.log("Successfully updated the next stop");
-      setCurrentStop(dataRes.data.last_visited_place);
-      {dataRes.data.pubcrawl.last_visited_place === -1 ? isStopFinished.current = true : isStopFinished.current = false;}
+        console.log("Successfully updated the next stop");
+        setCurrentStop(dataRes.data.last_visited_place);
+        { dataRes.data.pubcrawl.last_visited_place === -1 ? isStopFinished.current = true : isStopFinished.current = false; }
       }
       setDistance(Math.round(dataRes.data.distance));
       // if we finished the previous stop we reset the countOut,
@@ -405,13 +406,13 @@ const checkLocationPermission = async () => {
           const newState = { ...prevValue };
           newState["checkbox" + dataRes.last_visited_place] = true;
           return newState;
-        }); 
-      } 
-    } 
+        });
+      }
+    }
     // if we're not close enough to the next stop
-    else  if (dataRes.code == 2) {
+    else if (dataRes.code == 2) {
       // if the current stop is not finished we count each time the user leaves the stop area
-      if (!isStopFinished.current){
+      if (!isStopFinished.current) {
         setCountOut(countOut + 1);
       }
       // we update the distance to the next stop
@@ -448,110 +449,110 @@ const checkLocationPermission = async () => {
   const animateSeparator = () => {
     animatedSeparator.setValue(0); // Reset animation value
 
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(animatedSeparator, {
-            toValue: 1,
-            duration: 1500, // Duration for each state (0 and 1)
-            useNativeDriver: false,
-          }),
-          Animated.timing(animatedSeparator, {
-            toValue: 0,
-            duration: 1500, // Duration for each state (0 and 1)
-            useNativeDriver: false,
-          }),
-        ])
-      ).start();
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(animatedSeparator, {
+          toValue: 1,
+          duration: 1500, // Duration for each state (0 and 1)
+          useNativeDriver: false,
+        }),
+        Animated.timing(animatedSeparator, {
+          toValue: 0,
+          duration: 1500, // Duration for each state (0 and 1)
+          useNativeDriver: false,
+        }),
+      ])
+    ).start();
   };
-//----------------------------------------RENDER---------------------------------------------------------
+  //----------------------------------------RENDER---------------------------------------------------------
 
   return (
     <View style={{ flex: 1 }}>
-      {isLoading ?(
+      {isLoading ? (
         <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#f48024" />
-        <Text style={{fontSize:30, marginTop: 15}}>Loading...</Text>
-      </View>
+          <ActivityIndicator size="large" color="#f48024" />
+          <Text style={{ fontSize: 30, marginTop: 15 }}>Loading...</Text>
+        </View>
       ) : (
-      <View style={styles.container}>
-        <StatusBar barStyle="light-content" />
-        {currentLocation && isStopFinished.current && isLeader.current && (
-          <Text style={{fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen"}}>
-              { currentStop === -1 ? "Meeting point" : "Next Stop"} is {distance} meters away
-          </Text>
-        )}
-        {currentLocation && !isStopFinished.current && isLeader.current && (
-          <Text style={{fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen"}}>
-              You are { currentStop === 0 ? "at the Meeting point" : "in a stop"}
-          </Text>
-        )}
-        { !isLeader.current && (
-          <Text style={{fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen"}}>
+        <View style={styles.container}>
+          <StatusBar barStyle="light-content" />
+          {currentLocation && isStopFinished.current && isLeader.current && (
+            <Text style={{ fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen" }}>
+              {currentStop === -1 ? "Meeting point" : "Next Stop"} is {distance} meters away
+            </Text>
+          )}
+          {currentLocation && !isStopFinished.current && isLeader.current && (
+            <Text style={{ fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen" }}>
+              You are {currentStop === 0 ? "at the Meeting point" : "in a stop"}
+            </Text>
+          )}
+          {!isLeader.current && (
+            <Text style={{ fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen" }}>
               The leader of the pubcrawl is {leaderName}
-          </Text>
-        )}
-        <Popup
-          isOpen={popupState.popup1Open}
-          onClose={() => handleClosePopup(1)} 
-          onButtonOneClick={handleButtonOneClick}
-          onButtonTwoClick={handleButtonTwoClick} 
-          popupTitle={currentStop=== -1 ? "You seem to be at the meeting point" : "You reached the next stop"}
-          popupText={currentStop=== -1 ? "Do you want to start the pubcrawl ?" : "Do you want to update the status of the pubcrawl ?"}
-          updateButton={true}
-        />
-        <Popup
-          isOpen={popupState.popup2Open}
-          onClose={() => handleClosePopup(2)} 
-          onButtonOneClick={handleButtonOneClick} 
-          onButtonTwoClick={handleButtonTwoClick}
-          popupTitle={currentStop=== -1 ? "You're still on the meeting point" : "You are still in the next stop"}
-          popupText={currentStop=== -1 ? "Do you want to start the pubcrawl now ?" : "Do you want to update the status of the pubcrawl now ?"}
-          updateButton={true}
-        />
-        <Popup
-          isOpen={popupState.popup3Open}
-          onClose={() => handleClosePopup(3)} 
-          onButtonOneClick={handleButtonOneClick} 
-          onButtonTwoClick={handleButtonTwoClick}
-          popupTitle={currentStop=== -1 ? "You stayed long enough at the meeting point" : "You stayed long enough at the next stop"}
-          popupText={currentStop=== -1 ? "The pubcrawl will start now" : "The pubcrawl will be updated now."}
-          updateButton={false}
-        />
-        <Popup
-          isOpen={popupState.popup4Open}
-          onClose={() => handleClosePopup(4)}
-          onButtonOneClick={handleButtonOneClick}
-          onButtonTwoClick={handleButtonTwoClick}
-          popupTitle={"You seem to be leaving the current stop"}
-          popupText={"Do you want to update the status of the pubcrawl now ?"}
-          updateButton={true}
-        />
-        <Popup
-          isOpen={popupState.popup5Open}
-          onClose={() => handleClosePopup(5)}
-          onButtonOneClick={handleButtonOneClick}
-          onButtonTwoClick={handleButtonTwoClick}
-          popupTitle={currentStop=== -1 ? "You clicked on the meeting point without reaching it yet" : "It hasn't been long since you changed stop"}
-          popupText={currentStop=== -1 ? "Do you want to start the pubcrawl manually ?" : "Do you still want to update the status of the pubcrawl ?"}
-          updateButton={true}
-        />
+            </Text>
+          )}
+          <Popup
+            isOpen={popupState.popup1Open}
+            onClose={() => handleClosePopup(1)}
+            onButtonOneClick={handleButtonOneClick}
+            onButtonTwoClick={handleButtonTwoClick}
+            popupTitle={currentStop === -1 ? "You seem to be at the meeting point" : "You reached the next stop"}
+            popupText={currentStop === -1 ? "Do you want to start the pubcrawl ?" : "Do you want to update the status of the pubcrawl ?"}
+            updateButton={true}
+          />
+          <Popup
+            isOpen={popupState.popup2Open}
+            onClose={() => handleClosePopup(2)}
+            onButtonOneClick={handleButtonOneClick}
+            onButtonTwoClick={handleButtonTwoClick}
+            popupTitle={currentStop === -1 ? "You're still on the meeting point" : "You are still in the next stop"}
+            popupText={currentStop === -1 ? "Do you want to start the pubcrawl now ?" : "Do you want to update the status of the pubcrawl now ?"}
+            updateButton={true}
+          />
+          <Popup
+            isOpen={popupState.popup3Open}
+            onClose={() => handleClosePopup(3)}
+            onButtonOneClick={handleButtonOneClick}
+            onButtonTwoClick={handleButtonTwoClick}
+            popupTitle={currentStop === -1 ? "You stayed long enough at the meeting point" : "You stayed long enough at the next stop"}
+            popupText={currentStop === -1 ? "The pubcrawl will start now" : "The pubcrawl will be updated now."}
+            updateButton={false}
+          />
+          <Popup
+            isOpen={popupState.popup4Open}
+            onClose={() => handleClosePopup(4)}
+            onButtonOneClick={handleButtonOneClick}
+            onButtonTwoClick={handleButtonTwoClick}
+            popupTitle={"You seem to be leaving the current stop"}
+            popupText={"Do you want to update the status of the pubcrawl now ?"}
+            updateButton={true}
+          />
+          <Popup
+            isOpen={popupState.popup5Open}
+            onClose={() => handleClosePopup(5)}
+            onButtonOneClick={handleButtonOneClick}
+            onButtonTwoClick={handleButtonTwoClick}
+            popupTitle={currentStop === -1 ? "You clicked on the meeting point without reaching it yet" : "It hasn't been long since you changed stop"}
+            popupText={currentStop === -1 ? "Do you want to start the pubcrawl manually ?" : "Do you still want to update the status of the pubcrawl ?"}
+            updateButton={true}
+          />
           <ScrollView contentContainerStyle={styles.row}>
             <View style={styles.column}>
               <TouchableOpacity
                 style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
-                onPress={() => { isStopFinished.current && !checkboxes["checkbox0"] ? handleOpenPopup(5) : handleCheckboxToggle("checkbox0")}}
+                onPress={() => { isStopFinished.current && !checkboxes["checkbox0"] ? handleOpenPopup(5) : handleCheckboxToggle("checkbox0") }}
                 disabled={isLeader.current ? disabled["checkbox0"] : true}
-                >
+              >
                 {!checkboxes["checkbox0"] && timer > 0 && (
                   <Text style={styles.checkboxTimer}>
-                  {/* {formatTimerValue(timer)} */}
+                    {/* {formatTimerValue(timer)} */}
                   </Text>
                 )}
               </TouchableOpacity>
               {stops.map((stop) => (
                 <View key={stop.place_order} style={{ alignItems: "center" }}>
                   {checkboxes["checkbox" + (stop.place_order - 1)] && isStopFinished.current &&
-                  !checkboxes["checkbox" + stop.place_order] ? (
+                    !checkboxes["checkbox" + stop.place_order] ? (
                     <Animated.Text
                       style={[
                         styles.separator,
@@ -561,17 +562,17 @@ const checkLocationPermission = async () => {
                       ]}
                     />
                   ) : (
-                    <Text style={[styles.separator, (!checkboxes["checkbox" + (stop.place_order - 1)] || checkboxes["checkbox" + (stop.place_order - 1)] && !isStopFinished.current && !checkboxes["checkbox" + stop.place_order] ) && styles.hiddenSeparator]} />
+                    <Text style={[styles.separator, (!checkboxes["checkbox" + (stop.place_order - 1)] || checkboxes["checkbox" + (stop.place_order - 1)] && !isStopFinished.current && !checkboxes["checkbox" + stop.place_order]) && styles.hiddenSeparator]} />
                   )}
                   <TouchableOpacity
                     style={[styles.checkbox, checkboxes["checkbox" + stop.place_order] && styles.checkboxChecked]}
-                    onPress={() => { !isStopFinished.current && !checkboxes["checkbox" + stop.place_order] ? handleOpenPopup(5) : handleCheckboxToggle("checkbox" + stop.place_order)}}
+                    onPress={() => { !isStopFinished.current && !checkboxes["checkbox" + stop.place_order] ? handleOpenPopup(5) : handleCheckboxToggle("checkbox" + stop.place_order) }}
                     disabled={isLeader.current ? disabled["checkbox" + stop.place_order] : true}
-                    >
-                    {!checkboxes["checkbox" + stop.place_order] && checkboxes["checkbox" + (stop.place_order -1)] && timer > 0 && (
+                  >
+                    {!checkboxes["checkbox" + stop.place_order] && checkboxes["checkbox" + (stop.place_order - 1)] && timer > 0 && (
                       <Text style={styles.checkboxTimer}>
-                    {/* {formatTimerValue(timer)} */}
-                    </Text>
+                        {/* {formatTimerValue(timer)} */}
+                      </Text>
                     )}
                   </TouchableOpacity>
                 </View>
@@ -582,7 +583,7 @@ const checkLocationPermission = async () => {
               {stops.map((stop) => (
                 <View key={stop.place_order}>
                   {checkboxes["checkbox" + (stop.place_order - 1)] && isStopFinished.current &&
-                  !checkboxes["checkbox" + stop.place_order] ? (
+                    !checkboxes["checkbox" + stop.place_order] ? (
                     <Animated.Text
                       style={[
                         styles.text,
@@ -601,8 +602,8 @@ const checkLocationPermission = async () => {
               ))}
             </View>
           </ScrollView>
-        <Footer />
-      </View>
+          <Footer />
+        </View>
       )}
     </View>
   );
@@ -681,7 +682,7 @@ const styles = {
     fontWeight: "bold",
     textAlign: "center",
     textAlignVertical: "center",
-  },  
+  },
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 70,

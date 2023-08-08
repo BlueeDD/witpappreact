@@ -5,6 +5,7 @@ import Footer from './Footer';
 import * as Location from 'expo-location';
 import { AuthContext } from '../navigation';
 import { useNavigation } from '@react-navigation/native';
+import { ScrollView } from 'react-native';
 
 
 const DefaultScreen = () => {
@@ -113,29 +114,31 @@ const DefaultScreen = () => {
           </Text>
         </View>
       )}
-      <View style={styles.textContainer}>
-      {!hasPubcrawl && isVisible && (
-          <View style={styles.innerContainer}>
-            <Text style={styles.text}>There is no Pubcrawl planned today in {cityName}</Text>
-          </View> 
-      )}
-      {!hasPubcrawl && isVisible && (user.role!=='Agent') && (
-        <View>
-          <Text
-            underlineColor="#f48024"
-            style={[styles.registerText, {marginTop:20}]}>You want to create one?
-          </Text>
-          <TouchableOpacity
-              onPress={handleCreatePubCrawlPress} >
-              <Text style={[styles.registerText, styles.underlined, {marginTop: 2}]}>
-                Do it here
+      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
+        <View style={styles.textContainer}>
+          {!hasPubcrawl && isVisible && (
+            <View style={styles.innerContainer}>
+              <Text style={styles.text}>There is no Pubcrawl planned today in {cityName}</Text>
+            </View>
+          )}
+          {!hasPubcrawl && isVisible && (user.role !== 'Agent') && (
+            <View>
+              <Text
+                underlineColor="#f48024"
+                style={[styles.registerText, { marginTop: 20 }]}>You want to create one?
               </Text>
-          </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleCreatePubCrawlPress} >
+                <Text style={[styles.registerText, styles.underlined, { marginTop: 2 }]}>
+                  Do it here
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
-        )}
-        <Footer />
-      </View>
-    </View>
+      </ScrollView>
+      <Footer />
+    </View >
   );
 };
 
