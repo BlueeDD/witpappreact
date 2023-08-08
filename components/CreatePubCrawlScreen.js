@@ -1,6 +1,5 @@
 import React, {useEffect, useState, useContext} from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
-import SearchableDropdown from 'react-native-searchable-dropdown';
+import { View, Text, TextInput, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import Toggle from 'react-native-toggle-input';
 import ModalDropdown from 'react-native-modal-dropdown';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -11,15 +10,16 @@ const CreatePubCrawlScreen = () => {
   const {user} = useContext(AuthContext);
   const [toggle, setToggle] = React.useState(false);
   const [serverData, setServerData] = useState([]);
+  const [modalVisible, setModalVisible] = useState(-1);
   const [selectedValue, setSelectedValue] = useState('2');
   const options = ['2', '3', '4', '5', '6'];
 
   const [stops, setStops] = useState([
-    { label: 'Meeting Point', id: '', duration: ''},
-    { label: '1', id: '', duration: ''},
-    { label: '2', id: '', duration: ''},
-    { label: '3', id: '', duration: ''},
-    { label: '4', id: '', duration: ''},
+    { label: 'Meeting Point', id: '', name:'', duration: ''},
+    { label: '1', id: '', name:'', duration: ''},
+    { label: '2', id: '', name:'', duration: ''},
+    { label: '3', id: '', name:'', duration: ''},
+    { label: '4', id: '', name:'', duration: ''},
   ]);
 
   const handleSelect = (index) => {
@@ -29,9 +29,12 @@ const CreatePubCrawlScreen = () => {
 
   const handleSelectItem = (index, item) => {
     const updatedStops = [...stops];
-    console.log('item', item);
+    console.log('item',item);
     updatedStops[index].id = item.id;
+    updatedStops[index].name = item.name;
+    console.log('updatedStops'+index,updatedStops[index]);
     setStops(updatedStops);
+    setModalVisible(-1);
   };
 
   const handleTimeChange = (index, text) => {
@@ -64,12 +67,38 @@ const CreatePubCrawlScreen = () => {
 
   
   return (
-    // <KeyboardAwareScrollView
-    //   contentContainerStyle={styles.container}
-    //   behavior="padding"
-    //   keyboardVerticalOffset={0}
-    // >
-      <View style={styles.container}>
+    <KeyboardAwareScrollView
+      contentContainerStyle={styles.container}
+      behavior="padding"
+      keyboardVerticalOffset={0}
+    >
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible!== -1}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            {serverData.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.modalItem}
+                onPress={() => handleSelectItem(modalVisible, item)}
+              >
+                <Text>{item.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setModalVisible(-1)}
+          >
+            <Text style={{ color: 'white' }}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+      {/* <View style={styles.container}> */}
         <Text style={styles.title}>Create Pub Crawl</Text>
         <View style={{borderColor: '#f48204', borderWidth: 2, width: 380, alignItems: 'center', padding: 5}}>
         <View style={[styles.row,{marginBottom: 30}]}>
@@ -90,32 +119,10 @@ const CreatePubCrawlScreen = () => {
         {stops.map((Stop, index) => (
           <View key={index} style={styles.row}>
             {index===0 ? <Text style={{color:'gray'}}>Meeting Point</Text> : <Text style={{color:'gray'}}>Stop {Stop.label}</Text>}
-            <SearchableDropdown
-              onTextChange={(text) => console.log(text)}
-              //On text change listner on the searchable input
-              onItemSelect={(item) => handleSelectItem(index, item)}
-              //onItemSelect called after the selection from the dropdown
-              containerStyle={{ flex: 2, padding: 5 }}
-              //suggestion container style
-              textInputStyle={styles.textInput}
-              itemStyle={styles.itemStyle}
-              // itemTextStyle={}
-              itemsContainerStyle={{
-                //items container style you can pass maxHeight
-                //to restrict the items dropdown hieght
-                maxHeight: '50%',
-              }}
-              items={serverData}
-              //mapping of item array
-              defaultIndex={2}
-              //default selected item index
-              placeholder="placeholder"
-              //place holder for the search input
-              resetValue={false}
-              //reset textInput Value with true and false state
-              underlineColorAndroid="transparent"
-              //To remove the underline from the android input
-            />
+            <TouchableOpacity onPress={() => setModalVisible(index)}>
+            {Stop.name !== '' ? <Text style={styles.stopText}> {serverData[(Stop.id)-1].name} </Text>
+             : <Text style={[styles.stopText,{textAlign: 'center'}]}>Select a stop</Text>}
+            </TouchableOpacity>
             {index !== 0 && (<Text style={{color: 'gray'}}>Duration: </Text>)}
             {index !== 0 && (<TextInput
               style={[styles.timeInput]}
@@ -126,8 +133,8 @@ const CreatePubCrawlScreen = () => {
           </View>
         ))}
         </View>
-      {/* </KeyboardAwareScrollView> */}
-    </View>
+      </KeyboardAwareScrollView>
+    // </View>
   );
 };
 
@@ -162,12 +169,37 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     backgroundColor: '#FAF7F6',
   },
-  itemStyle: {
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+  },
+  modalItem: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  closeButton: {
+    backgroundColor: '#f48024',
+    alignItems: 'center',
     padding: 10,
-    marginTop: 2,
-    backgroundColor: '#FAF9F8',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  stopText: {
+    padding: 10,
+    margin: 4,
+    width: 150,
+    backgroundColor: 'white',
     borderColor: '#bbb',
     borderWidth: 1,
+    borderRadius: 5,
   },
   timeInput: {
     height: 40,
