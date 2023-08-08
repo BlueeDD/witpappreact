@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, Modal, TouchableOpacity, ScrollView,
 import Toggle from 'react-native-toggle-input';
 import ModalDropdown from 'react-native-modal-dropdown';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { AuthContext } from '../navigation';
 
 
@@ -104,14 +105,10 @@ const CreatePubCrawlScreen = () => {
 
   
   return (
-    <KeyboardAvoidingView
-    style={{ flex: 1 }}
-    behavior="padding"
-    keyboardVerticalOffset={0}
-    >
-    <ScrollView
+    <KeyboardAwareScrollView
+      behavior={"padding"}
+      keyboardVerticalOffset={0}
       contentContainerStyle={styles.container}
-      keyboardShouldPersistTaps="handled"
     >
       <Modal
         animationType="slide"
@@ -202,8 +199,7 @@ const CreatePubCrawlScreen = () => {
                 onPress={handleCreatePress}>
                 <Text style={styles.buttonText}>Create</Text>
             </TouchableOpacity>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
   );
 };
 
