@@ -147,13 +147,13 @@ const CreatePubCrawlScreen = () => {
       {/* <View style={styles.container}> */}
         <Text style={styles.title}>Create Pub Crawl</Text>
         <View style={{borderColor: '#f48204', borderWidth: 2, width: 380, alignItems: 'center', padding: 5}}>
-        <View style={[styles.row,{marginTop:10, marginBottom: 15}]}>
+        <View style={[styles.row,{marginTop:10, marginBottom: 10}]}>
           <Text style={{ color: 'gray' }}>Starting at: </Text>
           <TouchableOpacity onPress={() => setShowDateTimePicker(true)}>
             <Text>{selectedStartDate.toLocaleString()}</Text>
           </TouchableOpacity>
         </View>
-        <View style={[styles.row,{marginBottom: 15}]}>
+        <View style={[styles.row,{marginBottom: 10}]}>
           <Text style={{color: 'gray'}}>Duration (in hours):</Text>
           <ModalDropdown
             options={options}
@@ -164,7 +164,7 @@ const CreatePubCrawlScreen = () => {
             dropdownStyle={[styles.dropdownContainer,{position: 'absolute', left: 237}]}
           />
         </View>
-        <View style={[styles.row,{marginBottom: 15}]}>
+        <View style={[styles.row,{marginBottom: 10}]}>
           <Text style={{color: "gray", marginRight: 15}}>Enable Timeline </Text>
           <Toggle toggle={toggle} setToggle={setToggle} />
         </View>
@@ -174,7 +174,7 @@ const CreatePubCrawlScreen = () => {
             {index===0 ? 
               <TouchableOpacity onPress={() => setModalVisible(index)}>
                 {Stop.name !== '' ?
-                <Text style={[styles.stopText,{width: 200}]}> {serverData[(Stop.id)-1].name} </Text>
+                <Text style={[styles.stopText,{width: 220}]}> {serverData[(Stop.id)-1].name} </Text>
                 : <Text style={[styles.stopText,{width:200,textAlign: 'center'}]}>Select a stop</Text>}
               </TouchableOpacity> 
             : 
@@ -195,7 +195,7 @@ const CreatePubCrawlScreen = () => {
         ))}
         </View>
         <TouchableOpacity
-                style={[styles.button, { marginBottom: 15, marginTop: 30 }]}
+                style={[styles.button, {marginTop: 20 }]}
                 onPress={handleCreatePress}>
                 <Text style={styles.buttonText}>Create</Text>
             </TouchableOpacity>
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   title: {
-    fontSize: 25,
+    fontSize: 20,
     fontWeight: 'bold',
     marginTop: 15,
     marginBottom: 15,
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 5,
   },
   dateTimePickerModal: {
     backgroundColor: 'white',
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   textInput: {
-    padding: 12,
+    padding: 10,
     borderWidth: 1,
     borderColor: '#ccc',
     backgroundColor: '#FAF7F6',
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 20,
   },
   stopText: {
-    padding: 10,
+    padding: 4,
     margin: 4,
     width: 150,
     backgroundColor: 'white',
@@ -272,16 +272,16 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   timeInput: {
-    height: 40,
+    height: 35,
     borderWidth: 1,
     borderColor: '#f48024',
     borderRadius: 5,
     textAlign: 'center',
-    width: 40,
+    width: 35,
   },
   dropdown: {
-    width: 40,
-    height: 40,
+    width: 30,
+    height: 30,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
