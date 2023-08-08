@@ -143,7 +143,7 @@ const LoginForm = () => {
                     </TouchableOpacity>
                 </Text>
             </View>
-        </KeyboardAwareScrollView>
+        </ScrollView>
     );
 }
 const styles = StyleSheet.create({
