@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useContext} from 'react';
-import { View, Text, TextInput, StyleSheet, Modal, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Modal, TouchableOpacity, ScrollView, KeyboardAvoidingView } from 'react-native';
 import Toggle from 'react-native-toggle-input';
 import ModalDropdown from 'react-native-modal-dropdown';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -104,6 +104,11 @@ const CreatePubCrawlScreen = () => {
 
   
   return (
+    <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior="padding"
+    keyboardVerticalOffset={0}
+    >
     <ScrollView
       contentContainerStyle={styles.container}
       keyboardShouldPersistTaps="handled"
@@ -198,6 +203,7 @@ const CreatePubCrawlScreen = () => {
                 <Text style={styles.buttonText}>Create</Text>
             </TouchableOpacity>
       </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
