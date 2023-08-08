@@ -190,6 +190,7 @@ const CreatePubCrawlScreen = () => {
                 style={[styles.timeInput]}
                 value={Stop.duration}
                 onChangeText={(text) => handleTimeChange(index, text)}
+                keyboardType="numeric"
               />)}
               {index !== 0 && (<Text style={{ color: 'gray' }}> minutes</Text>)}
             </View>
