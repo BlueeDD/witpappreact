@@ -1,15 +1,18 @@
 import React, { useEffect, useContext, useState } from 'react';
-import { View, StyleSheet, Text, StatusBar } from 'react-native';
+import { View, StyleSheet, Text, StatusBar, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Footer from './Footer';
 import * as Location from 'expo-location';
 import { AuthContext } from '../navigation';
+import { useNavigation } from '@react-navigation/native';
+import { ScrollView } from 'react-native';
 
 
 const DefaultScreen = () => {
 
-  const { isLocationEnabled, setIsLocationEnabled, hasPubcrawl, setHasPubcrawl, cityName, setCityName, isVisible, setIsVisible } = useContext(AuthContext);
+  const { isLocationEnabled, setIsLocationEnabled, hasPubcrawl, setHasPubcrawl, cityName, setCityName, isVisible, setIsVisible, user } = useContext(AuthContext);
   const [loop, setLoop] = useState(false);
+  const navigation = useNavigation();
 
   // Show the text after 500ms (avoid seeing it if you don't stay on the screen for long)
   useEffect(() => {
@@ -65,6 +68,10 @@ const DefaultScreen = () => {
     }
   };
 
+  const handleCreatePubCrawlPress = () => {
+    navigation.navigate('CreatePubCrawl');
+  };
+
 
   //check pubcrawl and location
   useEffect(() => {
@@ -107,15 +114,31 @@ const DefaultScreen = () => {
           </Text>
         </View>
       )}
-      {!hasPubcrawl && isVisible && (
+      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
         <View style={styles.textContainer}>
-          <View style={styles.innerContainer}>
-            <Text style={styles.text}>There is no Pubcrawl planned today in {cityName}</Text>
-          </View>
+          {!hasPubcrawl && isVisible && (
+            <View style={styles.innerContainer}>
+              <Text style={styles.text}>There is no Pubcrawl planned today in {cityName}</Text>
+            </View>
+          )}
+          {!hasPubcrawl && isVisible && (user.role !== 'Agent') && (
+            <View>
+              <Text
+                underlineColor="#f48024"
+                style={[styles.registerText, { marginTop: 20 }]}>You want to create one?
+              </Text>
+              <TouchableOpacity
+                onPress={handleCreatePubCrawlPress} >
+                <Text style={[styles.registerText, styles.underlined, { marginTop: 2 }]}>
+                  Do it here
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
-      )}
+      </ScrollView>
       <Footer />
-    </View>
+    </View >
   );
 };
 
@@ -128,7 +151,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 70,
   },
   innerContainer: {
     backgroundColor: '#f48024',
@@ -154,7 +176,14 @@ const styles = StyleSheet.create({
   },
   underlined: {
     textDecorationLine: 'underline',
-    color: 'white',
+    color: '#f48024',
+  },
+  registerText: {
+    color: "#f48024",
+    fontWeight: "bold",
+    textAlign: "center",
+    fontSize: 20,
+    marginTop: 0,
   },
 });
 

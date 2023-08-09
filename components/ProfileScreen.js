@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Linking } from "react-native";
+import { View, Text, TouchableOpacity, Linking, ScrollView } from "react-native";
 import { AuthContext } from '../navigation';
 import { TextInput } from "react-native-gesture-handler";
 
@@ -61,39 +61,41 @@ const ProfileScreen = () => {
     };
 
     return (
-        <View style={styles.view}>
-            <Text style={styles.title}>Profile Information</Text>
-            {/* little text title at the left top of the name input */}
-            <Text style={styles.fieldTitle}>Name</Text>
-            <TextInput
-                style={styles.input}
-                value={formData.name}
-                onChangeText={value => handleInputChange('name', value)}
-            />
-            <Text style={styles.fieldTitle}>Email</Text>
-            <TextInput
-                style={styles.input}
-                value={formData.email}
-                onChangeText={value => handleInputChange('email', value)}
-            />
-            <Text style={styles.fieldTitle}>Role (cannot be changed)</Text>
-            <TextInput
-                style={styles.input}
-                value={user.role}
-                editable={false}
-            />
-            <View style={{ justifyContent: "center", alignItems: "center", width: 300, marginTop: 30, marginBottom: 20 }}>
-                <Text>If you want to change your password, please log in to
-                    <Text onPress={() => Linking.openURL('https://whereisthepubcrawl.com')} style={{ color: "#f48024" }}> https://whereisthepubcrawl.com </Text>
-                    and go to profile page to do it.</Text>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
+            <View style={styles.view}>
+                <Text style={styles.title}>Profile Information</Text>
+                {/* little text title at the left top of the name input */}
+                <Text style={styles.fieldTitle}>Name</Text>
+                <TextInput
+                    style={styles.input}
+                    value={formData.name}
+                    onChangeText={value => handleInputChange('name', value)}
+                />
+                <Text style={styles.fieldTitle}>Email</Text>
+                <TextInput
+                    style={styles.input}
+                    value={formData.email}
+                    onChangeText={value => handleInputChange('email', value)}
+                />
+                <Text style={styles.fieldTitle}>Role (cannot be changed)</Text>
+                <TextInput
+                    style={styles.input}
+                    value={user.role}
+                    editable={false}
+                />
+                <View style={{ justifyContent: "center", alignItems: "center", width: 300, marginTop: 30, marginBottom: 20 }}>
+                    <Text>If you want to change your password, please log in to
+                        <Text onPress={() => Linking.openURL('https://whereisthepubcrawl.com')} style={{ color: "#f48024" }}> https://whereisthepubcrawl.com </Text>
+                        and go to profile page to do it.</Text>
+                </View>
+                <TouchableOpacity
+                    style={[styles.button, { marginBottom: 15, marginTop: 30 }]}
+                    disabled={!formChanged}
+                    onPress={handleSavePress}>
+                    <Text style={styles.buttonText}>Save</Text>
+                </TouchableOpacity>
             </View>
-            <TouchableOpacity
-                style={[styles.button, { marginBottom: 15, marginTop: 30 }]}
-                disabled={!formChanged}
-                onPress={handleSavePress}>
-                <Text style={styles.buttonText}>Save</Text>
-            </TouchableOpacity>
-        </View>
+        </ScrollView>
     );
 }
 
