@@ -4,11 +4,13 @@ import * as Location from 'expo-location';
 import { AuthContext } from '../navigation';
 import Footer from './Footer';
 import Popup from './PopUp';
+import { useNavigation } from '@react-navigation/native';
 
 
 const FeedScreen = () => {
   // set the checkboxes
   const initialCheckboxes = {};
+  const navigation = useNavigation();
   const initialDisabled = {};
   const { setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user } = useContext(AuthContext);
   const [checkboxes, setCheckboxes] = useState({});
@@ -200,6 +202,21 @@ const FeedScreen = () => {
       handleOpenPopup(4);
     }
   }, [countOut, countIn]);
+
+  useEffect(() => {
+    // Function to set the header options when CreatePubCrawlScreen is focused
+    const setCreatePubCrawlHeaderOptions = () => {
+      navigation.setOptions({
+        headerLeft: () => null, // Hide the back arrow
+      });
+    };
+
+    // Subscribe to the focus event of CreatePubCrawlScreen
+    const unsubscribe = navigation.addListener('focus', setCreatePubCrawlHeaderOptions);
+
+    // Clean up the subscription when the component unmounts
+    return () => unsubscribe();
+  }, [navigation]);
 
   /*
   The next useEffect is to use if the agent wants to update the stops using a timer and not location
