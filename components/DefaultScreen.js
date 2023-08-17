@@ -12,6 +12,7 @@ const DefaultScreen = () => {
 
   const { isLocationEnabled, setIsLocationEnabled, hasPubcrawl, setHasPubcrawl, cityName, setCityName, isVisible, setIsVisible, user } = useContext(AuthContext);
   const [loop, setLoop] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState({ latitude: 0, longitude: 0 });
   const navigation = useNavigation();
 
   // Show the text after 500ms (avoid seeing it if you don't stay on the screen for long)
@@ -23,6 +24,13 @@ const DefaultScreen = () => {
     // Cleanup the timer when the component unmounts or the state changes
     return () => clearTimeout(timer);
   }, []);
+
+  //check pubcrawl and location
+  useEffect(() => {
+    getPubcrawlData();
+    checkLocation();
+  }, [loop]);
+  
 
   // check location permission
   const checkLocationPermission = async () => {
@@ -60,9 +68,14 @@ const DefaultScreen = () => {
 
   //check location with a timer of 5 seconds
   const checkLocation = () => {
-    if (!isLocationEnabled || !hasPubcrawl) {
+    if (!isLocationEnabled) {
       setTimeout(() => {
         checkLocationPermission();
+        setLoop(!loop); // Call checkLocation recursively
+      }, 5000);
+    } else if (isLocationEnabled && !hasPubcrawl){
+      setTimeout(() => {
+        getCurrentLocation();
         setLoop(!loop); // Call checkLocation recursively
       }, 5000);
     }
@@ -73,11 +86,21 @@ const DefaultScreen = () => {
   };
 
 
-  //check pubcrawl and location
-  useEffect(() => {
-    getPubcrawlData();
-    checkLocation();
-  }, [loop]);
+
+  const getCurrentLocation = async () => {
+    try {
+      const { coords } = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+      const { latitude, longitude } = coords;
+      console.log('Current location:', latitude, longitude);
+      setCurrentLocation({ latitude, longitude });
+  
+    } catch (error) {
+      console.warn(error);
+    }
+  };
+
 
   //get pubcrawl data
   const getPubcrawlData = async () => {
@@ -117,15 +140,27 @@ const DefaultScreen = () => {
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
         <View style={styles.textContainer}>
           {!hasPubcrawl && isVisible && (
-            <View style={styles.innerContainer}>
-              <Text style={styles.text}>There is no Pubcrawl planned today in {cityName}</Text>
+            <View>
+              <Text
+                underlineColor="#f48024"
+                style={[styles.registerText, { marginTop: -40 }]}>Wishing to share your location?
+              </Text>
+              <TouchableOpacity
+                onPress={handleCreatePubCrawlPress} >
+                <Text style={[styles.registerText, styles.underlined, { marginTop: 2, marginBottom: 40 }]}>
+                  Do it here
+                </Text>
+              </TouchableOpacity>
+              <View style={styles.innerContainer}>
+                <Text style={styles.text}>There is no Pubcrawl planned today in {cityName}</Text>
+              </View>
             </View>
           )}
           {!hasPubcrawl && isVisible && (user.role !== 'Agent') && (
             <View>
               <Text
                 underlineColor="#f48024"
-                style={[styles.registerText, { marginTop: 20 }]}>You want to create one?
+                style={[styles.registerText, { marginTop: 40 }]}>You want to create one?
               </Text>
               <TouchableOpacity
                 onPress={handleCreatePubCrawlPress} >

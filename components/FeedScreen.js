@@ -211,6 +211,11 @@ const FeedScreen = () => {
       });
     };
 
+    // Disable the gesture to prevent sliding back
+    navigation.setOptions({
+      gestureEnabled: verticalSwipeEnabled,
+    });
+
     // Subscribe to the focus event of CreatePubCrawlScreen
     const unsubscribe = navigation.addListener('focus', setCreatePubCrawlHeaderOptions);
 
@@ -284,7 +289,6 @@ const FeedScreen = () => {
         accuracy: Location.Accuracy.High,
       });
       const { latitude, longitude } = coords;
-      //coordinates should be rounded to 2 decimals
       setCurrentLocation({ latitude, longitude });
     } catch (error) {
       console.warn(error);
