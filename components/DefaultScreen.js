@@ -52,7 +52,7 @@ const DefaultScreen = () => {
     const hours = Math.floor(durationInSeconds / 3600);
     const minutes = Math.floor((durationInSeconds % 3600) / 60);
     const seconds = durationInSeconds % 60;
-    return `${hours}:${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+    return `${hours}:${minutes < 10 ? "0" : ""}${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
   // check location permission
@@ -173,10 +173,10 @@ const DefaultScreen = () => {
               timerDuration === 0 ? (
               <View>
                 <Text
-                    style={[styles.registerText, { marginTop: -80, marginBottom: 20 }]}>Wishing to share your location?
+                    style={[styles.registerText, { marginTop: -80, marginBottom: 20, fontSize:18 }]}>Wishing to share your location?
                 </Text>
                 <View style={[styles.row, { marginBottom: 50 }]}>
-                  <Text style={{ color: '#f48024', fontSize:20, fontWeight: 'bold' }}>Share it for</Text>
+                  <Text style={{ color: '#f48024', fontSize:18, fontWeight: 'bold' }}>Share it for</Text>
                   <ModalDropdown
                     options={options}
                     onSelect={handleSelect}
@@ -185,10 +185,10 @@ const DefaultScreen = () => {
                     defaultValue={selectedDuration}
                     dropdownStyle={[styles.dropdownContainer]}
                   />
-                  <Text style={{ color: '#f48024', fontSize:20, fontWeight: 'bold' }}> hour(s)</Text>
+                  <Text style={{ color: '#f48024', fontSize:18, fontWeight: 'bold' }}> hour(s)</Text>
                   <TouchableOpacity
                     style={[styles.button]}
-                    onPress={handleConfirm}>
+                    onPress={() => setTimerDuration(selectedDuration * 60 * 60)}>
                     <Text style={styles.buttonText}>Confirm</Text>
                   </TouchableOpacity>
                 </View>
@@ -199,7 +199,7 @@ const DefaultScreen = () => {
               ) : (
                 <View>
                   <View style={{ marginBottom: 50, marginTop: -80, alignItems: 'center' }}>
-                    <Text style={styles.registerText}>Your location is shared for {formatTime(timerDuration)}</Text>
+                    <Text style={{ color: '#f48024', fontSize:18, fontWeight: 'bold' }}>You're sharing your location for {formatTime(timerDuration)}</Text>
                   <TouchableOpacity
                     style={[styles.button,{width: 150, marginTop: 20}]}
                     onPress={() => setTimerDuration(0)}>
