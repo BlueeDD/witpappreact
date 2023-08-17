@@ -6,13 +6,17 @@ import * as Location from 'expo-location';
 import { AuthContext } from '../navigation';
 import { useNavigation } from '@react-navigation/native';
 import { ScrollView } from 'react-native';
+import ModalDropdown from 'react-native-modal-dropdown';
+import Countdown from 'react-countdown';
 
 
 const DefaultScreen = () => {
 
-  const { isLocationEnabled, setIsLocationEnabled, hasPubcrawl, setHasPubcrawl, cityName, setCityName, isVisible, setIsVisible, user } = useContext(AuthContext);
+  const { isLocationEnabled, setIsLocationEnabled, hasPubcrawl, setHasPubcrawl, cityName, setCityName, isVisible, setIsVisible, user, timerDuration, setTimerDuration } = useContext(AuthContext);
   const [loop, setLoop] = useState(false);
   const [currentLocation, setCurrentLocation] = useState({ latitude: 0, longitude: 0 });
+  const options = ['1','2', '3', '4', '5', '6'];
+  const [selectedDuration, setSelectedDuration] = useState('1');
   const navigation = useNavigation();
 
   // Show the text after 500ms (avoid seeing it if you don't stay on the screen for long)
@@ -31,6 +35,24 @@ const DefaultScreen = () => {
     checkLocation();
   }, [loop]);
   
+  useEffect(() => {
+    let timerInterval;
+
+    if (timerDuration > 0) {
+      timerInterval = setInterval(() => {
+        setTimerDuration((prevDuration) => prevDuration - 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(timerInterval);
+  }, [timerDuration]);
+
+  const formatTime = (durationInSeconds) => {
+    const hours = Math.floor(durationInSeconds / 3600);
+    const minutes = Math.floor((durationInSeconds % 3600) / 60);
+    const seconds = durationInSeconds % 60;
+    return `${hours}:${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
 
   // check location permission
   const checkLocationPermission = async () => {
@@ -81,11 +103,18 @@ const DefaultScreen = () => {
     }
   };
 
+  const handleConfirm = () => {
+    setTimerDuration(selectedDuration * 60 * 60);
+    console.log('Timer duration:', selectedDuration * 60 * 60);
+  };
+
   const handleCreatePubCrawlPress = () => {
     navigation.navigate('CreatePubCrawl');
   };
 
-
+  const handleSelect = (index) => {
+    setSelectedDuration(options[index]);
+  };
 
   const getCurrentLocation = async () => {
     try {
@@ -142,25 +171,34 @@ const DefaultScreen = () => {
           {!hasPubcrawl && isVisible && (
             <View>
               <Text
-                underlineColor="#f48024"
-                style={[styles.registerText, { marginTop: -40 }]}>Wishing to share your location?
+                  style={[styles.registerText, { marginTop: -80, marginBottom: 20 }]}>Wishing to share your location?
               </Text>
-              <TouchableOpacity
-                onPress={handleCreatePubCrawlPress} >
-                <Text style={[styles.registerText, styles.underlined, { marginTop: 2, marginBottom: 40 }]}>
-                  Do it here
-                </Text>
-              </TouchableOpacity>
+              <View style={[styles.row, { marginBottom: 50 }]}>
+                <Text style={{ color: '#f48024', fontSize:20, fontWeight: 'bold' }}>Share it for</Text>
+                <ModalDropdown
+                  options={options}
+                  onSelect={handleSelect}
+                  style={styles.dropdown}
+                  textStyle={styles.dropdownText}
+                  defaultValue={selectedDuration}
+                  dropdownStyle={[styles.dropdownContainer]}
+                />
+                <Text style={{ color: '#f48024', fontSize:20, fontWeight: 'bold' }}> hour(s)</Text>
+                <TouchableOpacity
+                  style={[styles.button]}
+                  onPress={handleConfirm}>
+                  <Text style={styles.buttonText}>Confirm</Text>
+                </TouchableOpacity>
+              </View>
               <View style={styles.innerContainer}>
-                <Text style={styles.text}>There is no Pubcrawl planned today in {cityName}</Text>
+                  <Text style={styles.text}>There is no Pubcrawl planned today in {cityName}</Text>
               </View>
             </View>
           )}
           {!hasPubcrawl && isVisible && (user.role !== 'Agent') && (
             <View>
               <Text
-                underlineColor="#f48024"
-                style={[styles.registerText, { marginTop: 40 }]}>You want to create one?
+                style={[styles.registerText, { marginTop: 50 }]}>You want to create one?
               </Text>
               <TouchableOpacity
                 onPress={handleCreatePubCrawlPress} >
@@ -181,6 +219,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1, // Set flex to 1 to take up all available space
     backgroundColor: 'white',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 5,
   },
   textContainer: {
     flex: 1,
@@ -219,6 +263,41 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 20,
     marginTop: 0,
+  },
+  dropdown: {
+    width: 40,
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#f48024',
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 5,
+  },
+  dropdownText: {
+    color: '#f48024',
+    fontSize: 16,
+  },
+  dropdownContainer: {
+    width: 41,
+    alignItems: 'center',
+  },
+  button: {
+    width: 80,
+    marginLeft: 10,
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderRadius: 15,
+    borderColor: "#f48024",
+    shadowRadius: 4,
+  },
+  buttonText: {
+    color: "#f48024",
+    fontWeight: "bold",
+    textAlign: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    fontSize: 16,
   },
 });
 
