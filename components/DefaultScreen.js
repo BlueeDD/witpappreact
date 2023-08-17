@@ -198,7 +198,7 @@ const DefaultScreen = () => {
               </View>
               ) : (
                 <View>
-                  <View style={{ marginBottom: 40, alignItems: 'center' }}>
+                  <View style={{ marginBottom: 50, marginTop: -80, alignItems: 'center' }}>
                     <Text style={styles.registerText}>Your location is shared for {formatTime(timerDuration)}</Text>
                   <TouchableOpacity
                     style={[styles.button,{width: 150, marginTop: 20}]}
