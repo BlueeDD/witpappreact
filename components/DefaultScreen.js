@@ -7,7 +7,6 @@ import { AuthContext } from '../navigation';
 import { useNavigation } from '@react-navigation/native';
 import { ScrollView } from 'react-native';
 import ModalDropdown from 'react-native-modal-dropdown';
-import Countdown from 'react-countdown';
 
 
 const DefaultScreen = () => {
@@ -35,6 +34,7 @@ const DefaultScreen = () => {
     checkLocation();
   }, [loop]);
   
+  // if the time is active, reduce the timer duration by 1 every second like a countdown
   useEffect(() => {
     let timerInterval;
 
@@ -47,6 +47,7 @@ const DefaultScreen = () => {
     return () => clearInterval(timerInterval);
   }, [timerDuration]);
 
+  // change the format of the timer for display purposes
   const formatTime = (durationInSeconds) => {
     const hours = Math.floor(durationInSeconds / 3600);
     const minutes = Math.floor((durationInSeconds % 3600) / 60);
@@ -169,31 +170,47 @@ const DefaultScreen = () => {
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
         <View style={styles.textContainer}>
           {!hasPubcrawl && isVisible && (
-            <View>
-              <Text
-                  style={[styles.registerText, { marginTop: -80, marginBottom: 20 }]}>Wishing to share your location?
-              </Text>
-              <View style={[styles.row, { marginBottom: 50 }]}>
-                <Text style={{ color: '#f48024', fontSize:20, fontWeight: 'bold' }}>Share it for</Text>
-                <ModalDropdown
-                  options={options}
-                  onSelect={handleSelect}
-                  style={styles.dropdown}
-                  textStyle={styles.dropdownText}
-                  defaultValue={selectedDuration}
-                  dropdownStyle={[styles.dropdownContainer]}
-                />
-                <Text style={{ color: '#f48024', fontSize:20, fontWeight: 'bold' }}> hour(s)</Text>
-                <TouchableOpacity
-                  style={[styles.button]}
-                  onPress={handleConfirm}>
-                  <Text style={styles.buttonText}>Confirm</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.innerContainer}>
+              timerDuration === 0 ? (
+              <View>
+                <Text
+                    style={[styles.registerText, { marginTop: -80, marginBottom: 20 }]}>Wishing to share your location?
+                </Text>
+                <View style={[styles.row, { marginBottom: 50 }]}>
+                  <Text style={{ color: '#f48024', fontSize:20, fontWeight: 'bold' }}>Share it for</Text>
+                  <ModalDropdown
+                    options={options}
+                    onSelect={handleSelect}
+                    style={styles.dropdown}
+                    textStyle={styles.dropdownText}
+                    defaultValue={selectedDuration}
+                    dropdownStyle={[styles.dropdownContainer]}
+                  />
+                  <Text style={{ color: '#f48024', fontSize:20, fontWeight: 'bold' }}> hour(s)</Text>
+                  <TouchableOpacity
+                    style={[styles.button]}
+                    onPress={handleConfirm}>
+                    <Text style={styles.buttonText}>Confirm</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.innerContainer}>
                   <Text style={styles.text}>There is no Pubcrawl planned today in {cityName}</Text>
+                </View>
               </View>
-            </View>
+              ) : (
+                <View>
+                  <View style={{ marginBottom: 40, alignItems: 'center' }}>
+                    <Text style={styles.registerText}>Your location is shared for {formatTime(timerDuration)}</Text>
+                  <TouchableOpacity
+                    style={[styles.button,{width: 150, marginTop: 20}]}
+                    onPress={() => setTimerDuration(0)}>
+                    <Text style={styles.buttonText}>Stop sharing</Text>
+                  </TouchableOpacity>
+                  </View>
+                  <View style={styles.innerContainer}>
+                    <Text style={styles.text}>There is no Pubcrawl planned today in {cityName}</Text>
+                  </View>
+                </View>
+              )
           )}
           {!hasPubcrawl && isVisible && (user.role !== 'Agent') && (
             <View>
@@ -283,7 +300,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   button: {
-    width: 80,
+    width: 100,
     marginLeft: 10,
     backgroundColor: "white",
     borderWidth: 1,
@@ -295,9 +312,9 @@ const styles = StyleSheet.create({
     color: "#f48024",
     fontWeight: "bold",
     textAlign: "center",
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 5,
-    fontSize: 16,
+    fontSize: 20,
   },
 });
 
