@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import { View, Text, StatusBar, TouchableOpacity, Animated, ScrollView, ActivityIndicator } from 'react-native';
 import * as Location from 'expo-location';
+import Toggle from 'react-native-toggle-input';
 import { AuthContext } from '../navigation';
 import Footer from './Footer';
 import Popup from './PopUp';
@@ -12,13 +13,14 @@ const FeedScreen = () => {
   const initialCheckboxes = {};
   const navigation = useNavigation();
   const initialDisabled = {};
-  const { setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user } = useContext(AuthContext);
+  const { setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user, timerDuration, setTimerDuration } = useContext(AuthContext);
   const [checkboxes, setCheckboxes] = useState({});
   const [disabled, setDisabled] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [currentStop, setCurrentStop] = useState(-2);
   const [pubcrawlID, setPubcrawlID] = useState(null);
   const [leaderName, setLeaderName] = useState("");
+  const [toggle, setToggle] = React.useState(false);
   const isLeader = useRef(false);
   const isStopFinished = useRef(false);
   const manual = useRef(false);
@@ -181,6 +183,18 @@ const FeedScreen = () => {
   }, [currentLocation]);
 
   useEffect(() => {
+    let timerInterval;
+
+    if (timerDuration > 0) {
+      timerInterval = setInterval(() => {
+        setTimerDuration((prevDuration) => prevDuration - 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(timerInterval);
+  }, [timerDuration]);
+
+  useEffect(() => {
     // if 1 in, the "you reached the pub" popup will open
     if (countIn === 1) {
       handleClosePopup(4);
@@ -213,7 +227,7 @@ const FeedScreen = () => {
 
     // Disable the gesture to prevent sliding back
     navigation.setOptions({
-      gestureEnabled: verticalSwipeEnabled,
+      gestureEnabled: false,
     });
 
     // Subscribe to the focus event of CreatePubCrawlScreen
@@ -248,6 +262,8 @@ const FeedScreen = () => {
   //     return () => clearInterval(intervalId); // This is important to clear the interval when the component unmounts
   //   }
   // }, [timer, checkboxes]);
+
+  //----------------------------------------LOCATION---------------------------------------------------------
 
   const checkLocationPermission = async () => {
     try {
@@ -495,23 +511,8 @@ const FeedScreen = () => {
           <Text style={{ fontSize: 30, marginTop: 15 }}>Loading...</Text>
         </View>
       ) : (
-        <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.container}>
           <StatusBar barStyle="light-content" />
-          {currentLocation && isStopFinished.current && isLeader.current && (
-            <Text style={{ fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen" }}>
-              {currentStop === -1 ? "Meeting point" : "Next Stop"} is {distance} meters away
-            </Text>
-          )}
-          {currentLocation && !isStopFinished.current && isLeader.current && (
-            <Text style={{ fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen" }}>
-              You are {currentStop === 0 ? "at the Meeting point" : "in a stop"}
-            </Text>
-          )}
-          {!isLeader.current && (
-            <Text style={{ fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen" }}>
-              The leader of the pubcrawl is {leaderName}
-            </Text>
-          )}
           <Popup
             isOpen={popupState.popup1Open}
             onClose={() => handleClosePopup(1)}
@@ -557,7 +558,36 @@ const FeedScreen = () => {
             popupText={currentStop === -1 ? "Do you want to start the pubcrawl manually ?" : "Do you still want to update the status of the pubcrawl ?"}
             updateButton={true}
           />
-          <ScrollView contentContainerStyle={styles.row}>
+            {currentLocation && isStopFinished.current && isLeader.current && (
+            <View style={{ alignItems: "center" }}>
+            <Text style={{ fontSize: 15, marginBottom:15, fontWeight: "bold", color: "darkgreen" }}>
+              {currentStop === -1 ? "Meeting point" : "Next Stop"} is {distance} meters away
+            </Text>
+            <Toggle 
+            toggle={toggle} 
+            setToggle={setToggle}
+            toggleText1="Automatic"
+             />
+            </View>
+          )}
+          {currentLocation && !isStopFinished.current && isLeader.current && (
+            <View style={{ alignItems: "center" }}>
+              <Text style={{ fontSize: 15, marginBottom:15, fontWeight: "bold", color: "darkgreen" }}>
+                You are {currentStop === 0 ? "at the Meeting point" : "in a stop"}
+              </Text>
+              <Toggle 
+              toggle={toggle} 
+              setToggle={setToggle}
+              toggleText1="Automatic"
+              />
+            </View>
+          )}
+          {!isLeader.current && (
+            <Text style={{ fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen" }}>
+              The leader of the pubcrawl is {leaderName}
+            </Text>
+          )}
+          <View style={styles.row}>
             <View style={styles.column}>
               <TouchableOpacity
                 style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
@@ -599,7 +629,7 @@ const FeedScreen = () => {
                 </View>
               ))}
             </View>
-            <View style={[styles.column, { marginLeft: -50 }]}>
+            <View style={[styles.column, { marginLeft: 0 }]}>
               <Text style={styles.title}>{meetingPoint}</Text>
               {stops.map((stop) => (
                 <View key={stop.place_order}>
@@ -622,10 +652,10 @@ const FeedScreen = () => {
                 </View>
               ))}
             </View>
-          </ScrollView>
-          <Footer />
-        </View>
+          </View>
+        </ScrollView>
       )}
+    <Footer />
     </View>
   );
 };
@@ -673,7 +703,7 @@ const styles = {
     alignItems: "center",
     width: "50%",
     justifyContent: "center",
-    marginLeft: -180,
+    marginLeft: -80,
   },
   separator: {
     width: 8,
