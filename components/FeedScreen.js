@@ -321,6 +321,16 @@ const FeedScreen = () => {
     }
   };
 
+  const updateTimeDuration = () => {
+    if (toggle) {
+      setTimerDuration(0);
+      setToggle(false);
+    } else {
+      setTimerDuration(1000000);
+      setToggle(true);
+    }
+  };
+
   //----------------------------------------API CALLS---------------------------------------------------------
 
 
@@ -560,14 +570,18 @@ const FeedScreen = () => {
           />
             {currentLocation && isStopFinished.current && isLeader.current && (
             <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 15, marginBottom:15, fontWeight: "bold", color: "darkgreen" }}>
-              {currentStop === -1 ? "Meeting point" : "Next Stop"} is {distance} meters away
-            </Text>
-            <Toggle 
-            toggle={toggle} 
-            setToggle={setToggle}
-            toggleText1="Automatic"
-             />
+              <Text style={{ fontSize: 15, marginBottom:15, fontWeight: "bold", color: "darkgreen" }}>
+                {currentStop === -1 ? "Meeting point" : "Next Stop"} is {distance} meters away
+              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={{ fontSize: 15, fontWeight: "bold", color: "darkgreen", marginRight: 10 }}>
+                {timerDuration > 0 ? "sharing live location to customers" : "share live location to customers"}
+                </Text>
+                <Toggle 
+                toggle={toggle} 
+                setToggle={updateTimeDuration}
+                />
+              </View>
             </View>
           )}
           {currentLocation && !isStopFinished.current && isLeader.current && (
@@ -575,11 +589,15 @@ const FeedScreen = () => {
               <Text style={{ fontSize: 15, marginBottom:15, fontWeight: "bold", color: "darkgreen" }}>
                 You are {currentStop === 0 ? "at the Meeting point" : "in a stop"}
               </Text>
-              <Toggle 
-              toggle={toggle} 
-              setToggle={setToggle}
-              toggleText1="Automatic"
-              />
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={{ fontSize: 15, fontWeight: "bold", color: "darkgreen", marginRight: 10 }}>
+                  {timerDuration > 0 ? "sharing live location" : "share your location here"}
+                </Text>
+                <Toggle 
+                toggle={toggle} 
+                setToggle={updateTimeDuration}
+                />
+              </View>
             </View>
           )}
           {!isLeader.current && (
