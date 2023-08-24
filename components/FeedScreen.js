@@ -1,22 +1,26 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import { View, Text, StatusBar, TouchableOpacity, Animated, ScrollView, ActivityIndicator } from 'react-native';
 import * as Location from 'expo-location';
+import Toggle from 'react-native-toggle-input';
 import { AuthContext } from '../navigation';
 import Footer from './Footer';
 import Popup from './PopUp';
+import { useNavigation } from '@react-navigation/native';
 
 
 const FeedScreen = () => {
   // set the checkboxes
   const initialCheckboxes = {};
+  const navigation = useNavigation();
   const initialDisabled = {};
-  const { setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user } = useContext(AuthContext);
+  const { setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user, timerDuration, setTimerDuration } = useContext(AuthContext);
   const [checkboxes, setCheckboxes] = useState({});
   const [disabled, setDisabled] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [currentStop, setCurrentStop] = useState(-2);
   const [pubcrawlID, setPubcrawlID] = useState(null);
   const [leaderName, setLeaderName] = useState("");
+  const [toggle, setToggle] = React.useState(false);
   const isLeader = useRef(false);
   const isStopFinished = useRef(false);
   const manual = useRef(false);
@@ -174,9 +178,24 @@ const FeedScreen = () => {
 
   useEffect(() => {
     setNextStop();
-    console.log("countOut: " + countOut);
-    console.log("countIn: " + countIn);
+    if (timerDuration > 0) {
+      updateUserLocation();
+    }
+    // console.log("countOut: " + countOut);
+    // console.log("countIn: " + countIn);
   }, [currentLocation]);
+
+  useEffect(() => {
+    let timerInterval;
+
+    if (timerDuration > 0) {
+      timerInterval = setInterval(() => {
+        setTimerDuration((prevDuration) => prevDuration - 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(timerInterval);
+  }, [timerDuration]);
 
   useEffect(() => {
     // if 1 in, the "you reached the pub" popup will open
@@ -200,6 +219,26 @@ const FeedScreen = () => {
       handleOpenPopup(4);
     }
   }, [countOut, countIn]);
+
+  useEffect(() => {
+    // Function to set the header options when CreatePubCrawlScreen is focused
+    const setCreatePubCrawlHeaderOptions = () => {
+      navigation.setOptions({
+        headerLeft: () => null, // Hide the back arrow
+      });
+    };
+
+    // Disable the gesture to prevent sliding back
+    navigation.setOptions({
+      gestureEnabled: false,
+    });
+
+    // Subscribe to the focus event of CreatePubCrawlScreen
+    const unsubscribe = navigation.addListener('focus', setCreatePubCrawlHeaderOptions);
+
+    // Clean up the subscription when the component unmounts
+    return () => unsubscribe();
+  }, [navigation]);
 
   /*
   The next useEffect is to use if the agent wants to update the stops using a timer and not location
@@ -226,6 +265,8 @@ const FeedScreen = () => {
   //     return () => clearInterval(intervalId); // This is important to clear the interval when the component unmounts
   //   }
   // }, [timer, checkboxes]);
+
+  //----------------------------------------LOCATION---------------------------------------------------------
 
   const checkLocationPermission = async () => {
     try {
@@ -267,7 +308,6 @@ const FeedScreen = () => {
         accuracy: Location.Accuracy.High,
       });
       const { latitude, longitude } = coords;
-      //coordinates should be rounded to 2 decimals
       setCurrentLocation({ latitude, longitude });
     } catch (error) {
       console.warn(error);
@@ -281,6 +321,16 @@ const FeedScreen = () => {
         checkLocationPermission();
         checkLocation(); // Call checkLocation recursively
       }, 5000);
+    }
+  };
+
+  const updateTimeDuration = () => {
+    if (toggle) {
+      setTimerDuration(0);
+      setToggle(false);
+    } else {
+      setTimerDuration(1000000);
+      setToggle(true);
     }
   };
 
@@ -424,6 +474,26 @@ const FeedScreen = () => {
     }
   };
 
+  const updateUserLocation = async () => {
+    try {
+      const response = await fetch('https://whereisthepubcrawl.com/API/updateLocationUser.php', {
+        method: 'PATCH',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id_user: user.id,
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
+        }),
+      });
+      const dataRes = await response.json();
+      console.log(dataRes);
+    } catch (error) {
+      console.log('Error fetching data from API', error);
+    }
+  };
+
 
   //----------------------------------------ANIMATIONS---------------------------------------------------------
 
@@ -474,23 +544,8 @@ const FeedScreen = () => {
           <Text style={{ fontSize: 30, marginTop: 15 }}>Loading...</Text>
         </View>
       ) : (
-        <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.container}>
           <StatusBar barStyle="light-content" />
-          {currentLocation && isStopFinished.current && isLeader.current && (
-            <Text style={{ fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen" }}>
-              {currentStop === -1 ? "Meeting point" : "Next Stop"} is {distance} meters away
-            </Text>
-          )}
-          {currentLocation && !isStopFinished.current && isLeader.current && (
-            <Text style={{ fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen" }}>
-              You are {currentStop === 0 ? "at the Meeting point" : "in a stop"}
-            </Text>
-          )}
-          {!isLeader.current && (
-            <Text style={{ fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen" }}>
-              The leader of the pubcrawl is {leaderName}
-            </Text>
-          )}
           <Popup
             isOpen={popupState.popup1Open}
             onClose={() => handleClosePopup(1)}
@@ -536,7 +591,44 @@ const FeedScreen = () => {
             popupText={currentStop === -1 ? "Do you want to start the pubcrawl manually ?" : "Do you still want to update the status of the pubcrawl ?"}
             updateButton={true}
           />
-          <ScrollView contentContainerStyle={styles.row}>
+            {currentLocation && isStopFinished.current && isLeader.current && (
+            <View style={{ alignItems: "center" }}>
+              <Text style={{ fontSize: 15, marginBottom:15, fontWeight: "bold", color: "darkgreen" }}>
+                {currentStop === -1 ? "Meeting point" : "Next Stop"} is {distance} meters away
+              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={{ fontSize: 15, fontWeight: "bold", color: "darkgreen", marginRight: 10 }}>
+                {timerDuration > 0 ? "sharing live location to customers" : "share live location to customers"}
+                </Text>
+                <Toggle 
+                toggle={toggle} 
+                setToggle={updateTimeDuration}
+                />
+              </View>
+            </View>
+          )}
+          {currentLocation && !isStopFinished.current && isLeader.current && (
+            <View style={{ alignItems: "center" }}>
+              <Text style={{ fontSize: 15, marginBottom:15, fontWeight: "bold", color: "darkgreen" }}>
+                You are {currentStop === 0 ? "at the Meeting point" : "in a stop"}
+              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={{ fontSize: 15, fontWeight: "bold", color: "darkgreen", marginRight: 10 }}>
+                  {timerDuration > 0 ? "sharing live location" : "share your location here"}
+                </Text>
+                <Toggle 
+                toggle={toggle} 
+                setToggle={updateTimeDuration}
+                />
+              </View>
+            </View>
+          )}
+          {!isLeader.current && (
+            <Text style={{ fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen" }}>
+              The leader of the pubcrawl is {leaderName}
+            </Text>
+          )}
+          <View style={styles.row}>
             <View style={styles.column}>
               <TouchableOpacity
                 style={[styles.checkbox, checkboxes["checkbox0"] && styles.checkboxChecked]}
@@ -578,7 +670,7 @@ const FeedScreen = () => {
                 </View>
               ))}
             </View>
-            <View style={[styles.column, { marginLeft: -50 }]}>
+            <View style={[styles.column, { marginLeft: 0 }]}>
               <Text style={styles.title}>{meetingPoint}</Text>
               {stops.map((stop) => (
                 <View key={stop.place_order}>
@@ -601,10 +693,10 @@ const FeedScreen = () => {
                 </View>
               ))}
             </View>
-          </ScrollView>
-          <Footer />
-        </View>
+          </View>
+        </ScrollView>
       )}
+    <Footer />
     </View>
   );
 };
@@ -652,7 +744,7 @@ const styles = {
     alignItems: "center",
     width: "50%",
     justifyContent: "center",
-    marginLeft: -180,
+    marginLeft: -80,
   },
   separator: {
     width: 8,

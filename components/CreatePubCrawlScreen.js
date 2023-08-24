@@ -5,10 +5,12 @@ import ModalDropdown from 'react-native-modal-dropdown';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { AuthContext } from '../navigation';
+import { useNavigation } from '@react-navigation/native';
 
 
 const CreatePubCrawlScreen = () => {
-  const { user } = useContext(AuthContext);
+  const navigation = useNavigation();
+  const { user,setHasPubcrawl } = useContext(AuthContext);
   const [toggle, setToggle] = React.useState(false);
   const [serverData, setServerData] = useState([]);
   const [modalVisible, setModalVisible] = useState(-1);
@@ -16,11 +18,11 @@ const CreatePubCrawlScreen = () => {
   const options = ['2', '3', '4', '5', '6'];
 
   const [stops, setStops] = useState([
-    { label: 'Meeting Point', id: '', name: '' },
-    { label: '1', id: '', name: '', duration: '' },
-    { label: '2', id: '', name: '', duration: '' },
-    { label: '3', id: '', name: '', duration: '' },
-    { label: '4', id: '', name: '', duration: '' },
+    { label: 'Meeting Point', place_id: '', name: '' },
+    { label: '1', place_id: '', name: '', duration: '' },
+    { label: '2', place_id: '', name: '', duration: '' },
+    { label: '3', place_id: '', name: '', duration: '' },
+    { label: '4', place_id: '', name: '', duration: '' },
   ]);
 
   // Calculate the next starting hour
@@ -34,6 +36,15 @@ const CreatePubCrawlScreen = () => {
   const [showDateTimePicker, setShowDateTimePicker] = useState(false);
   const [selectedStartDate, setSelectedStartDate] = useState(nextStartingHour);
 
+  function convertDateFormat(inputDate) {
+    const parts = inputDate.split(' '); // Split into date and time parts
+    const dateParts = parts[0].split('/'); // Split date into day, month, year
+    const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`; // Format as YYYY-MM-DD
+    const formattedTime = parts[1]; // Keep the time part unchanged
+  
+    return `${formattedDate} ${formattedTime}`;
+  }
+
   const handleSelect = (index) => {
     setSelectedDuration(options[index]);
   };
@@ -41,10 +52,10 @@ const CreatePubCrawlScreen = () => {
 
   const handleSelectItem = (index, item) => {
     const updatedStops = [...stops];
-    console.log('item', item);
-    updatedStops[index].id = item.id;
+    // console.log('item', item);
+    updatedStops[index].place_id = item.id;
     updatedStops[index].name = item.name;
-    console.log('updatedStops' + index, updatedStops[index]);
+    // console.log('updatedStops' + index, updatedStops[index]);
     setStops(updatedStops);
     setModalVisible(-1);
   };
@@ -67,7 +78,7 @@ const CreatePubCrawlScreen = () => {
     setShowDateTimePicker(false);
   };
 
-  const handleCreatePress = () => {
+  const handleCreatePress = async () => {
     // if any of the fields is empty, alert the user
     if (stops.some(stop => stop.name === '' || stop.duration === '')) {
       alert('Please fill in all the fields.');
@@ -75,9 +86,50 @@ const CreatePubCrawlScreen = () => {
     } else if (selectedDuration * 60 < stops.slice(1).reduce((acc, stop) => acc + parseInt(stop.duration), 0)) {
       alert('The total duration of the pub crawl cannot be less than the sum of the stops durations.');
     } else {
-      console.log('stops', stops);
-      console.log('selectedDuration', selectedDuration);
-      console.log('toggle', toggle);
+      // format the date to YYYY-MM-DD HH:MM:SS
+      const outputDate = convertDateFormat(selectedStartDate.toLocaleString());
+      // transform the stops array to the format required by the API from {label, place_id, name, duration} to {meeting_point, stops: [{duration, place_id}] }
+      const transformedData = stops.reduce((result, stop) => {
+        if (stop.label === "Meeting Point") {
+          result.meeting_point = stop.name;
+        } else {
+          result.stops.push({ "duration": stop.duration, "place_id": stop.place_id });
+        }
+        return result;
+      }, { meeting_point: "", stops: [] });
+
+      console.log('start_time', outputDate);
+      console.log('city_id', user.agentCityId);
+      console.log('Duration', selectedDuration);
+      console.log('meeting_point', transformedData.meeting_point);
+      console.log('agent_id', user.id);
+      console.log('enable_timeline', toggle);
+      console.log('stops', transformedData.stops);
+
+      const response = await fetch('https://whereisthepubcrawl.com/API/createPubcrawl.php', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          start_time: outputDate,
+          city_id: user.agentCityId,
+          duration: selectedDuration,
+          meeting_point: transformedData.meeting_point,
+          agent_id: user.id,
+          enable_timeline: toggle,
+          stops: transformedData.stops,
+        }),
+      });
+      const dataRes = await response.json();
+      if (dataRes.code === 0) {
+        alert('Pub crawl created successfully!');
+        setHasPubcrawl(true);
+        navigation.navigate('Feed');
+      } else {
+        alert('Something went wrong. Please try again.');
+        console.log('dataRes', dataRes);
+      }
     }
   };
 
@@ -93,8 +145,16 @@ const CreatePubCrawlScreen = () => {
       }),
     });
     const dataRes = await response.json();
-    //here is the content of dataRes: [{"city_id": "1", "id": "1", "latitude": "36.72371616684815", "longitude": "-4.417598247528076", "stop": "Merced 14. Plaza de la Merced 14"}, {"city_id": "1", "id": "2", "latitude": "36.72365219204769", "longitude": "-4.41709776603106", "stop": "Picasso Bar Tapas, Pl. de la Merced, 20"}, {"city_id": "1", "id": "3", "latitude": "36.7223829789638", "longitude": "-4.421585459408515", "stop": "Camden Lock Malaga, Calle Convalecientes"}, {"city_id": "1", "id": "4", "latitude": "36.72232749160218", "longitude": "-4.421705048630165", "stop": "Gallery Club, Calle Convalecientes"}, {"city_id": "1", "id": "5", "latitude": "36.72226183562587", "longitude": "-4.421773785371996", "stop": "The Museum, Calle Convalecientes"}, {"city_id": "1", "id": "6", "latitude": "36.722955203904306", "longitude": "-4.422135203429746", "stop": "Smile Inc, Calle Nosquera"}, {"city_id": "1", "id": "7", "latitude": "36.722829361712165", "longitude": "-4.421640370730702", "stop": "Seven O clock, Calle Comedias"}, {"city_id": "1", "id": "8", "latitude": "36.722162277629174", "longitude": "-4.422687147770784", "stop": "Sala Bubbles, Calle Martires"}, {"city_id": "1", "id": "9", "latitude": "36.72214151555827", 
-    // "longitude": "-4.421288411859857", "stop": "Sala Gold, Calle Luis de Velazquez"}]
+    //here is the content of dataRes:
+    //[{"city_id": "1", "id": "1", "latitude": "36.72371616684815", "longitude": "-4.417598247528076", "stop": "Merced 14. Plaza de la Merced 14"},
+    // {"city_id": "1", "id": "2", "latitude": "36.72365219204769", "longitude": "-4.41709776603106", "stop": "Picasso Bar Tapas, Pl. de la Merced, 20"},
+    // {"city_id": "1", "id": "3", "latitude": "36.7223829789638", "longitude": "-4.421585459408515", "stop": "Camden Lock Malaga, Calle Convalecientes"},
+    // {"city_id": "1", "id": "4", "latitude": "36.72232749160218", "longitude": "-4.421705048630165", "stop": "Gallery Club, Calle Convalecientes"},
+    // {"city_id": "1", "id": "5", "latitude": "36.72226183562587", "longitude": "-4.421773785371996", "stop": "The Museum, Calle Convalecientes"}, 
+    // {"city_id": "1", "id": "6", "latitude": "36.722955203904306", "longitude": "-4.422135203429746", "stop": "Smile Inc, Calle Nosquera"},
+    // {"city_id": "1", "id": "7", "latitude": "36.722829361712165", "longitude": "-4.421640370730702", "stop": "Seven O clock, Calle Comedias"},
+    // {"city_id": "1", "id": "8", "latitude": "36.722162277629174", "longitude": "-4.422687147770784", "stop": "Sala Bubbles, Calle Martires"},
+    // {"city_id": "1", "id": "9", "latitude": "36.72214151555827", "longitude": "-4.421288411859857", "stop": "Sala Gold, Calle Luis de Velazquez"}]
     //put the list of stops with their name in serverData
     setServerData(dataRes.data.map((item) => ({ name: item.stop, id: item.id })));
   };
@@ -175,13 +235,13 @@ const CreatePubCrawlScreen = () => {
               {index === 0 ?
                 <TouchableOpacity onPress={() => setModalVisible(index)}>
                   {Stop.name !== '' ?
-                    <Text style={[styles.stopText, { width: 200 }]}> {serverData[(Stop.id) - 1].name} </Text>
+                    <Text style={[styles.stopText, { width: 200 }]}> {serverData[(Stop.place_id) - 1].name} </Text>
                     : <Text style={[styles.stopText, { width: 200, textAlign: 'center' }]}>Select a stop</Text>}
                 </TouchableOpacity>
                 :
                 <TouchableOpacity onPress={() => setModalVisible(index)}>
                   {Stop.name !== '' ?
-                    <Text style={styles.stopText}> {serverData[(Stop.id) - 1].name} </Text>
+                    <Text style={styles.stopText}> {serverData[(Stop.place_id) - 1].name} </Text>
                     : <Text style={[styles.stopText, { textAlign: 'center' }]}>Select a stop</Text>}
                 </TouchableOpacity>
               }

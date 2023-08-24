@@ -6,12 +6,16 @@ import * as Location from 'expo-location';
 import { AuthContext } from '../navigation';
 import { useNavigation } from '@react-navigation/native';
 import { ScrollView } from 'react-native';
+import ModalDropdown from 'react-native-modal-dropdown';
 
 
 const DefaultScreen = () => {
 
-  const { isLocationEnabled, setIsLocationEnabled, hasPubcrawl, setHasPubcrawl, cityName, setCityName, isVisible, setIsVisible, user } = useContext(AuthContext);
+  const { isLocationEnabled, setIsLocationEnabled, hasPubcrawl, setHasPubcrawl, cityName, setCityName, isVisible, setIsVisible, user, timerDuration, setTimerDuration } = useContext(AuthContext);
   const [loop, setLoop] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState({ latitude: 0, longitude: 0 });
+  const options = ['1','2', '3', '4', '5', '6'];
+  const [selectedDuration, setSelectedDuration] = useState('1');
   const navigation = useNavigation();
 
   // Show the text after 500ms (avoid seeing it if you don't stay on the screen for long)
@@ -23,6 +27,36 @@ const DefaultScreen = () => {
     // Cleanup the timer when the component unmounts or the state changes
     return () => clearTimeout(timer);
   }, []);
+
+  //check pubcrawl and location
+  useEffect(() => {
+    getPubcrawlData();
+    checkLocation();
+    if (timerDuration > 0) {
+      updateUserLocation();
+    }
+  }, [loop]);
+  
+  // if the time is active, reduce the timer duration by 1 every second like a countdown
+  useEffect(() => {
+    let timerInterval;
+
+    if (timerDuration > 0) {
+      timerInterval = setInterval(() => {
+        setTimerDuration((prevDuration) => prevDuration - 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(timerInterval);
+  }, [timerDuration]);
+
+  // change the format of the timer for display purposes
+  const formatTime = (durationInSeconds) => {
+    const hours = Math.floor(durationInSeconds / 3600);
+    const minutes = Math.floor((durationInSeconds % 3600) / 60);
+    const seconds = durationInSeconds % 60;
+    return `${hours}:${minutes < 10 ? "0" : ""}${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
 
   // check location permission
   const checkLocationPermission = async () => {
@@ -60,9 +94,14 @@ const DefaultScreen = () => {
 
   //check location with a timer of 5 seconds
   const checkLocation = () => {
-    if (!isLocationEnabled || !hasPubcrawl) {
+    if (!isLocationEnabled) {
       setTimeout(() => {
         checkLocationPermission();
+        setLoop(!loop); // Call checkLocation recursively
+      }, 5000);
+    } else if (isLocationEnabled && !hasPubcrawl){
+      setTimeout(() => {
+        getCurrentLocation();
         setLoop(!loop); // Call checkLocation recursively
       }, 5000);
     }
@@ -72,12 +111,24 @@ const DefaultScreen = () => {
     navigation.navigate('CreatePubCrawl');
   };
 
+  const handleSelect = (index) => {
+    setSelectedDuration(options[index]);
+  };
 
-  //check pubcrawl and location
-  useEffect(() => {
-    getPubcrawlData();
-    checkLocation();
-  }, [loop]);
+  const getCurrentLocation = async () => {
+    try {
+      const { coords } = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+      const { latitude, longitude } = coords;
+      console.log('Current location:', latitude, longitude);
+      setCurrentLocation({ latitude, longitude });
+  
+    } catch (error) {
+      console.warn(error);
+    }
+  };
+
 
   //get pubcrawl data
   const getPubcrawlData = async () => {
@@ -102,6 +153,25 @@ const DefaultScreen = () => {
     }
   };
 
+  const updateUserLocation = async () => {
+    try {
+      const response = await fetch('https://whereisthepubcrawl.com/API/updateLocationUser.php', {
+        method: 'PATCH',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id_user: user.id,
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
+        }),
+      });
+      const dataRes = await response.json();
+      console.log(dataRes);
+    } catch (error) {
+      console.log('Error fetching data from API', error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -117,15 +187,52 @@ const DefaultScreen = () => {
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
         <View style={styles.textContainer}>
           {!hasPubcrawl && isVisible && (
-            <View style={styles.innerContainer}>
-              <Text style={styles.text}>There is no Pubcrawl planned today in {cityName}</Text>
-            </View>
+              timerDuration === 0 ? (
+              <View>
+                <Text
+                    style={[styles.registerText, { marginTop: -80, marginBottom: 20, fontSize:18 }]}>Wishing to share your location?
+                </Text>
+                <View style={[styles.row, { marginBottom: 50 }]}>
+                  <Text style={{ color: '#f48024', fontSize:18, fontWeight: 'bold' }}>Share it for</Text>
+                  <ModalDropdown
+                    options={options}
+                    onSelect={handleSelect}
+                    style={styles.dropdown}
+                    textStyle={styles.dropdownText}
+                    defaultValue={selectedDuration}
+                    dropdownStyle={[styles.dropdownContainer]}
+                  />
+                  <Text style={{ color: '#f48024', fontSize:18, fontWeight: 'bold' }}> hour(s)</Text>
+                  <TouchableOpacity
+                    style={[styles.button]}
+                    onPress={() => setTimerDuration(selectedDuration * 60 * 60)}>
+                    <Text style={styles.buttonText}>Confirm</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.innerContainer}>
+                  <Text style={styles.text}>There is no Pubcrawl planned today in {cityName}</Text>
+                </View>
+              </View>
+              ) : (
+                <View>
+                  <View style={{ marginBottom: 50, marginTop: -80, alignItems: 'center' }}>
+                    <Text style={{ color: '#f48024', fontSize:18, fontWeight: 'bold' }}>You're sharing your location for {formatTime(timerDuration)}</Text>
+                  <TouchableOpacity
+                    style={[styles.button,{width: 150, marginTop: 20}]}
+                    onPress={() => setTimerDuration(0)}>
+                    <Text style={styles.buttonText}>Stop sharing</Text>
+                  </TouchableOpacity>
+                  </View>
+                  <View style={styles.innerContainer}>
+                    <Text style={styles.text}>There is no Pubcrawl planned today in {cityName}</Text>
+                  </View>
+                </View>
+              )
           )}
           {!hasPubcrawl && isVisible && (user.role !== 'Agent') && (
             <View>
               <Text
-                underlineColor="#f48024"
-                style={[styles.registerText, { marginTop: 20 }]}>You want to create one?
+                style={[styles.registerText, { marginTop: 50 }]}>You want to create one?
               </Text>
               <TouchableOpacity
                 onPress={handleCreatePubCrawlPress} >
@@ -146,6 +253,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1, // Set flex to 1 to take up all available space
     backgroundColor: 'white',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 5,
   },
   textContainer: {
     flex: 1,
@@ -184,6 +297,41 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 20,
     marginTop: 0,
+  },
+  dropdown: {
+    width: 40,
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#f48024',
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 5,
+  },
+  dropdownText: {
+    color: '#f48024',
+    fontSize: 16,
+  },
+  dropdownContainer: {
+    width: 41,
+    alignItems: 'center',
+  },
+  button: {
+    width: 100,
+    marginLeft: 10,
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderRadius: 15,
+    borderColor: "#f48024",
+    shadowRadius: 4,
+  },
+  buttonText: {
+    color: "#f48024",
+    fontWeight: "bold",
+    textAlign: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 5,
+    fontSize: 20,
   },
 });
 
