@@ -32,6 +32,9 @@ const DefaultScreen = () => {
   useEffect(() => {
     getPubcrawlData();
     checkLocation();
+    if (timerDuration > 0) {
+      updateUserLocation();
+    }
   }, [loop]);
   
   // if the time is active, reduce the timer duration by 1 every second like a countdown
@@ -104,11 +107,6 @@ const DefaultScreen = () => {
     }
   };
 
-  const handleConfirm = () => {
-    setTimerDuration(selectedDuration * 60 * 60);
-    console.log('Timer duration:', selectedDuration * 60 * 60);
-  };
-
   const handleCreatePubCrawlPress = () => {
     navigation.navigate('CreatePubCrawl');
   };
@@ -155,6 +153,25 @@ const DefaultScreen = () => {
     }
   };
 
+  const updateUserLocation = async () => {
+    try {
+      const response = await fetch('https://whereisthepubcrawl.com/API/updateLocationUser.php', {
+        method: 'PATCH',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id_user: user.id,
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
+        }),
+      });
+      const dataRes = await response.json();
+      console.log(dataRes);
+    } catch (error) {
+      console.log('Error fetching data from API', error);
+    }
+  };
 
   return (
     <View style={styles.container}>

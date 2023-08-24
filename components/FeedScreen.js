@@ -178,8 +178,11 @@ const FeedScreen = () => {
 
   useEffect(() => {
     setNextStop();
-    console.log("countOut: " + countOut);
-    console.log("countIn: " + countIn);
+    if (timerDuration > 0) {
+      updateUserLocation();
+    }
+    // console.log("countOut: " + countOut);
+    // console.log("countIn: " + countIn);
   }, [currentLocation]);
 
   useEffect(() => {
@@ -468,6 +471,26 @@ const FeedScreen = () => {
       isStopFinished.current = true;
     } else {
       console.log(dataRes.message);
+    }
+  };
+
+  const updateUserLocation = async () => {
+    try {
+      const response = await fetch('https://whereisthepubcrawl.com/API/updateLocationUser.php', {
+        method: 'PATCH',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id_user: user.id,
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
+        }),
+      });
+      const dataRes = await response.json();
+      console.log(dataRes);
+    } catch (error) {
+      console.log('Error fetching data from API', error);
     }
   };
 
