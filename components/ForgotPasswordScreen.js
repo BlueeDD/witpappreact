@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, TextInput, Image, StyleSheet, Text, TouchableOpacity, KeyboardAvoidingView } from "react-native";
+import { View, TextInput, Image, StyleSheet, Text, TouchableOpacity, ScrollView } from "react-native";
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import { useNavigation } from '@react-navigation/native';
 
@@ -49,42 +50,44 @@ const ForgotPasswordForm = () => {
     };
 
     return (
-        <KeyboardAvoidingView
-            behavior={"padding"}
-            keyboardVerticalOffset={0}>
-            <View style={styles.view}>
-                <Image style={{ alignSelf: "center", marginBottom: 20 }}
-                    source={require('../assets/logo.webp')} />
-                <TextInput style={styles.textInput}
-                    placeholder="Email"
-                    placeholderTextColor={"white"}
-                    onChangeText={text => handleEmailChange(text)}
-                    value={email}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    required={true}
-                    selectionColor={"grey"}
-                />
-                {!isValid && (
-                    <Text style={styles.errorText}>Please enter a valid email address.</Text>
-                )}
-                <TouchableOpacity
-                    style={[styles.button, { marginBottom: 30 }]}
-                    onPress={handleForgotPasswordPress}>
-                    <Text style={styles.buttonText}>Send reset link</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={{ width: 200 }}
-                    onPress={handleLoginPress} >
-                    <Text
-                        underlineColor="#f48024"
-                        style={[styles.registerText,{marginTop: -30}]}>You finally remember your password ?
-                        <Text style={styles.underline}> Login here</Text>
-                    </Text>
-                </TouchableOpacity>
-            </View>
-        </KeyboardAvoidingView>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
+            <KeyboardAwareScrollView
+                behavior={"padding"}
+                keyboardVerticalOffset={0}>
+                <View style={styles.view}>
+                    <Image style={{ alignSelf: "center", marginBottom: 20 }}
+                        source={require('../assets/logo.webp')} />
+                    <TextInput style={styles.textInput}
+                        placeholder="Email"
+                        placeholderTextColor={"white"}
+                        onChangeText={text => handleEmailChange(text)}
+                        value={email}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        required={true}
+                        selectionColor={"grey"}
+                    />
+                    {!isValid && (
+                        <Text style={styles.errorText}>Please enter a valid email address.</Text>
+                    )}
+                    <TouchableOpacity
+                        style={[styles.button, { marginBottom: 30 }]}
+                        onPress={handleForgotPasswordPress}>
+                        <Text style={styles.buttonText}>Send reset link</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={{ width: 200 }}
+                        onPress={handleLoginPress} >
+                        <Text
+                            underlineColor="#f48024"
+                            style={[styles.registerText, { marginTop: -30 }]}>You finally remember your password ?
+                            <Text style={styles.underline}> Login here</Text>
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </KeyboardAwareScrollView>
+        </ScrollView>
     );
 }
 

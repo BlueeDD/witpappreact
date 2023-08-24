@@ -11,6 +11,8 @@ const initialUser = {
 
 const initialCity =  "South Tours";
 
+const initialTimerDuration = 0;
+
 export const AuthContext = createContext({
   hasUser: false,
   setHasUser: () => { },
@@ -26,6 +28,10 @@ export const AuthContext = createContext({
   setHasPubcrawl: () => { },
   cityName: initialCity,
   setCityName: () => { },
+  isVisible: false,
+  setIsVisible: () => { },
+  timerDuration: initialTimerDuration,
+  setTimerDuration: () => {},
 });
 
 export const Stack = createStackNavigator();
@@ -38,6 +44,8 @@ const AuthProvider = ({ children }) => {
   const [isLocationEnabled, setIsLocationEnabled] = useState(false);
   const [hasPubcrawl, setHasPubcrawl] = useState(false);
   const [cityName, setCityName] = useState(initialCity);
+  const [isVisible, setIsVisible] = useState(false);
+  const [timerDuration, setTimerDuration] = useState(initialTimerDuration);
 
   const handleSetUser = (userData) => {
     setUser(userData);
@@ -60,6 +68,10 @@ const AuthProvider = ({ children }) => {
         setHasPubcrawl,
         cityName,
         setCityName,
+        isVisible,
+        setIsVisible,
+        timerDuration,
+        setTimerDuration,
       }}
     >
       {children}

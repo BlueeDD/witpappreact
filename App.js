@@ -9,6 +9,7 @@ import FeedScreen from "./components/FeedScreen";
 import DefaultScreen from "./components/DefaultScreen";
 import HeaderMenu from "./headerMenu";
 import ProfileScreen from "./components/ProfileScreen";
+import CreatePubCrawlScreen from "./components/CreatePubCrawlScreen";
 import AuthProvider, { AuthContext, Stack } from './navigation';
 import * as Notifications from 'expo-notifications';
 
@@ -38,6 +39,16 @@ const ForgotPassword = () => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       <ForgotPasswordScreen />
+      <Footer />
+    </View>
+  );
+}
+
+const CreatePubCrawl = () => {
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      <CreatePubCrawlScreen />
       <Footer />
     </View>
   );
@@ -100,40 +111,39 @@ export default function App() {
     <AuthProvider>
       <NavigationContainer>
         <AuthContext.Consumer>
-          {(authContext) => (
-            <Stack.Navigator
-              screenOptions={{
-                headerBackImage: () => (
-                  <Image
-                    source={require("./assets/back.png")}
-                    style={{ width: 30, height: 30, marginLeft: 15 }}
+          {(authContext) =>
+            // If the user is logged in, show the feed (adn the other components inside the app)
+            authContext.hasUser ? (
+              <Stack.Navigator
+                screenOptions={{
+                  headerBackImage: () => (
+                    <Image
+                      source={require("./assets/back.png")}
+                      style={{ width: 30, height: 30, marginLeft: 15 }}
+                    />
+                  ),
+                  headerBackTitleVisible: false,
+                  headerTintColor: "white",
+                  headerTitleStyle: {
+                    fontWeight: "bold",
+                  },
+                  headerRight: () => (
+                    <HeaderMenu hasUser={authContext.hasUser} />
+                  ),
+                  headerStyle: {
+                    backgroundColor: "#f48024",
+                  },
+                }}
+              >
+                {authContext.hasPubcrawl && authContext.isLocationEnabled ? (
+                  <Stack.Screen
+                    name="Feed"
+                    component={Feed}
+                    options={{
+                      title: "Pub Crawl " + authContext.cityName,
+                    }}
                   />
-                ),
-                headerBackTitleVisible: false,
-                headerTintColor: "white",
-                headerTitleStyle: {
-                  fontWeight: "bold",
-                },
-                headerRight: () => (
-                  <HeaderMenu hasUser={authContext.hasUser} />
-                ),
-                headerStyle: {
-                  backgroundColor: "#f48024",
-                },
-              }}
-            >
-              {authContext.hasUser ? (
-                // If the user is logged in, show the Feed screen if there is a pubcrawl ongoing or planned today and the location is enabled
-                (authContext.hasPubcrawl && authContext.isLocationEnabled) ? (
-                <Stack.Screen
-                  name="Feed"
-                  component={Feed}
-                  options={{
-                    title: "Pub Crawl " + authContext.cityName,
-                  }}
-                />
                 ) : (
-                  // If the user is logged in, show the Default screen if there is no pubcrawl ongoing or planned today or the location is disabled
                   <Stack.Screen
                     name="Default"
                     component={Default}
@@ -141,8 +151,45 @@ export default function App() {
                       title: "Pub Crawl " + authContext.cityName,
                     }}
                   />
-                )
-              ) : (
+                )}
+                <Stack.Screen
+                  name="Profile"
+                  component={Profile}
+                  options={{
+                    title: "Pub Crawl " + authContext.cityName,
+                  }}
+                />
+                <Stack.Screen
+                  name="CreatePubCrawl"
+                  component={CreatePubCrawl}
+                  options={{
+                    title: "Pub Crawl " + authContext.cityName,
+                  }}
+                />
+              </Stack.Navigator>
+            ) : (
+              // otherwise show the login screen (and the other components outside the app)
+              <Stack.Navigator
+                screenOptions={{
+                  headerBackImage: () => (
+                    <Image
+                      source={require("./assets/back.png")}
+                      style={{ width: 30, height: 30, marginLeft: 15 }}
+                    />
+                  ),
+                  headerBackTitleVisible: false,
+                  headerTintColor: "white",
+                  headerTitleStyle: {
+                    fontWeight: "bold",
+                  },
+                  headerRight: () => (
+                    <HeaderMenu hasUser={authContext.hasUser} />
+                  ),
+                  headerStyle: {
+                    backgroundColor: "#f48024",
+                  },
+                }}
+              >
                 <Stack.Screen
                   name="Login"
                   component={Login}
@@ -150,30 +197,23 @@ export default function App() {
                     title: "Pub Crawl " + authContext.cityName,
                   }}
                 />
-              )}
-              <Stack.Screen
-                name="Register"
-                component={Register}
-                options={{
-                  title: "Pub Crawl " + authContext.cityName,
-                }}
-              />
-              <Stack.Screen
-                name="Profile"
-                component={Profile}
-                options={{
-                  title: "Pub Crawl " + authContext.cityName,
-                }}
-              />
-              <Stack.Screen
-                name="ForgotPassword"
-                component={ForgotPassword}
-                options={{
-                  title: "Pub Crawl " + authContext.cityName,
-                }}
-              />
-            </Stack.Navigator>
-          )}
+                <Stack.Screen
+                  name="Register"
+                  component={Register}
+                  options={{
+                    title: "Pub Crawl " + authContext.cityName,
+                  }}
+                />
+                <Stack.Screen
+                  name="ForgotPassword"
+                  component={ForgotPassword}
+                  options={{
+                    title: "Pub Crawl " + authContext.cityName,
+                  }}
+                />
+              </Stack.Navigator>
+            )
+          }
         </AuthContext.Consumer>
       </NavigationContainer>
     </AuthProvider>
