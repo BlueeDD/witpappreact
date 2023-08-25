@@ -253,6 +253,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1, // Set flex to 1 to take up all available space
     backgroundColor: 'white',
+    marginHorizontal: 20,
   },
   row: {
     flexDirection: 'row',
