@@ -186,8 +186,8 @@ const DefaultScreen = () => {
       )}
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
         <View style={styles.textContainer}>
-          {!hasPubcrawl && isVisible && (
-              timerDuration === 0 ? (
+          {!hasPubcrawl && isLocationEnabled && isVisible && (
+            timerDuration === 0 ? (
               <View>
                 <Text
                     style={[styles.registerText, { marginTop: -80, marginBottom: 20, fontSize:18 }]}>Wishing to share your location?
@@ -229,7 +229,7 @@ const DefaultScreen = () => {
                 </View>
               )
           )}
-          {!hasPubcrawl && isVisible && (user.role !== 'Agent') && (
+          {!hasPubcrawl && isLocationEnabled && isVisible && (user.role !== 'Agent') && (
             <View>
               <Text
                 style={[styles.registerText, { marginTop: 50 }]}>You want to create one?
