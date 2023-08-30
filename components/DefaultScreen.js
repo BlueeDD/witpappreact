@@ -152,7 +152,7 @@ const DefaultScreen = () => {
         accuracy: Location.Accuracy.High,
       });
       const { latitude, longitude } = coords;
-      console.log('Current location:', latitude, longitude);
+      // console.log('Current location:', latitude, longitude);
       setCurrentLocation({ latitude, longitude });
   
     } catch (error) {
@@ -174,7 +174,7 @@ const DefaultScreen = () => {
         }),
       });
       const dataRes = await response.json();
-      console.log(dataRes);
+      // console.log(dataRes);
       setCityName(dataRes.data.city_name);
       if (dataRes.code === 0) {
         setHasPubcrawl(true);
@@ -199,7 +199,7 @@ const DefaultScreen = () => {
         }),
       });
       const dataRes = await response.json();
-      console.log(dataRes);
+      // console.log(dataRes);
     } catch (error) {
       console.log('Error fetching data from API', error);
     }
