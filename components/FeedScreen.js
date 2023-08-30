@@ -211,6 +211,7 @@ const FeedScreen = () => {
       setIsSharingLocation(false);
       updateUserLocation();
     }
+    // console.log("isSharingLocation: " + isSharingLocation);
     // console.log("countOut: " + countOut);
     // console.log("countIn: " + countIn);
   }, [currentLocation]);
@@ -427,9 +428,9 @@ const FeedScreen = () => {
       setHasPubcrawl(true);
       setLeaderName(dataRes.data.pubcrawl.leader_name);
       isLeader.current = (dataRes.data.pubcrawl.leader_id == user.id);
-      console.log("isLeader : " + isLeader.current);
-      console.log("isLeaderID : " + dataRes.data.pubcrawl.leader_id);
-      console.log("user id : " + user.id);
+      // console.log("isLeader : " + isLeader.current);
+      // console.log("isLeaderID : " + dataRes.data.pubcrawl.leader_id);
+      // console.log("user id : " + user.id);
       { dataRes.data.pubcrawl.last_visited_place === -1 ? isStopFinished.current = true : isStopFinished.current = false; }
     } else if (dataRes.code == 2) {
       setHasPubcrawl(false);
