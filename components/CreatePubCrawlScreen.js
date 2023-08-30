@@ -266,14 +266,14 @@ const CreatePubCrawlScreen = () => {
           ))}
           <View style={styles.row}>
             <TouchableOpacity
-              style={stops.length === 7 ? [styles.timeInput, { marginTop: 10, marginRight: 10, alignItems: 'center',justifyContent: 'center', borderColor:"#ccc" }] : [styles.timeInput, { marginTop: 10, marginRight: 10, alignItems: 'center',justifyContent: 'center'}]}
+              style={stops.length === 7 ? [styles.timeInput, { marginTop: 15, marginRight: 10, alignItems: 'center',justifyContent: 'center', borderColor:"#ccc" }] : [styles.timeInput, { marginTop: 15, marginRight: 10, alignItems: 'center',justifyContent: 'center'}]}
               onPress={addStop}
               disabled={stops.length === 7 ? true : false}
               >
               <Text style={stops.length === 7 ? { color: '#ccc', fontWeight: 'bold' } : { color: '#f48024', fontWeight: 'bold' } }>+</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={stops.length === 2 ? [styles.timeInput, { marginTop: 10, marginLeft: 10, alignItems: 'center',justifyContent: 'center', borderColor:"#ccc" }] : [styles.timeInput, { marginTop: 10, marginLeft: 10, alignItems: 'center',justifyContent: 'center'}]}
+              style={stops.length === 2 ? [styles.timeInput, { marginTop: 15, marginLeft: 10, alignItems: 'center',justifyContent: 'center', borderColor:"#ccc" }] : [styles.timeInput, { marginTop: 15, marginLeft: 10, alignItems: 'center',justifyContent: 'center'}]}
               onPress={() => deleteStop(stops.length - 1)}
               disabled={stops.length === 2 ? true : false}
               >
