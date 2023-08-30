@@ -111,10 +111,16 @@ const FeedScreen = () => {
         }
       }
       setNextStop();
-
-
       setDisabled(disabledState);
       manual.current = false;
+      //if the checkbox checked is the last one, we set the duration at 10 minutes to avoid the location to be shared after the pubcrawl ends
+      if (checkboxIndex === stops.length && newState[checkboxName]) {
+        setTimerDuration(600);
+      }
+      //this is the case where the last checkbox is unchecked, we set the duration at 1000000 to share the location until the last checkbox is checked again
+      else if (checkboxIndex === stops.length && !newState[checkboxName]) {
+        setTimerDuration(1000000);
+      }
       return newState;
     });
   };
