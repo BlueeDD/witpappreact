@@ -11,7 +11,7 @@ import ModalDropdown from 'react-native-modal-dropdown';
 
 const DefaultScreen = () => {
 
-  const { isLocationEnabled, setIsLocationEnabled, hasPubcrawl, setHasPubcrawl, cityName, setCityName, isVisible, setIsVisible, user, timerDuration, setTimerDuration } = useContext(AuthContext);
+  const { isLocationEnabled, setIsLocationEnabled, hasPubcrawl, setHasPubcrawl, cityName, setCityName, isVisible, setIsVisible, user, timerDuration, setTimerDuration, isSharingLocation, setIsSharingLocation } = useContext(AuthContext);
   const [loop, setLoop] = useState(false);
   const [currentLocation, setCurrentLocation] = useState({ latitude: 0, longitude: 0 });
   const options = ['1','2', '3', '4', '5', '6'];
@@ -35,16 +35,47 @@ const DefaultScreen = () => {
     if (timerDuration > 0) {
       updateUserLocation();
     }
+    if (timerDuration === 0 && isSharingLocation) {
+      setIsSharingLocation(false);
+      updateUserLocation();
+    }
   }, [loop]);
+
+  
+  // Additional configuration for DefaultScreen
+  useEffect(() => {
+    // Function to set the default header options when transitioning from FeedScreen to DefaultScreen
+    const setFeedScreenHeaderOptions = () => {
+      navigation.setOptions({
+        headerLeft: () => null, // Hide the back arrow
+      });
+    };
+
+      // Disable the gesture to prevent sliding back
+      navigation.setOptions({
+        gestureEnabled: false,
+      });
+
+    // Subscribe to the focus event of DefaultScreen
+    const unsubscribeFeedScreen = navigation.addListener('focus', setFeedScreenHeaderOptions);
+
+    // Clean up the subscription when the component unmounts
+    return () => unsubscribeFeedScreen();
+  }, [navigation]);
   
   // if the time is active, reduce the timer duration by 1 every second like a countdown
   useEffect(() => {
     let timerInterval;
 
     if (timerDuration > 0) {
+      if(!isSharingLocation) {
+        setIsSharingLocation(true);
+      }
       timerInterval = setInterval(() => {
         setTimerDuration((prevDuration) => prevDuration - 1);
       }, 1000);
+    } else if (timerDuration === 0) {
+      setIsSharingLocation(false);
     }
 
     return () => clearInterval(timerInterval);
@@ -121,7 +152,7 @@ const DefaultScreen = () => {
         accuracy: Location.Accuracy.High,
       });
       const { latitude, longitude } = coords;
-      console.log('Current location:', latitude, longitude);
+      // console.log('Current location:', latitude, longitude);
       setCurrentLocation({ latitude, longitude });
   
     } catch (error) {
@@ -143,7 +174,7 @@ const DefaultScreen = () => {
         }),
       });
       const dataRes = await response.json();
-      console.log(dataRes);
+      // console.log(dataRes);
       setCityName(dataRes.data.city_name);
       if (dataRes.code === 0) {
         setHasPubcrawl(true);
@@ -164,10 +195,11 @@ const DefaultScreen = () => {
           id_user: user.id,
           latitude: currentLocation.latitude,
           longitude: currentLocation.longitude,
+          is_sharing: isSharingLocation,
         }),
       });
       const dataRes = await response.json();
-      console.log(dataRes);
+      // console.log(dataRes);
     } catch (error) {
       console.log('Error fetching data from API', error);
     }
@@ -186,13 +218,13 @@ const DefaultScreen = () => {
       )}
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
         <View style={styles.textContainer}>
-          {!hasPubcrawl && isVisible && (
-              timerDuration === 0 ? (
+          {!hasPubcrawl && isLocationEnabled && isVisible && (
+            timerDuration === 0 ? (
               <View>
                 <Text
-                    style={[styles.registerText, { marginTop: -80, marginBottom: 20, fontSize:18 }]}>Wishing to share your location?
+                    style={[styles.registerText, { marginTop: -80, marginBottom: 10, fontSize:18 }]}>Wishing to share your location?
                 </Text>
-                <View style={[styles.row, { marginBottom: 50 }]}>
+                <View style={[styles.row, { marginBottom: 10 }]}>
                   <Text style={{ color: '#f48024', fontSize:18, fontWeight: 'bold' }}>Share it for</Text>
                   <ModalDropdown
                     options={options}
@@ -202,13 +234,13 @@ const DefaultScreen = () => {
                     defaultValue={selectedDuration}
                     dropdownStyle={[styles.dropdownContainer]}
                   />
-                  <Text style={{ color: '#f48024', fontSize:18, fontWeight: 'bold' }}> hour(s)</Text>
-                  <TouchableOpacity
-                    style={[styles.button]}
+                  <Text style={{ color: '#f48024', fontSize:18, fontWeight: 'bold' }}> {selectedDuration === '1' ? "hour" : "hours"}</Text>
+                </View>
+                <TouchableOpacity
+                    style={[styles.button,{alignItems: 'center', marginBottom: 20}]}
                     onPress={() => setTimerDuration(selectedDuration * 60 * 60)}>
                     <Text style={styles.buttonText}>Confirm</Text>
-                  </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
                 <View style={styles.innerContainer}>
                   <Text style={styles.text}>There is no Pubcrawl planned today in {cityName}</Text>
                 </View>
@@ -216,9 +248,9 @@ const DefaultScreen = () => {
               ) : (
                 <View>
                   <View style={{ marginBottom: 50, marginTop: -80, alignItems: 'center' }}>
-                    <Text style={{ color: '#f48024', fontSize:18, fontWeight: 'bold' }}>You're sharing your location for {formatTime(timerDuration)}</Text>
+                    <Text style={{ color: '#f48024', fontSize:15, fontWeight: 'bold' }}>You're sharing your location for {formatTime(timerDuration)}</Text>
                   <TouchableOpacity
-                    style={[styles.button,{width: 150, marginTop: 20}]}
+                    style={[styles.button,{width: 150, marginTop: 15, marginBottom: 19}]}
                     onPress={() => setTimerDuration(0)}>
                     <Text style={styles.buttonText}>Stop sharing</Text>
                   </TouchableOpacity>
@@ -229,7 +261,7 @@ const DefaultScreen = () => {
                 </View>
               )
           )}
-          {!hasPubcrawl && isVisible && (user.role !== 'Agent') && (
+          {!hasPubcrawl && isLocationEnabled && isVisible && (user.role !== 'Agent') && (
             <View>
               <Text
                 style={[styles.registerText, { marginTop: 50 }]}>You want to create one?
@@ -264,6 +296,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    marginHorizontal: 20,
   },
   innerContainer: {
     backgroundColor: '#f48024',
@@ -324,6 +357,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     borderColor: "#f48024",
     shadowRadius: 4,
+    alignSelf: "center",
   },
   buttonText: {
     color: "#f48024",

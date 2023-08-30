@@ -2,7 +2,7 @@
   "expo": {
     "name": "WITP",
     "slug": "witpappreact",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -37,7 +37,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "571291ac-8c8b-413c-a475-8255348c8171"
+        "projectId": "f0bd8182-5611-413a-b05c-f2df96a91666"
       }
     }
   }
