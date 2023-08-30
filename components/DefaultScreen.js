@@ -36,6 +36,28 @@ const DefaultScreen = () => {
       updateUserLocation();
     }
   }, [loop]);
+
+  
+  // Additional configuration for DefaultScreen
+  useEffect(() => {
+    // Function to set the default header options when transitioning from FeedScreen to DefaultScreen
+    const setFeedScreenHeaderOptions = () => {
+      navigation.setOptions({
+        headerLeft: () => null, // Hide the back arrow
+      });
+    };
+
+      // Disable the gesture to prevent sliding back
+      navigation.setOptions({
+        gestureEnabled: false,
+      });
+
+    // Subscribe to the focus event of DefaultScreen
+    const unsubscribeFeedScreen = navigation.addListener('focus', setFeedScreenHeaderOptions);
+
+    // Clean up the subscription when the component unmounts
+    return () => unsubscribeFeedScreen();
+  }, [navigation]);
   
   // if the time is active, reduce the timer duration by 1 every second like a countdown
   useEffect(() => {

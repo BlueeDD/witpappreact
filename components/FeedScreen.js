@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
-import { View, Text, StatusBar, TouchableOpacity, Animated, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StatusBar, TouchableOpacity, Animated, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import * as Location from 'expo-location';
 import Toggle from 'react-native-toggle-input';
 import { AuthContext } from '../navigation';
@@ -12,8 +12,9 @@ const FeedScreen = () => {
   // set the checkboxes
   const initialCheckboxes = {};
   const navigation = useNavigation();
+  const [refreshing, setRefreshing] = useState(false);
   const initialDisabled = {};
-  const { setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user, timerDuration, setTimerDuration } = useContext(AuthContext);
+  const { hasPubcrawl, setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user, timerDuration, setTimerDuration } = useContext(AuthContext);
   const [checkboxes, setCheckboxes] = useState({});
   const [disabled, setDisabled] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -47,6 +48,25 @@ const FeedScreen = () => {
   const animatedSeparator = useRef(new Animated.Value(0)).current;
 
   const [timer, setTimer] = useState(0);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    getPubcrawlData()
+      .then(() => {
+        setRefreshing(false);
+        if (!hasPubcrawl) {
+          navigation.navigate('Default',{
+            screen: 'Default',
+            params: {},
+            options: {
+              headerLeft: () => null, // Hide the back arrow
+            },
+          }
+          ); // Navigate to DefaultScreen
+        }
+      })
+      .catch(() => setRefreshing(false));
+  };
 
   //-----------------------------------TIMER-----------------------------------
 
@@ -405,9 +425,11 @@ const FeedScreen = () => {
       { dataRes.data.pubcrawl.last_visited_place === -1 ? isStopFinished.current = true : isStopFinished.current = false; }
     } else if (dataRes.code == 2) {
       setHasPubcrawl(false);
+      navigation.navigate('Default'); // Navigate to DefaultScreen
     } else if (dataRes.code == 5) {
       setHasPubcrawl(false);
       console.log("You have already finished today pubcrawl.");
+      navigation.navigate('Default'); // Navigate to DefaultScreen
     } else {
       alert("We encountered a problem to get the pubcrawl data. Please try again later.");
     }
@@ -543,14 +565,17 @@ const FeedScreen = () => {
   //----------------------------------------RENDER---------------------------------------------------------
 
   return (
-    <View style={{ flex: 1 }}>
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
+  <View style={{ flex: 1, backgroundColor:"white" }}>
+  <ScrollView contentContainerStyle={{ flexGrow: 1 }}
+    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+    }>
+    {isLoading ? (
+      <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#f48024" />
           <Text style={{ fontSize: 30, marginTop: 15 }}>Loading...</Text>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.container}>
           <StatusBar barStyle="light-content" />
           <Popup
             isOpen={popupState.popup1Open}
@@ -598,11 +623,11 @@ const FeedScreen = () => {
             updateButton={true}
           />
             {currentLocation && isStopFinished.current && isLeader.current && (
-            <View style={{ alignItems: "center" }}>
+            <View style={{ alignItems: "center", borderColor:"darkgreen",  borderTopWidth: 4, borderBottomWidth:4, padding: 15, width:"100%" }}>
               <Text style={{ fontSize: 15, marginBottom:15, fontWeight: "bold", color: "darkgreen" }}>
                 {currentStop === -1 ? "Meeting point" : "Next Stop"} is {distance} meters away
               </Text>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View style={{ flexDirection: "row", alignItems: "center"}}>
               <Text style={{ fontSize: 15, fontWeight: "bold", color: "darkgreen", marginRight: 10 }}>
                 {timerDuration > 0 ? "sharing live location to customers" : "share live location to customers"}
                 </Text>
@@ -614,7 +639,7 @@ const FeedScreen = () => {
             </View>
           )}
           {currentLocation && !isStopFinished.current && isLeader.current && (
-            <View style={{ alignItems: "center" }}>
+            <View style={{ alignItems: "center", borderColor:"darkgreen", borderTopWidth: 4, borderBottomWidth:4, padding: 15, width:"100%" }}>
               <Text style={{ fontSize: 15, marginBottom:15, fontWeight: "bold", color: "darkgreen" }}>
                 You are {currentStop === 0 ? "at the Meeting point" : "in a stop"}
               </Text>
@@ -630,9 +655,11 @@ const FeedScreen = () => {
             </View>
           )}
           {!isLeader.current && (
-            <Text style={{ fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen" }}>
-              The leader of the pubcrawl is {leaderName}
-            </Text>
+            <View style={{ alignItems: "center", borderColor:"darkgreen", borderTopWidth: 4, borderBottomWidth:4, padding: 15, width:"100%" }}>
+              <Text style={{ fontSize: 15, marginTop: 20, fontWeight: "bold", color: "darkgreen" }}>
+                The leader of the pubcrawl is {leaderName}
+              </Text>
+            </View>
           )}
           <View style={styles.row}>
             <View style={styles.column}>
@@ -700,8 +727,9 @@ const FeedScreen = () => {
               ))}
             </View>
           </View>
-        </ScrollView>
-      )}
+        </View>
+      )}    
+    </ScrollView>
     <Footer />
     </View>
   );
