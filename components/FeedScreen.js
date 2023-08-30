@@ -14,7 +14,7 @@ const FeedScreen = () => {
   const navigation = useNavigation();
   const [refreshing, setRefreshing] = useState(false);
   const initialDisabled = {};
-  const { hasPubcrawl, setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user, timerDuration, setTimerDuration } = useContext(AuthContext);
+  const { hasPubcrawl, setHasPubcrawl, isLocationEnabled, setIsLocationEnabled, user, timerDuration, setTimerDuration, isSharingLocation, setIsSharingLocation } = useContext(AuthContext);
   const [checkboxes, setCheckboxes] = useState({});
   const [disabled, setDisabled] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -207,6 +207,10 @@ const FeedScreen = () => {
     if (timerDuration > 0) {
       updateUserLocation();
     }
+    if (timerDuration === 0 && isSharingLocation) {
+      setIsSharingLocation(false);
+      updateUserLocation();
+    }
     // console.log("countOut: " + countOut);
     // console.log("countIn: " + countIn);
   }, [currentLocation]);
@@ -218,6 +222,8 @@ const FeedScreen = () => {
       timerInterval = setInterval(() => {
         setTimerDuration((prevDuration) => prevDuration - 1);
       }, 1000);
+    } else if (timerDuration === 0) { 
+      setIsSharingLocation(false);
     }
 
     return () => clearInterval(timerInterval);
@@ -353,9 +359,11 @@ const FeedScreen = () => {
   const updateTimeDuration = () => {
     if (toggle) {
       setTimerDuration(0);
+      setIsSharingLocation(false)
       setToggle(false);
     } else {
       setTimerDuration(1000000);
+      setIsSharingLocation(true)
       setToggle(true);
     }
   };
@@ -513,6 +521,7 @@ const FeedScreen = () => {
           id_user: user.id,
           latitude: currentLocation.latitude,
           longitude: currentLocation.longitude,
+          is_sharing: isSharingLocation,
         }),
       });
       const dataRes = await response.json();

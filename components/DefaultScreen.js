@@ -11,7 +11,7 @@ import ModalDropdown from 'react-native-modal-dropdown';
 
 const DefaultScreen = () => {
 
-  const { isLocationEnabled, setIsLocationEnabled, hasPubcrawl, setHasPubcrawl, cityName, setCityName, isVisible, setIsVisible, user, timerDuration, setTimerDuration } = useContext(AuthContext);
+  const { isLocationEnabled, setIsLocationEnabled, hasPubcrawl, setHasPubcrawl, cityName, setCityName, isVisible, setIsVisible, user, timerDuration, setTimerDuration, isSharingLocation, setIsSharingLocation } = useContext(AuthContext);
   const [loop, setLoop] = useState(false);
   const [currentLocation, setCurrentLocation] = useState({ latitude: 0, longitude: 0 });
   const options = ['1','2', '3', '4', '5', '6'];
@@ -33,6 +33,10 @@ const DefaultScreen = () => {
     getPubcrawlData();
     checkLocation();
     if (timerDuration > 0) {
+      updateUserLocation();
+    }
+    if (timerDuration === 0 && isSharingLocation) {
+      setIsSharingLocation(false);
       updateUserLocation();
     }
   }, [loop]);
@@ -64,9 +68,14 @@ const DefaultScreen = () => {
     let timerInterval;
 
     if (timerDuration > 0) {
+      if(!isSharingLocation) {
+        setIsSharingLocation(true);
+      }
       timerInterval = setInterval(() => {
         setTimerDuration((prevDuration) => prevDuration - 1);
       }, 1000);
+    } else if (timerDuration === 0) {
+      setIsSharingLocation(false);
     }
 
     return () => clearInterval(timerInterval);
@@ -186,6 +195,7 @@ const DefaultScreen = () => {
           id_user: user.id,
           latitude: currentLocation.latitude,
           longitude: currentLocation.longitude,
+          is_sharing: isSharingLocation,
         }),
       });
       const dataRes = await response.json();
