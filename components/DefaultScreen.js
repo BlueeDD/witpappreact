@@ -234,7 +234,7 @@ const DefaultScreen = () => {
                     defaultValue={selectedDuration}
                     dropdownStyle={[styles.dropdownContainer]}
                   />
-                  <Text style={{ color: '#f48024', fontSize:18, fontWeight: 'bold' }}> hour(s)</Text>
+                  <Text style={{ color: '#f48024', fontSize:18, fontWeight: 'bold' }}> {selectedDuration === '1' ? "hour" : "hours"}</Text>
                 </View>
                 <TouchableOpacity
                     style={[styles.button,{alignItems: 'center', marginBottom: 20}]}
