@@ -190,9 +190,9 @@ const DefaultScreen = () => {
             timerDuration === 0 ? (
               <View>
                 <Text
-                    style={[styles.registerText, { marginTop: -80, marginBottom: 20, fontSize:18 }]}>Wishing to share your location?
+                    style={[styles.registerText, { marginTop: -80, marginBottom: 10, fontSize:18 }]}>Wishing to share your location?
                 </Text>
-                <View style={[styles.row, { marginBottom: 50 }]}>
+                <View style={[styles.row, { marginBottom: 10 }]}>
                   <Text style={{ color: '#f48024', fontSize:18, fontWeight: 'bold' }}>Share it for</Text>
                   <ModalDropdown
                     options={options}
@@ -203,12 +203,12 @@ const DefaultScreen = () => {
                     dropdownStyle={[styles.dropdownContainer]}
                   />
                   <Text style={{ color: '#f48024', fontSize:18, fontWeight: 'bold' }}> hour(s)</Text>
-                  <TouchableOpacity
-                    style={[styles.button]}
+                </View>
+                <TouchableOpacity
+                    style={[styles.button,{alignItems: 'center', marginBottom: 20}]}
                     onPress={() => setTimerDuration(selectedDuration * 60 * 60)}>
                     <Text style={styles.buttonText}>Confirm</Text>
-                  </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
                 <View style={styles.innerContainer}>
                   <Text style={styles.text}>There is no Pubcrawl planned today in {cityName}</Text>
                 </View>
@@ -216,9 +216,9 @@ const DefaultScreen = () => {
               ) : (
                 <View>
                   <View style={{ marginBottom: 50, marginTop: -80, alignItems: 'center' }}>
-                    <Text style={{ color: '#f48024', fontSize:18, fontWeight: 'bold' }}>You're sharing your location for {formatTime(timerDuration)}</Text>
+                    <Text style={{ color: '#f48024', fontSize:15, fontWeight: 'bold' }}>You're sharing your location for {formatTime(timerDuration)}</Text>
                   <TouchableOpacity
-                    style={[styles.button,{width: 150, marginTop: 20}]}
+                    style={[styles.button,{width: 150, marginTop: 15, marginBottom: 19}]}
                     onPress={() => setTimerDuration(0)}>
                     <Text style={styles.buttonText}>Stop sharing</Text>
                   </TouchableOpacity>
@@ -253,7 +253,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1, // Set flex to 1 to take up all available space
     backgroundColor: 'white',
-    marginHorizontal: 20,
   },
   row: {
     flexDirection: 'row',
@@ -265,6 +264,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    marginHorizontal: 20,
   },
   innerContainer: {
     backgroundColor: '#f48024',
@@ -325,6 +325,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     borderColor: "#f48024",
     shadowRadius: 4,
+    alignSelf: "center",
   },
   buttonText: {
     color: "#f48024",
