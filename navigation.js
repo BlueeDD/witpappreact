@@ -32,6 +32,8 @@ export const AuthContext = createContext({
   setIsVisible: () => { },
   timerDuration: initialTimerDuration,
   setTimerDuration: () => {},
+  isSharingLocation: false,
+  setIsSharingLocation: () => {},
 });
 
 export const Stack = createStackNavigator();
@@ -46,6 +48,7 @@ const AuthProvider = ({ children }) => {
   const [cityName, setCityName] = useState(initialCity);
   const [isVisible, setIsVisible] = useState(false);
   const [timerDuration, setTimerDuration] = useState(initialTimerDuration);
+  const [isSharingLocation, setIsSharingLocation] = useState(false);
 
   const handleSetUser = (userData) => {
     setUser(userData);
@@ -72,6 +75,8 @@ const AuthProvider = ({ children }) => {
         setIsVisible,
         timerDuration,
         setTimerDuration,
+        isSharingLocation,
+        setIsSharingLocation,
       }}
     >
       {children}

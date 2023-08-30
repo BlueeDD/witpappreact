@@ -25,7 +25,16 @@ const CreatePubCrawlScreen = () => {
     { label: '4', place_id: '', name: '', duration: '' },
   ]);
 
-  // Calculate the next starting hour
+  const addStop = () => {
+    const newStop = { label: (stops.length).toString(), place_id: '', name: '', duration: '' };
+    setStops([...stops, newStop]);
+  };
+
+  const deleteStop = (index) => {
+    const updatedStops = stops.filter((_, i) => i !== index);
+    setStops(updatedStops);
+  };
+
   // Calculate the next starting hour
   const now = new Date();
   const nextStartingHour = new Date(now);
@@ -255,6 +264,22 @@ const CreatePubCrawlScreen = () => {
               {index !== 0 && (<Text style={{ color: 'gray' }}> minutes</Text>)}
             </View>
           ))}
+          <View style={styles.row}>
+            <TouchableOpacity
+              style={stops.length === 7 ? [styles.timeInput, { marginTop: 15, marginRight: 10, alignItems: 'center',justifyContent: 'center', borderColor:"#ccc" }] : [styles.timeInput, { marginTop: 15, marginRight: 10, alignItems: 'center',justifyContent: 'center'}]}
+              onPress={addStop}
+              disabled={stops.length === 7 ? true : false}
+              >
+              <Text style={stops.length === 7 ? { color: '#ccc', fontWeight: 'bold' } : { color: '#f48024', fontWeight: 'bold' } }>+</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={stops.length === 2 ? [styles.timeInput, { marginTop: 15, marginLeft: 10, alignItems: 'center',justifyContent: 'center', borderColor:"#ccc" }] : [styles.timeInput, { marginTop: 15, marginLeft: 10, alignItems: 'center',justifyContent: 'center'}]}
+              onPress={() => deleteStop(stops.length - 1)}
+              disabled={stops.length === 2 ? true : false}
+              >
+              <Text style={stops.length === 2 ? { color: '#ccc', fontWeight: 'bold' } : { color: '#f48024', fontWeight: 'bold' } }>-</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         <TouchableOpacity
           style={[styles.button, { marginTop: 20 }]}
